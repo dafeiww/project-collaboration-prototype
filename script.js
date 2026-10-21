@@ -47,7 +47,7 @@ let projects;
 try { const saved = JSON.parse(localStorage.getItem(storageKey)); projects = Array.isArray(saved) && saved.length === initialProjects.length ? saved : structuredClone(initialProjects); }
 catch { projects = structuredClone(initialProjects); }
 for (const p of projects) for (const member of p.members || []) if (member.id === 'support-1') member.role = 'admin';
-let page = 'reference', activeProjectId = 'analysis', tab = 'members', identity = 'owner', search = '', modal = null, toastTimer;
+let page = 'reference', activeProjectId = 'analysis', tab = 'members', identity = 'owner', search = '', modal = null, toastTimer, confirmationTimer;
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(projects)); } catch {} }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
@@ -93,15 +93,29 @@ function renderDetail() { return `<div class="screenshot-stage" data-screen-labe
 function renderReference() { return `<div class="screenshot-stage" data-screen-label="分析详情 · 原截图新增项目协作入口"><img src="分析详情-参考截图.png" alt="原始分析详情页面，项目数据区域上方新增项目协作入口"><button class="screenshot-entry" data-enter-collab>项目协作<span class="entry-line"></span></button></div>`; }
 function render() { document.body.classList.toggle('reference-mode',page==='reference'||page==='detail');main.innerHTML = page === 'reference'?renderReference():page === 'detail'?renderDetail():renderProjects(); document.getElementById('crumb').innerHTML = page === 'detail' ? `项目管理 <span>/</span> ${safe(project().type)} <span>/</span> 项目协作` : '项目管理 <span>/</span> 项目列表'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.nav==='projects')); }
 function modalFrame(title, subtitle, body, footer) { modalRoot.hidden=false; modalRoot.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="${safe(title)}"><div class="modal-head"><div><h2>${title}</h2><p>${subtitle}</p></div><button class="modal-close" data-close aria-label="关闭">×</button></div><div class="modal-body">${body}</div><div class="modal-foot">${footer}</div></div>`; }
-function closeConfirmation() { confirmRoot.hidden=true; confirmRoot.innerHTML=''; modalRoot.hidden=false; modalRoot.inert=false; }
+function closeConfirmation() {
+  clearTimeout(confirmationTimer);
+  confirmRoot.hidden=true;
+  confirmRoot.textContent='';
+  modalRoot.inert=false;
+  if(modal) modal.pendingUser=null;
+}
 function closeModal() { closeConfirmation(); modal=null; modalRoot.hidden=true; modalRoot.innerHTML=''; }
 function showAccountConfirmation(user) {
   modal.pendingUser=user;
-  modalRoot.hidden=true;
   modalRoot.inert=true;
+  confirmRoot.textContent=safetyMessage;
   confirmRoot.hidden=false;
-  confirmRoot.innerHTML=`<div class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="confirm-mark">${icon('info')}</div><h2 id="confirmTitle">请确认云平台账号</h2><p id="confirmMessage">${safetyMessage}</p><div class="confirm-account"><span>注册手机号 <strong>${safe(user.phone)}</strong></span><span>云平台账号 <strong>${safe(user.account)}</strong></span></div><div class="confirm-actions"><button class="btn" data-return-verify>返回核对</button><button class="btn primary" data-continue-role>继续设置角色</button></div></div>`;
-  confirmRoot.querySelector('[data-continue-role]').focus();
+  const modalTop=modalRoot.querySelector('.modal').getBoundingClientRect().top;
+  confirmRoot.style.top=`${Math.max(12,Math.round(modalTop-confirmRoot.getBoundingClientRect().height-16))}px`;
+  confirmationTimer=setTimeout(()=>{
+    if(!modal || modal.type!=='add' || modal.step!=='verify' || modal.pendingUser!==user) return;
+    closeConfirmation();
+    modal.user=user;
+    modal.step='role';
+    showModal();
+    modalRoot.querySelector('input[name=role], [data-confirm-add]')?.focus();
+  },2400);
 }
 function rolesRadio(selected='member') { return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span><strong>${roleNames[r]}</strong><small>${roleDescriptions[r]}</small></span></label>`).join('')}</div>`; }
 function openAdd() { if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'add',step:'verify',error:''}; showModal(); }
@@ -167,10 +181,6 @@ document.querySelector('.global-header').addEventListener('click',e=>{if(e.targe
 main.addEventListener('input',e=>{if(e.target.id==='projectSearch'||e.target.id==='memberSearch'){const field=e.target.id;const position=e.target.selectionStart;search=e.target.value;render();const next=document.getElementById(field);next.focus();try{next.setSelectionRange(position,position)}catch{}}});
 main.addEventListener('change',e=>{if(e.target.id==='visitorDownload'&&canManage()){project().visitorDownload=e.target.checked;save();render();notify('访问者下载权限已更新（仅演示）')}});
 document.getElementById('identitySelect').addEventListener('change',e=>{identity=e.target.value;render();notify(`已切换至${roleNames[identity]}视角`)});
-confirmRoot.addEventListener('click',e=>{
-  if(e.target.closest('[data-return-verify]')){closeConfirmation();modal.pendingUser=null;document.getElementById('account')?.focus();}
-  else if(e.target.closest('[data-continue-role]')&&modal?.pendingUser){modal.user=modal.pendingUser;modal.pendingUser=null;modal.step='role';closeConfirmation();showModal();}
-});
 modalRoot.addEventListener('click',e=>{
   if(e.target===modalRoot||e.target.closest('[data-close]'))return closeModal();
   const a=e.target.closest('[data-verify],[data-back-verify],[data-confirm-add],[data-save-role],[data-confirm-remove]');if(!a||!modal)return;
@@ -200,5 +210,5 @@ modalRoot.addEventListener('input',e=>{
     if(err)err.remove();
   }
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmRoot.hidden){closeConfirmation();modal.pendingUser=null;}else if(!modalRoot.hidden)closeModal();}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmRoot.hidden){closeConfirmation();document.getElementById('account')?.focus();}else if(!modalRoot.hidden)closeModal();}});
 render();
