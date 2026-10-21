@@ -30,8 +30,8 @@ const directory = [
 ];
 // 文案集中管理；原型内“编辑提示语”也可修改，修改只保存在当前浏览器。
 const defaultAccountCopy = {
-  subtitle: '请输入对方注册手机号及云平台账号，核对无误后再设置项目角色。',
-  security: '为保证项目数据安全，请核对并确认对方的手机号和云平台账号。本页仅为交互演示，不会进行真实身份认证或授予实际权限。',
+  subtitle: '输入注册手机号后将自动显示匹配的云平台账号，请确认无误。',
+  security: '为保证项目数据安全，请再次核对手机号和云平台账号是否属于拟邀请的成员。正式系统中，添加后将按所选角色授予项目权限；当前原型仅演示，不会实际授权。',
   mismatch: '手机号或云平台账号不匹配，请核对后重试。'
 };
 const accountCopyKey = 'personalbio-project-collaboration-copy-v1';
@@ -110,14 +110,14 @@ function showModal() {
   if(!modal) return;
   if(modal.type==='add' && modal.step==='verify') {
     modalFrame('添加项目成员',safe(accountCopy.subtitle),
-      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><label class="field" id="accountField"><span class="field-label">云平台账号</span><input id="account" type="text" autocomplete="off" maxlength="40" placeholder="请输入对方的云平台账号" value="${safe(modal.account||'')}"><span class="field-error">请输入云平台账号</span></label>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<div class="verify-hint" id="securityHint">${safe(accountCopy.security)}</div><p class="demo-example">演示账号：手机号 13800000005，云平台账号 xia.laoshi</p><details class="copy-settings"><summary>编辑提示语（仅此浏览器）</summary><div class="copy-fields"><label>弹窗说明<textarea id="copySubtitle" maxlength="200" rows="2">${safe(accountCopy.subtitle)}</textarea></label><label>安全提示<textarea id="copySecurity" maxlength="200" rows="3">${safe(accountCopy.security)}</textarea></label><label>核对失败提示<textarea id="copyMismatch" maxlength="200" rows="2">${safe(accountCopy.mismatch)}</textarea></label><div class="copy-actions"><button type="button" class="btn quiet small" data-reset-copy>恢复默认</button><button type="button" class="btn small" data-save-copy>保存提示语</button></div></div></details></form>`,
+      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><label class="field" id="accountField"><span class="field-label">云平台账号 <span class="autofill-tag">自动匹配</span></span><input id="account" type="text" autocomplete="off" maxlength="40" placeholder="输入手机号后自动显示" value="${safe(modal.account||'')}"><span class="field-error">请输入云平台账号</span></label><div id="phoneLookup" aria-live="polite"></div>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<p class="demo-example">演示手机号：13800000005，自动匹配账号 xia.laoshi</p><details class="copy-settings"><summary>编辑提示语（仅此浏览器）</summary><div class="copy-fields"><label>弹窗说明<textarea id="copySubtitle" maxlength="200" rows="2">${safe(accountCopy.subtitle)}</textarea></label><label>确认时的安全提示<textarea id="copySecurity" maxlength="200" rows="3">${safe(accountCopy.security)}</textarea></label><label>核对失败提示<textarea id="copyMismatch" maxlength="200" rows="2">${safe(accountCopy.mismatch)}</textarea></label><div class="copy-actions"><button type="button" class="btn quiet small" data-reset-copy>恢复默认</button><button type="button" class="btn small" data-save-copy>保存提示语</button></div></div></details></form>`,
       '<button class="btn" data-close>取消</button><button class="btn primary" data-verify>确认云平台账号</button>');
-    document.getElementById('phone').focus(); return;
+    drawPhoneLookup(false);document.getElementById('phone').focus(); return;
   }
   if(modal.type==='add' && modal.step==='role') {
     const u=modal.user;
     modalFrame('确认成员与角色','账号核对通过，请为该用户选择项目角色',
-      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 账号 ${safe(u.account)}</span></div><span class="checkmark">演示核对通过</span></div><span class="field-label">项目角色</span>${rolesRadio('member')}`,
+      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 账号 ${safe(u.account)}</span></div><span class="checkmark">演示核对通过</span></div><div class="verify-hint confirmation-hint" id="securityHint">${safe(accountCopy.security)}</div><span class="field-label">项目角色</span>${rolesRadio('member')}`,
       '<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-confirm-add>添加成员</button>'); return;
   }
   if(modal.type==='edit') {
@@ -142,6 +142,15 @@ function verify() {
   else if(project().members.some(m=>m.id===user.id)) modal.error='这位用户已在当前项目中，请在成员列表中调整角色。';
   else { modal.user=user; modal.step='role'; modal.error=''; }
   showModal();
+}
+function drawPhoneLookup(autoFill=true) {
+  const phone=document.getElementById('phone')?.value.trim();
+  const accountInput=document.getElementById('account');
+  const slot=document.getElementById('phoneLookup');
+  if(!slot||!accountInput) return;
+  const user=/^1[3-9]\d{9}$/.test(phone)?directory.find(u=>u.phone===phone):null;
+  if(autoFill) accountInput.value=user?.account||'';
+  slot.innerHTML=user?`<div class="account-preview">${avatar(user.name)}<div><strong>${safe(user.name)}</strong><small>匹配的云平台账号：${safe(user.account)}</small></div><span>请确认</span></div>`:'';
 }
 main.addEventListener('click', e => {
   const action=e.target.closest('[data-enter-collab],[data-open-project],[data-tab],[data-add],[data-edit-member],[data-remove-member],[data-nav]'); if(!action) return;
@@ -175,7 +184,8 @@ modalRoot.addEventListener('click',e=>{
     document.getElementById('copySecurity').value=accountCopy.security;
     document.getElementById('copyMismatch').value=accountCopy.mismatch;
     modalRoot.querySelector('.modal-head p').textContent=accountCopy.subtitle;
-    document.getElementById('securityHint').textContent=accountCopy.security;
+    const securityHint=document.getElementById('securityHint');
+    if(securityHint) securityHint.textContent=accountCopy.security;
     notify(reset?'已恢复默认提示语':'提示语已保存到当前浏览器');
     return;
   }
@@ -199,6 +209,7 @@ modalRoot.addEventListener('click',e=>{
 modalRoot.addEventListener('submit',e=>{if(e.target.id==='verifyForm'){e.preventDefault();verify()}});
 modalRoot.addEventListener('input',e=>{
   if(e.target.id==='phone'||e.target.id==='account') {
+    if(e.target.id==='phone') drawPhoneLookup();
     e.target.closest('.field')?.classList.remove('invalid');
     modal.error='';
     const err=modalRoot.querySelector('.modal-body > form > .inline-error');
