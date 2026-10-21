@@ -8,12 +8,16 @@ const icons = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   back: '<path d="m14 5-7 7 7 7"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  shield: '<path d="M12 2 20 5v6c0 5-3.1 8.6-8 11-4.9-2.4-8-6-8-11V5l8-3z"/><path d="m9 12 2 2 4-4"/>',
+  person: '<circle cx="12" cy="7" r="3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2"/>',
+  eye: '<path d="M2 12s3.7-6 10-6 10 6 10 6-3.7 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.8"/>',
   pulse: '<path d="M2 12h5l3-7 4 14 3-7h5"/>',
   chart: '<path d="M4 20V4m0 16h16M8 15l4-4 3 2 5-7"/>'
 };
 function icon(name, cls = 'icon') { return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`; }
 document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon, 'icon'); });
 const roleNames = { owner: '项目所有者', admin: '管理员', member: '成员', visitor: '访问者' };
+const roleIcons = { admin: 'shield', member: 'person', visitor: 'eye' };
 const roleDescriptions = {
   owner: '确认管理归属，指定管理员，负责项目交接。',
   admin: '管理成员与权限，在授权范围内管理项目。',
@@ -120,7 +124,7 @@ function showAccountConfirmation(user) {
     modalRoot.querySelector('input[name=role], [data-confirm-add]')?.focus();
   },2400);
 }
-function rolesRadio(selected='member') { return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span><strong>${roleNames[r]}</strong><small>${roleDescriptions[r]}</small></span></label>`).join('')}</div>`; }
+function rolesRadio(selected='member') { return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option ${r}"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span class="role-icon">${icon(roleIcons[r])}</span><span><strong>${roleNames[r]}</strong><small>${roleDescriptions[r]}</small></span></label>`).join('')}</div>`; }
 function openAdd() { if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'add',step:'verify',error:''}; showModal(); }
 function showModal() {
   if(!modal) return;
