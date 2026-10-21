@@ -1,4 +1,4 @@
-/* 本文件只运行交互演示；身份核验、授权与数据存储接入真实系统时必须由服务端实现。 */
+/* 本文件只运行交互演示；真实账号核验、授权与数据存储必须由服务端实现。 */
 const icons = {
   grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   layers: '<rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/>',
@@ -21,13 +21,29 @@ const roleDescriptions = {
   visitor: '查看授权内容；下载权限单独设置。'
 };
 const directory = [
-  { id: 'owner-1', name: '王老师', phone: '13800000000' },
-  { id: 'support-1', name: '技术支持', phone: '13800000004' },
-  { id: 'chen-1', name: '陈老师', phone: '13800000001' },
-  { id: 'li-1', name: '小李', phone: '13800000002' },
-  { id: 'zhou-1', name: '小周', phone: '13800000003' },
-  { id: 'xia-1', name: '夏老师', phone: '13800000005' }
+  { id: 'owner-1', name: '王老师', phone: '13800000000', account: 'wang.laoshi' },
+  { id: 'support-1', name: '技术支持', phone: '13800000004', account: 'tech.support' },
+  { id: 'chen-1', name: '陈老师', phone: '13800000001', account: 'chen.laoshi' },
+  { id: 'li-1', name: '小李', phone: '13800000002', account: 'xiao.li' },
+  { id: 'zhou-1', name: '小周', phone: '13800000003', account: 'xiao.zhou' },
+  { id: 'xia-1', name: '夏老师', phone: '13800000005', account: 'xia.laoshi' }
 ];
+// 文案集中管理；原型内“编辑提示语”也可修改，修改只保存在当前浏览器。
+const defaultAccountCopy = {
+  subtitle: '请输入对方注册手机号及云平台账号，核对无误后再设置项目角色。',
+  security: '为保证项目数据安全，请核对并确认对方的手机号和云平台账号。本页仅为交互演示，不会进行真实身份认证或授予实际权限。',
+  mismatch: '手机号或云平台账号不匹配，请核对后重试。'
+};
+const accountCopyKey = 'personalbio-project-collaboration-copy-v1';
+let accountCopy = { ...defaultAccountCopy };
+try {
+  const savedCopy = JSON.parse(localStorage.getItem(accountCopyKey));
+  if (savedCopy && typeof savedCopy === 'object') {
+    for (const key of Object.keys(defaultAccountCopy)) {
+      if (typeof savedCopy[key] === 'string' && savedCopy[key].trim()) accountCopy[key] = savedCopy[key].trim().slice(0, 200);
+    }
+  }
+} catch {}
 const initialProjects = [
   { id: 'analysis', name: '测试示例-定量蛋白组分析', code: 'PT202610201731FS5D', type: '云分析', members: [
     { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'member', initial: true },
@@ -93,15 +109,15 @@ function openAdd() { if(!canManage()) return notify('当前角色不能添加成
 function showModal() {
   if(!modal) return;
   if(modal.type==='add' && modal.step==='verify') {
-    modalFrame('添加项目成员','请填写对方在云平台注册时使用的信息',
-      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><div id="phoneLookup" aria-live="polite"></div><label class="field" id="nameField"><span class="field-label">云平台用户名 <span class="autofill-tag">自动匹配</span></span><input id="username" type="text" autocomplete="off" maxlength="30" placeholder="输入手机号后自动匹配用户名" value="${safe(modal.name||'')}"><span class="field-error">请输入用户名</span></label>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<div class="verify-hint">演示可输入 13800000005 自动带出“夏老师”；其他未登记手机号会提示未注册。自动匹配只核对账号资料，不是短信验证码或真实身份认证。</div></form>`,
-      '<button class="btn" data-close>取消</button><button class="btn primary" data-verify>核对云平台账号</button>');
-    drawPhoneLookup(false);document.getElementById('phone').focus(); return;
+    modalFrame('添加项目成员',safe(accountCopy.subtitle),
+      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><label class="field" id="accountField"><span class="field-label">云平台账号</span><input id="account" type="text" autocomplete="off" maxlength="40" placeholder="请输入对方的云平台账号" value="${safe(modal.account||'')}"><span class="field-error">请输入云平台账号</span></label>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<div class="verify-hint" id="securityHint">${safe(accountCopy.security)}</div><p class="demo-example">演示账号：手机号 13800000005，云平台账号 xia.laoshi</p><details class="copy-settings"><summary>编辑提示语（仅此浏览器）</summary><div class="copy-fields"><label>弹窗说明<textarea id="copySubtitle" maxlength="200" rows="2">${safe(accountCopy.subtitle)}</textarea></label><label>安全提示<textarea id="copySecurity" maxlength="200" rows="3">${safe(accountCopy.security)}</textarea></label><label>核对失败提示<textarea id="copyMismatch" maxlength="200" rows="2">${safe(accountCopy.mismatch)}</textarea></label><div class="copy-actions"><button type="button" class="btn quiet small" data-reset-copy>恢复默认</button><button type="button" class="btn small" data-save-copy>保存提示语</button></div></div></details></form>`,
+      '<button class="btn" data-close>取消</button><button class="btn primary" data-verify>确认云平台账号</button>');
+    document.getElementById('phone').focus(); return;
   }
   if(modal.type==='add' && modal.step==='role') {
     const u=modal.user;
     modalFrame('确认成员与角色','账号核对通过，请为该用户选择项目角色',
-      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 云平台用户</span></div><span class="checkmark">已核对</span></div><span class="field-label">项目角色</span>${rolesRadio('member')}`,
+      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 账号 ${safe(u.account)}</span></div><span class="checkmark">演示核对通过</span></div><span class="field-label">项目角色</span>${rolesRadio('member')}`,
       '<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-confirm-add>添加成员</button>'); return;
   }
   if(modal.type==='edit') {
@@ -116,26 +132,16 @@ function showModal() {
   }
 }
 function verify() {
-  const phone=document.getElementById('phone').value.trim(), name=document.getElementById('username').value.trim();
-  modal.phone=phone; modal.name=name;
+  const phone=document.getElementById('phone').value.trim(), account=document.getElementById('account').value.trim();
+  modal.phone=phone; modal.account=account;
   document.getElementById('phoneField').classList.toggle('invalid',!/^1[3-9]\d{9}$/.test(phone));
-  document.getElementById('nameField').classList.toggle('invalid',!name);
-  if(!/^1[3-9]\d{9}$/.test(phone)||!name) return;
-  const user=directory.find(u=>u.phone===phone);
-  if(!user) modal.error='当前手机号对应的用户未注册云平台，请先完成云平台注册，再添加至项目。';
-  else if(user.name!==name) modal.error='手机号与用户名不匹配，请核对该用户的云平台账号信息。';
+  document.getElementById('accountField').classList.toggle('invalid',!account);
+  if(!/^1[3-9]\d{9}$/.test(phone)||!account) return;
+  const user=directory.find(u=>u.phone===phone && u.account.toLowerCase()===account.toLowerCase());
+  if(!user) modal.error=accountCopy.mismatch;
   else if(project().members.some(m=>m.id===user.id)) modal.error='这位用户已在当前项目中，请在成员列表中调整角色。';
   else { modal.user=user; modal.step='role'; modal.error=''; }
   showModal();
-}
-function drawPhoneLookup(autoFill=true) {
-  const input=document.getElementById('phone'), slot=document.getElementById('phoneLookup'), nameInput=document.getElementById('username');if(!input||!slot)return;
-  const phone=input.value.trim();if(!/^1[3-9]\d{9}$/.test(phone)){slot.innerHTML='';if(nameInput&&nameInput.value===modal.autoName)nameInput.value='';modal.autoName='';return;}
-  const user=directory.find(u=>u.phone===phone);
-  if(nameInput&&autoFill){nameInput.value=user?user.name:'';modal.autoName=user?.name||'';}
-  slot.innerHTML=user
-    ? `<div class="account-preview">${avatar(user.name)}<div><strong>${safe(user.name)}</strong><small>已找到云平台账户 · 用户名已自动匹配</small></div><span>已注册</span></div>`
-    : '<div class="inline-error">当前手机号对应的用户未注册云平台，请先完成注册后再添加。</div>';
 }
 main.addEventListener('click', e => {
   const action=e.target.closest('[data-enter-collab],[data-open-project],[data-tab],[data-add],[data-edit-member],[data-remove-member],[data-nav]'); if(!action) return;
@@ -155,6 +161,24 @@ main.addEventListener('change',e=>{if(e.target.id==='visitorDownload'&&canManage
 document.getElementById('identitySelect').addEventListener('change',e=>{identity=e.target.value;render();notify(`已切换至${roleNames[identity]}视角`)});
 modalRoot.addEventListener('click',e=>{
   if(e.target===modalRoot||e.target.closest('[data-close]'))return closeModal();
+  if(e.target.closest('[data-save-copy],[data-reset-copy]')&&modal?.type==='add'&&modal.step==='verify') {
+    const reset=Boolean(e.target.closest('[data-reset-copy]'));
+    const next=reset?{...defaultAccountCopy}:{
+      subtitle:document.getElementById('copySubtitle').value.trim(),
+      security:document.getElementById('copySecurity').value.trim(),
+      mismatch:document.getElementById('copyMismatch').value.trim()
+    };
+    if(Object.values(next).some(value=>!value)){notify('提示语不能为空');return;}
+    accountCopy=next;
+    try { localStorage.setItem(accountCopyKey,JSON.stringify(accountCopy)); } catch {}
+    document.getElementById('copySubtitle').value=accountCopy.subtitle;
+    document.getElementById('copySecurity').value=accountCopy.security;
+    document.getElementById('copyMismatch').value=accountCopy.mismatch;
+    modalRoot.querySelector('.modal-head p').textContent=accountCopy.subtitle;
+    document.getElementById('securityHint').textContent=accountCopy.security;
+    notify(reset?'已恢复默认提示语':'提示语已保存到当前浏览器');
+    return;
+  }
   const a=e.target.closest('[data-verify],[data-back-verify],[data-confirm-add],[data-save-role],[data-confirm-remove]');if(!a||!modal)return;
   if(a.hasAttribute('data-verify'))return verify();
   if(a.hasAttribute('data-back-verify')){modal.step='verify';return showModal();}
@@ -173,6 +197,13 @@ modalRoot.addEventListener('click',e=>{
   }
 });
 modalRoot.addEventListener('submit',e=>{if(e.target.id==='verifyForm'){e.preventDefault();verify()}});
-modalRoot.addEventListener('input',e=>{if(e.target.id==='phone'){drawPhoneLookup();const err=modalRoot.querySelector('.modal-body > .inline-error');if(err)err.remove()}});
+modalRoot.addEventListener('input',e=>{
+  if(e.target.id==='phone'||e.target.id==='account') {
+    e.target.closest('.field')?.classList.remove('invalid');
+    modal.error='';
+    const err=modalRoot.querySelector('.modal-body > form > .inline-error');
+    if(err)err.remove();
+  }
+});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modalRoot.hidden)closeModal()});
 render();
