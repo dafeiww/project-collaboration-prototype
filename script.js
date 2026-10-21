@@ -74,7 +74,7 @@ function renderProjects() {
 }
 function renderMemberRow(member, index) {
   const user = person(member.id);
-  return `<tr><td><div class="member-cell">${avatar(user.name,index)}<div><div class="member-name">${safe(user.name)}</div>${member.id==='support-1'?'<div class="member-note">固定管理员 · 可移除</div>':member.initial?'<div class="member-note">默认加入 · 可移除</div>':''}</div></div></td><td><span class="role-pill ${member.role}">${roleNames[member.role] || '成员'}</span></td><td>${canManage()?`<div class="table-actions"><button class="btn quiet small" data-edit-member="${safe(member.id)}" ${member.id==='support-1'?'disabled aria-label="技术支持的角色不可调整" title="技术支持固定为管理员"':''}>调整角色</button><button class="btn quiet small" data-remove-member="${safe(member.id)}">移除</button></div>`:'<span class="fixed">无管理权限</span>'}</td></tr>`;
+  return `<tr><td><div class="member-cell">${avatar(user.name,index)}<div><div class="member-name">${safe(user.name)}</div>${member.id==='support-1'?'<div class="member-note">固定管理员 · 可移除</div>':member.initial?'<div class="member-note">默认加入 · 可移除</div>':''}</div></div></td><td><span class="role-pill ${member.role}">${icon(roleIcons[member.role] || roleIcons.member)}${roleNames[member.role] || '成员'}</span></td><td>${canManage()?`<div class="table-actions"><button class="btn quiet small" data-edit-member="${safe(member.id)}" ${member.id==='support-1'?'disabled aria-label="技术支持的角色不可调整" title="技术支持固定为管理员"':''}>调整角色</button><button class="btn quiet small" data-remove-member="${safe(member.id)}">移除</button></div>`:'<span class="fixed">无管理权限</span>'}</td></tr>`;
 }
 function renderMembers(p) {
   const list = p.members.filter(m => m.role !== 'owner' && `${person(m.id).name}${roleNames[m.role]}`.includes(search));
