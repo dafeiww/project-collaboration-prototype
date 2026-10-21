@@ -26,7 +26,8 @@ const directory = [
   { id: 'chen-1', name: '陈老师', phone: '13800000001', account: 'chen.laoshi' },
   { id: 'li-1', name: '小李', phone: '13800000002', account: 'xiao.li' },
   { id: 'zhou-1', name: '小周', phone: '13800000003', account: 'xiao.zhou' },
-  { id: 'xia-1', name: '夏老师', phone: '13800000005', account: 'xia.laoshi' }
+  { id: 'xia-1', name: '夏老师', phone: '13800000005', account: 'xia.laoshi' },
+  { id: 'lin-1', name: '林老师', phone: '13800000006', account: 'lin.laoshi' }
 ];
 const accountCopy = {
   subtitle: '输入注册手机号后将自动显示匹配的云平台账号，请确认无误。',
@@ -36,13 +37,15 @@ const safetyMessage = '为保证项目数据安全，请再次核对手机号和
 const initialProjects = [
   { id: 'analysis', name: '测试示例-定量蛋白组分析', code: 'PT202610201731FS5D', type: '云分析', members: [
     { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
-    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }
+    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }, { id: 'lin-1', role: 'member' }
   ], visitorDownload: true },
   { id: 'visual', name: '多组学数据可视化项目', code: 'YT20261021008', type: '云图汇', members: [
-    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' }
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
+    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }, { id: 'lin-1', role: 'member' }
   ], visitorDownload: true }
 ];
-const storageKey = 'personalbio-project-collaboration-preview-v1';
+// 新版示例名单使用独立存储键；旧版演示记录保留，不会被清除或错误继承。
+const storageKey = 'personalbio-project-collaboration-preview-v2';
 let projects;
 try { const saved = JSON.parse(localStorage.getItem(storageKey)); projects = Array.isArray(saved) && saved.length === initialProjects.length ? saved : structuredClone(initialProjects); }
 catch { projects = structuredClone(initialProjects); }
