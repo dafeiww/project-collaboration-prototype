@@ -45,12 +45,12 @@ const initialProjects = [
   ], visitorDownload: true }
 ];
 // 新版示例名单使用独立存储键；旧版演示记录保留，不会被清除或错误继承。
-const storageKey = 'personalbio-project-collaboration-preview-v2';
+const storageKey = 'personalbio-project-collaboration-preview-v3';
 let projects;
 try { const saved = JSON.parse(localStorage.getItem(storageKey)); projects = Array.isArray(saved) && saved.length === initialProjects.length ? saved : structuredClone(initialProjects); }
 catch { projects = structuredClone(initialProjects); }
 for (const p of projects) for (const member of p.members || []) if (member.id === 'support-1') member.role = 'admin';
-let page = 'reference', activeProjectId = 'analysis', tab = 'members', identity = 'owner', search = '', modal = null, toastTimer, confirmationTimer;
+let page = 'detail', activeProjectId = 'analysis', tab = 'members', identity = 'owner', search = '', modal = null, toastTimer, confirmationTimer;
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(projects)); } catch {} }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
