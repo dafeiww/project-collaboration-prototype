@@ -28,37 +28,27 @@ const directory = [
   { id: 'zhou-1', name: '小周', phone: '13800000003', account: 'xiao.zhou' },
   { id: 'xia-1', name: '夏老师', phone: '13800000005', account: 'xia.laoshi' }
 ];
-// 文案集中管理；原型内“编辑提示语”也可修改，修改只保存在当前浏览器。
-const defaultAccountCopy = {
+const accountCopy = {
   subtitle: '输入注册手机号后将自动显示匹配的云平台账号，请确认无误。',
-  security: '为保证项目数据安全，请再次核对手机号和云平台账号是否属于拟邀请的成员。正式系统中，添加后将按所选角色授予项目权限；当前原型仅演示，不会实际授权。',
   mismatch: '手机号或云平台账号不匹配，请核对后重试。'
 };
-const accountCopyKey = 'personalbio-project-collaboration-copy-v1';
-let accountCopy = { ...defaultAccountCopy };
-try {
-  const savedCopy = JSON.parse(localStorage.getItem(accountCopyKey));
-  if (savedCopy && typeof savedCopy === 'object') {
-    for (const key of Object.keys(defaultAccountCopy)) {
-      if (typeof savedCopy[key] === 'string' && savedCopy[key].trim()) accountCopy[key] = savedCopy[key].trim().slice(0, 200);
-    }
-  }
-} catch {}
+const safetyMessage = '为保证项目数据安全，请再次核对手机号和云平台账号是否属于拟邀请的成员';
 const initialProjects = [
   { id: 'analysis', name: '测试示例-定量蛋白组分析', code: 'PT202610201731FS5D', type: '云分析', members: [
-    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'member', initial: true },
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
     { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }
   ], visitorDownload: true },
   { id: 'visual', name: '多组学数据可视化项目', code: 'YT20261021008', type: '云图汇', members: [
-    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'member', initial: true }, { id: 'chen-1', role: 'admin' }
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' }
   ], visitorDownload: true }
 ];
 const storageKey = 'personalbio-project-collaboration-preview-v1';
 let projects;
 try { const saved = JSON.parse(localStorage.getItem(storageKey)); projects = Array.isArray(saved) && saved.length === initialProjects.length ? saved : structuredClone(initialProjects); }
 catch { projects = structuredClone(initialProjects); }
+for (const p of projects) for (const member of p.members || []) if (member.id === 'support-1') member.role = 'admin';
 let page = 'reference', activeProjectId = 'analysis', tab = 'members', identity = 'owner', search = '', modal = null, toastTimer;
-const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot');
+const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
 function save() { try { localStorage.setItem(storageKey, JSON.stringify(projects)); } catch {} }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
 function person(id) { return directory.find(d => d.id === id) || { name: '未知用户', phone: '' }; }
@@ -77,7 +67,7 @@ function renderProjects() {
 }
 function renderMemberRow(member, index) {
   const user = person(member.id);
-  return `<tr><td><div class="member-cell">${avatar(user.name,index)}<div><div class="member-name">${safe(user.name)}</div>${member.initial ? '<div class="member-note">默认加入 · 可移除</div>' : ''}</div></div></td><td><span class="role-pill ${member.role}">${roleNames[member.role] || '成员'}</span></td><td>${canManage()?`<div class="table-actions"><button class="btn quiet small" data-edit-member="${safe(member.id)}">调整角色</button><button class="btn quiet small" data-remove-member="${safe(member.id)}">移除</button></div>`:'<span class="fixed">无管理权限</span>'}</td></tr>`;
+  return `<tr><td><div class="member-cell">${avatar(user.name,index)}<div><div class="member-name">${safe(user.name)}</div>${member.id==='support-1'?'<div class="member-note">固定管理员 · 可移除</div>':member.initial?'<div class="member-note">默认加入 · 可移除</div>':''}</div></div></td><td><span class="role-pill ${member.role}">${roleNames[member.role] || '成员'}</span></td><td>${canManage()?`<div class="table-actions">${member.id==='support-1'?'':`<button class="btn quiet small" data-edit-member="${safe(member.id)}">调整角色</button>`}<button class="btn quiet small" data-remove-member="${safe(member.id)}">移除</button></div>`:'<span class="fixed">无管理权限</span>'}</td></tr>`;
 }
 function renderMembers(p) {
   const list = p.members.filter(m => m.role !== 'owner' && `${person(m.id).name}${roleNames[m.role]}`.includes(search));
@@ -103,21 +93,30 @@ function renderDetail() { return `<div class="screenshot-stage" data-screen-labe
 function renderReference() { return `<div class="screenshot-stage" data-screen-label="分析详情 · 原截图新增项目协作入口"><img src="分析详情-参考截图.png" alt="原始分析详情页面，项目数据区域上方新增项目协作入口"><button class="screenshot-entry" data-enter-collab>项目协作<span class="entry-line"></span></button></div>`; }
 function render() { document.body.classList.toggle('reference-mode',page==='reference'||page==='detail');main.innerHTML = page === 'reference'?renderReference():page === 'detail'?renderDetail():renderProjects(); document.getElementById('crumb').innerHTML = page === 'detail' ? `项目管理 <span>/</span> ${safe(project().type)} <span>/</span> 项目协作` : '项目管理 <span>/</span> 项目列表'; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.nav==='projects')); }
 function modalFrame(title, subtitle, body, footer) { modalRoot.hidden=false; modalRoot.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-label="${safe(title)}"><div class="modal-head"><div><h2>${title}</h2><p>${subtitle}</p></div><button class="modal-close" data-close aria-label="关闭">×</button></div><div class="modal-body">${body}</div><div class="modal-foot">${footer}</div></div>`; }
-function closeModal() { modal=null; modalRoot.hidden=true; modalRoot.innerHTML=''; }
+function closeConfirmation() { confirmRoot.hidden=true; confirmRoot.innerHTML=''; modalRoot.hidden=false; modalRoot.inert=false; }
+function closeModal() { closeConfirmation(); modal=null; modalRoot.hidden=true; modalRoot.innerHTML=''; }
+function showAccountConfirmation(user) {
+  modal.pendingUser=user;
+  modalRoot.hidden=true;
+  modalRoot.inert=true;
+  confirmRoot.hidden=false;
+  confirmRoot.innerHTML=`<div class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage"><div class="confirm-mark">${icon('info')}</div><h2 id="confirmTitle">请确认云平台账号</h2><p id="confirmMessage">${safetyMessage}</p><div class="confirm-account"><span>注册手机号 <strong>${safe(user.phone)}</strong></span><span>云平台账号 <strong>${safe(user.account)}</strong></span></div><div class="confirm-actions"><button class="btn" data-return-verify>返回核对</button><button class="btn primary" data-continue-role>继续设置角色</button></div></div>`;
+  confirmRoot.querySelector('[data-continue-role]').focus();
+}
 function rolesRadio(selected='member') { return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span><strong>${roleNames[r]}</strong><small>${roleDescriptions[r]}</small></span></label>`).join('')}</div>`; }
 function openAdd() { if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'add',step:'verify',error:''}; showModal(); }
 function showModal() {
   if(!modal) return;
   if(modal.type==='add' && modal.step==='verify') {
     modalFrame('添加项目成员',safe(accountCopy.subtitle),
-      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><label class="field" id="accountField"><span class="field-label">云平台账号 <span class="autofill-tag">自动匹配</span></span><input id="account" type="text" autocomplete="off" maxlength="40" placeholder="输入手机号后自动显示" value="${safe(modal.account||'')}"><span class="field-error">请输入云平台账号</span></label><div id="phoneLookup" aria-live="polite"></div>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<p class="demo-example">演示手机号：13800000005，自动匹配账号 xia.laoshi</p><details class="copy-settings"><summary>编辑提示语（仅此浏览器）</summary><div class="copy-fields"><label>弹窗说明<textarea id="copySubtitle" maxlength="200" rows="2">${safe(accountCopy.subtitle)}</textarea></label><label>确认时的安全提示<textarea id="copySecurity" maxlength="200" rows="3">${safe(accountCopy.security)}</textarea></label><label>核对失败提示<textarea id="copyMismatch" maxlength="200" rows="2">${safe(accountCopy.mismatch)}</textarea></label><div class="copy-actions"><button type="button" class="btn quiet small" data-reset-copy>恢复默认</button><button type="button" class="btn small" data-save-copy>保存提示语</button></div></div></details></form>`,
+      `<form id="verifyForm" novalidate><label class="field" id="phoneField"><span class="field-label">注册手机号</span><input id="phone" type="tel" inputmode="numeric" autocomplete="off" maxlength="11" placeholder="请输入 11 位手机号" value="${safe(modal.phone||'')}"><span class="field-error">请输入有效的 11 位中国大陆手机号</span></label><label class="field" id="accountField"><span class="field-label">云平台账号 <span class="autofill-tag">自动匹配</span></span><input id="account" type="text" autocomplete="off" maxlength="40" placeholder="输入手机号后自动显示" value="${safe(modal.account||'')}"><span class="field-error">请输入云平台账号</span></label><div id="phoneLookup" aria-live="polite"></div>${modal.error?`<div class="inline-error">${safe(modal.error)}</div>`:''}<p class="demo-example">演示手机号：13800000005，自动匹配账号 xia.laoshi</p></form>`,
       '<button class="btn" data-close>取消</button><button class="btn primary" data-verify>确认云平台账号</button>');
     drawPhoneLookup(false);document.getElementById('phone').focus(); return;
   }
   if(modal.type==='add' && modal.step==='role') {
     const u=modal.user;
     modalFrame('确认成员与角色','账号核对通过，请为该用户选择项目角色',
-      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 账号 ${safe(u.account)}</span></div><span class="checkmark">演示核对通过</span></div><div class="verify-hint confirmation-hint" id="securityHint">${safe(accountCopy.security)}</div><span class="field-label">项目角色</span>${rolesRadio('member')}`,
+      `<div class="verify-success">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>手机号 ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))} · 账号 ${safe(u.account)}</span></div><span class="checkmark">演示核对通过</span></div><span class="field-label">项目角色</span>${u.id==='support-1'?'<div class="fixed-admin-role">技术支持固定为管理员，角色不可调整。</div>':rolesRadio('member')}`,
       '<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-confirm-add>添加成员</button>'); return;
   }
   if(modal.type==='edit') {
@@ -140,7 +139,7 @@ function verify() {
   const user=directory.find(u=>u.phone===phone && u.account.toLowerCase()===account.toLowerCase());
   if(!user) modal.error=accountCopy.mismatch;
   else if(project().members.some(m=>m.id===user.id)) modal.error='这位用户已在当前项目中，请在成员列表中调整角色。';
-  else { modal.user=user; modal.step='role'; modal.error=''; }
+  else { modal.error=''; showAccountConfirmation(user); return; }
   showModal();
 }
 function drawPhoneLookup(autoFill=true) {
@@ -158,7 +157,7 @@ main.addEventListener('click', e => {
   else if(action.dataset.openProject){activeProjectId=action.dataset.openProject;page='detail';tab='members';search='';}
   else if(action.dataset.tab){tab=action.dataset.tab;search='';}
   else if(action.hasAttribute('data-add')) return openAdd();
-  else if(action.dataset.editMember){if(!canManage())return;const member=project().members.find(m=>m.id===action.dataset.editMember);if(!member||member.role==='owner')return;modal={type:'edit',id:member.id,role:member.role};return showModal();}
+  else if(action.dataset.editMember){if(!canManage())return;const member=project().members.find(m=>m.id===action.dataset.editMember);if(!member||member.role==='owner'||member.id==='support-1')return;modal={type:'edit',id:member.id,role:member.role};return showModal();}
   else if(action.dataset.removeMember){if(!canManage())return;const member=project().members.find(m=>m.id===action.dataset.removeMember);if(!member||member.role==='owner')return;modal={type:'remove',id:member.id};return showModal();}
   else if(action.dataset.nav){page=action.dataset.nav;search='';}
   render();
@@ -168,37 +167,22 @@ document.querySelector('.global-header').addEventListener('click',e=>{if(e.targe
 main.addEventListener('input',e=>{if(e.target.id==='projectSearch'||e.target.id==='memberSearch'){const field=e.target.id;const position=e.target.selectionStart;search=e.target.value;render();const next=document.getElementById(field);next.focus();try{next.setSelectionRange(position,position)}catch{}}});
 main.addEventListener('change',e=>{if(e.target.id==='visitorDownload'&&canManage()){project().visitorDownload=e.target.checked;save();render();notify('访问者下载权限已更新（仅演示）')}});
 document.getElementById('identitySelect').addEventListener('change',e=>{identity=e.target.value;render();notify(`已切换至${roleNames[identity]}视角`)});
+confirmRoot.addEventListener('click',e=>{
+  if(e.target.closest('[data-return-verify]')){closeConfirmation();modal.pendingUser=null;document.getElementById('account')?.focus();}
+  else if(e.target.closest('[data-continue-role]')&&modal?.pendingUser){modal.user=modal.pendingUser;modal.pendingUser=null;modal.step='role';closeConfirmation();showModal();}
+});
 modalRoot.addEventListener('click',e=>{
   if(e.target===modalRoot||e.target.closest('[data-close]'))return closeModal();
-  if(e.target.closest('[data-save-copy],[data-reset-copy]')&&modal?.type==='add'&&modal.step==='verify') {
-    const reset=Boolean(e.target.closest('[data-reset-copy]'));
-    const next=reset?{...defaultAccountCopy}:{
-      subtitle:document.getElementById('copySubtitle').value.trim(),
-      security:document.getElementById('copySecurity').value.trim(),
-      mismatch:document.getElementById('copyMismatch').value.trim()
-    };
-    if(Object.values(next).some(value=>!value)){notify('提示语不能为空');return;}
-    accountCopy=next;
-    try { localStorage.setItem(accountCopyKey,JSON.stringify(accountCopy)); } catch {}
-    document.getElementById('copySubtitle').value=accountCopy.subtitle;
-    document.getElementById('copySecurity').value=accountCopy.security;
-    document.getElementById('copyMismatch').value=accountCopy.mismatch;
-    modalRoot.querySelector('.modal-head p').textContent=accountCopy.subtitle;
-    const securityHint=document.getElementById('securityHint');
-    if(securityHint) securityHint.textContent=accountCopy.security;
-    notify(reset?'已恢复默认提示语':'提示语已保存到当前浏览器');
-    return;
-  }
   const a=e.target.closest('[data-verify],[data-back-verify],[data-confirm-add],[data-save-role],[data-confirm-remove]');if(!a||!modal)return;
   if(a.hasAttribute('data-verify'))return verify();
   if(a.hasAttribute('data-back-verify')){modal.step='verify';return showModal();}
   if(!canManage())return closeModal();
   if(a.hasAttribute('data-confirm-add')&&modal.type==='add'&&modal.step==='role'){
     if(project().members.some(m=>m.id===modal.user.id))return notify('该用户已在项目中');
-    const role=modalRoot.querySelector('input[name=role]:checked')?.value||'member';project().members.push({id:modal.user.id,role});save();closeModal();render();return notify('成员添加成功（仅演示）');
+    const role=modal.user.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';project().members.push({id:modal.user.id,role});save();closeModal();render();return notify('成员添加成功（仅演示）');
   }
   if(a.hasAttribute('data-save-role')&&modal.type==='edit'){
-    const member=project().members.find(m=>m.id===modal.id);if(!member||member.role==='owner')return closeModal();
+    const member=project().members.find(m=>m.id===modal.id);if(!member||member.role==='owner'||member.id==='support-1')return closeModal();
     member.role=modalRoot.querySelector('input[name=role]:checked')?.value||member.role;save();closeModal();render();return notify('角色已更新（仅演示）');
   }
   if(a.hasAttribute('data-confirm-remove')&&modal.type==='remove'){
@@ -216,5 +200,5 @@ modalRoot.addEventListener('input',e=>{
     if(err)err.remove();
   }
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!modalRoot.hidden)closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!confirmRoot.hidden){closeConfirmation();modal.pendingUser=null;}else if(!modalRoot.hidden)closeModal();}});
 render();
