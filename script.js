@@ -149,6 +149,7 @@ main.addEventListener('click', e => {
   render();
 });
 document.querySelector('.sidebar').addEventListener('click',e=>{const a=e.target.closest('[data-nav]');if(a){page='projects';search='';render();}});
+document.querySelector('.global-header').addEventListener('click',e=>{if(e.target.closest('[data-global-analysis]')){page='reference';search='';render();}else if(e.target.closest('[data-global-projects]')){page='projects';search='';render();}});
 main.addEventListener('input',e=>{if(e.target.id==='projectSearch'||e.target.id==='memberSearch'){const field=e.target.id;const position=e.target.selectionStart;search=e.target.value;render();const next=document.getElementById(field);next.focus();try{next.setSelectionRange(position,position)}catch{}}});
 main.addEventListener('change',e=>{if(e.target.id==='visitorDownload'&&canManage()){project().visitorDownload=e.target.checked;save();render();notify('访问者下载权限已更新（仅演示）')}});
 document.getElementById('identitySelect').addEventListener('change',e=>{identity=e.target.value;render();notify(`已切换至${roleNames[identity]}视角`)});
