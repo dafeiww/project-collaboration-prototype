@@ -6,9 +6,9 @@
   <meta name="color-scheme" content="light">
   <title>项目协作 · 派森诺基因云平台</title>
   <meta name="description" content="派森诺科研协作空间：管理项目、课题组与成员，体验单项目和批量项目协作。">
-  <meta name="theme-color" content="#167d70">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23167d70'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261026-design">
+  <meta name="theme-color" content="#1989fa">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231989fa'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css?v=20261026-blue-lists">
 </head>
 <body>
   <div class="app-shell" data-screen-label="项目协作交互原型">
@@ -18,9 +18,15 @@
       <div class="side-caption">工作空间</div>
       <nav class="side-nav">
         <button class="nav-item" data-nav="overview"><span class="nav-icon" data-icon="grid"></span>项目概况</button>
-        <button class="nav-item active" data-nav="projects"><span class="nav-icon" data-icon="folder"></span>项目列表<span class="nav-count" id="navProjectCount">8</span></button>
-        <button class="nav-item" data-nav="groups"><span class="nav-icon" data-icon="people"></span>课题组列表</button>
-        <button class="nav-item" data-nav="members"><span class="nav-icon" data-icon="person"></span>成员列表</button>
+        <div class="project-nav-group">
+          <button class="nav-item project-menu-button" data-project-menu aria-expanded="true" aria-controls="projectSubnav"><span class="nav-icon" data-icon="folder"></span>项目列表<span class="nav-count" id="navProjectCount">8</span><span class="nav-menu-chevron" aria-hidden="true">⌃</span></button>
+          <div class="nav-submenu" id="projectSubnav" aria-label="项目列表子目录">
+            <button class="nav-item nav-sub-item" data-nav="visual"><span class="nav-sub-dot"></span>云图汇</button>
+            <button class="nav-item nav-sub-item active" data-nav="projects"><span class="nav-sub-dot"></span>云分析</button>
+            <button class="nav-item nav-sub-item" data-nav="groups"><span class="nav-sub-dot"></span>课题组管理</button>
+            <button class="nav-item nav-sub-item" data-nav="members"><span class="nav-sub-dot"></span>成员管理</button>
+          </div>
+        </div>
         <button class="nav-item" data-nav="data"><span class="nav-icon" data-icon="chart"></span>项目数据</button>
       </nav>
       <div class="side-bottom"><div class="side-note-icon" data-icon="shield"></div><strong>让科研协作，井然有序</strong><p>连接课题组与项目，<br>共同探索数据的更多可能。</p><span class="side-note-badge"><i></i>科研协作空间</span></div>
@@ -37,6 +43,6 @@
   <div id="modalRoot" class="modal-root" hidden></div>
   <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="script.js?v=20261026-design"></script>
+  <script src="script.js?v=20261026-blue-lists"></script>
 </body>
 </html>
