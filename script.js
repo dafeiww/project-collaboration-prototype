@@ -90,7 +90,8 @@ try {
 for(const p of projects){if(p.name==='测试示例-定量蛋白组分析')p.name='测试示例-定量蛋白组云分析';if(p.name==='测试示例-农学 SmallRNA分析')p.name='测试示例-农学SmallRNA分析';}
 for (const container of [...projects, ...groups]) for (const m of container.members || []) if (m.id === 'support-1') m.role = 'admin';
 let projectMenuOpen=true;
-let page = 'projects', activeProjectId = 'analysis', tab = 'members', listTab = 'mine', identity = 'owner', search = '', categoryFilter = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
+let page = 'projects', activeProjectId = 'analysis', tab = 'data', listTab = 'mine', identity = 'owner', search = '', categoryFilter = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
+let detailOrigin = { page: 'projects', listTab: 'mine' };
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
 function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
@@ -100,7 +101,16 @@ function safe(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp
 function canManage() { return identity === 'owner' || identity === 'admin'; }
 function notify(message) { const el = document.getElementById('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3000); }
 function syncRecords(pid) { const p = projects.find(x => x.id === pid); if (!p) return; collabRecords.filter(r => r.projectId === pid).forEach(r => { r.members = (r.members || []).filter(m => p.members.some(pm => pm.id === m.id)).map(m => ({ ...m, role: p.members.find(pm => pm.id === m.id).role })); }); }
-function navigate(next) { if(['projects','visual'].includes(next)&&next!==page){selectedProjectIds=[];listTab='mine';} if(['projects','visual','groups','members'].includes(next))projectMenuOpen=true; page = next; search = ''; categoryFilter = ''; render(); window.scrollTo({ top: 0, behavior: 'instant' }); }
+function navigate(next, options = {}) { if(['projects','visual'].includes(next)&&next!==page){selectedProjectIds=[];listTab='mine';} if(options.projectTab&&['projects','visual'].includes(next))listTab=options.projectTab; if(['projects','visual','groups','members'].includes(next))projectMenuOpen=true; page = next; search = ''; categoryFilter = ''; render(); window.scrollTo({ top: 0, behavior: 'instant' }); }
+function isCollaborativeDetail() { return page === 'detail' && detailOrigin.listTab === 'collab'; }
+function openProjectDetail(id, summaryOnly = false) {
+  const target = projects.find(p => p.id === id);
+  if (!target) return;
+  detailOrigin = { page: target.type === '云图汇' ? 'visual' : 'projects', listTab: ['projects','visual'].includes(page) ? listTab : 'mine' };
+  activeProjectId = target.id;
+  tab = !summaryOnly && detailOrigin.listTab === 'collab' ? 'members' : 'data';
+  navigate('detail');
+}
 function avatar(name, index = 0) { return `<span class="avatar ${['','lavender','sand','blue','coral'][index % 5]}">${safe(name.slice(0, 1))}</span>`; }
 function heading(title, subtitle, actions = '') { return `<div class="page-heading"><div><div class="eyebrow">我的科研空间</div><h1>${title}</h1><p>${subtitle}</p></div>${actions ? `<div class="heading-actions">${actions}</div>` : ''}</div>`; }
 function emptyState(title, subtitle = '', action = '') { return `<div class="empty-icon">${icon('folder')}</div><strong>${title}</strong><p>${subtitle}</p>${action}`; }
@@ -174,10 +184,11 @@ function renderMembers(p) {
   return `<section class="surface"><div class="section-header"><div><h2>项目成员</h2><p>为每一位协作伙伴，分配合适的权限</p></div><div class="section-actions"><button class="btn primary" data-add ${!canManage()?'disabled':''}>${icon('plus')}添加成员</button></div></div><div class="toolbar">${searchField('memberSearch','搜索成员姓名或账号')}<span class="small-count">共 ${list.length} 位协作成员</span></div><div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>协作成员</th><th>项目角色</th><th>手机号</th><th style="text-align:right">操作</th></tr></thead><tbody>${list.map(renderMemberRow).join('')||`<tr><td colspan="4" class="empty-cell">${emptyState('暂无匹配的协作成员','可通过“添加成员”邀请伙伴参与项目。')}</td></tr>`}</tbody></table></div></div><div class="detail-permission"><span>项目所有者：${safe(person(p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}</span><label class="download-toggle"><input id="visitorDownload" type="checkbox" ${p.visitorDownload?'checked':''} ${!canManage()?'disabled':''}>允许访问者下载数据</label></div></section>`;
 }
 function renderDetail() {
-  const p=project();
-  return `<div class="page" data-screen-label="项目详情"><button class="back-link" data-nav="${p.type==='云图汇'?'visual':'projects'}">${icon('back')}返回项目列表</button><section class="surface detail-header"><div class="detail-card"><div class="detail-title"><span class="project-mark">${icon('folder')}</span><div><h1>${safe(p.name.replace(/^测试示例-/,''))}</h1><p>${safe(p.code)} · ${safe(p.category)}</p></div></div><span class="status-chip">已完成</span></div><div class="detail-meta"><div><span>开题单号</span><strong>${safe(p.ticket)}</strong></div><div><span>合同编号</span><strong>${safe(p.contract)}</strong></div><div><span>创建时间</span><strong>${safe(p.created)}</strong></div><div><span>协作成员</span><strong>${p.members.filter(m=>m.role!=='owner').length} 位成员</strong></div></div><div class="detail-tabs"><button data-tab="data" class="${tab==='data'?'active':''}">项目概况</button><button data-tab="members" class="${tab==='members'?'active':''}">项目协作</button></div></section>${tab==='members'?renderMembers(p):renderProjectSummary(p)}</div>`;
+  const p=project(), collaborative=isCollaborativeDetail();
+  if(!collaborative)tab='data';
+  return `<div class="page" data-screen-label="项目详情"><button class="back-link" data-back-project-list>${icon('back')}返回${{mine:'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}列表</button><section class="surface detail-header"><div class="detail-card"><div class="detail-title"><span class="project-mark">${icon('folder')}</span><div><h1>${safe(p.name.replace(/^测试示例-/,''))}</h1><p>${safe(p.code)} · ${safe(p.category)}</p></div></div><span class="status-chip">已完成</span></div><div class="detail-meta ${collaborative?'':'basic-meta'}"><div><span>开题单号</span><strong>${safe(p.ticket)}</strong></div><div><span>合同编号</span><strong>${safe(p.contract)}</strong></div><div><span>创建时间</span><strong>${safe(p.created)}</strong></div>${collaborative?`<div><span>协作成员</span><strong>${p.members.filter(m=>m.role!=='owner').length} 位成员</strong></div>`:''}</div><div class="detail-tabs"><button data-tab="data" class="${tab==='data'?'active':''}">项目概况</button>${collaborative?`<button data-tab="members" class="${tab==='members'?'active':''}">项目协作</button>`:''}</div></section>${collaborative&&tab==='members'?renderMembers(p):renderProjectSummary(p)}</div>`;
 }
-function renderProjectSummary(p) { return `<section class="surface summary-panel"><h2>分析任务已完成</h2><div class="progress-row"><span>项目分析进度</span><span>100%</span></div><div class="progress-track"><i style="width:100%"></i></div><p class="member-note" style="margin:20px 0">${safe(p.name)}已完成分析，可切换到项目协作管理成员和访问权限。</p><button class="btn" data-tab="members">${icon('people')}管理协作成员</button></section>`; }
+function renderProjectSummary(p) { const collaborative=isCollaborativeDetail(); return `<section class="surface summary-panel"><h2>分析任务已完成</h2><div class="progress-row"><span>项目分析进度</span><span>100%</span></div><div class="progress-track"><i style="width:100%"></i></div><p class="member-note" style="margin:20px 0">${safe(p.name)}已完成分析，${collaborative?'可切换到项目协作管理成员和访问权限。':'分析成果已就绪，可查看项目基本信息与分析进度。'}</p>${collaborative?`<button class="btn" data-tab="members">${icon('people')}管理协作成员</button>`:''}</section>`; }
 function renderOverview() { return `<div class="page" data-screen-label="项目概况">${heading('欢迎回来，王老师','科研的每一步探索，都值得被妥善连接。',`<button class="btn primary" data-nav="projects">${icon('folder')}查看全部项目</button>`)}${stats()}<div class="summary-panels"><section class="surface summary-panel"><h2>项目类别分布</h2>${[...new Set(projects.map(p=>p.type))].map((t,i)=>{const count=projects.filter(p=>p.type===t).length;return `<div style="margin-bottom:23px"><div class="progress-row"><span>${safe(t)}</span><span>${count} 个项目</span></div><div class="progress-track ${i?'blue':''}"><i style="width:${count/projects.length*100}%"></i></div></div>`;}).join('')}<div class="overview-list"><div class="overview-item">${icon('shield')}所有示例项目分析已完成<small>可开始协作</small></div></div></section><section class="surface summary-panel"><h2>我的课题组</h2><div class="overview-list">${groups.map((g,i)=>`<button class="btn ghost" data-open-collab="${g.id}" style="justify-content:flex-start">${avatar(g.name,i)}${safe(g.name)}<span style="margin-left:auto" class="small-count">${g.members.length} 人</span></button>`).join('')}</div><button class="btn quiet text-primary" data-nav="groups" style="margin-top:18px">查看全部课题组 →</button></section></div></div>`; }
 function renderData() { return `<div class="page" data-screen-label="项目数据">${heading('项目数据','从数据到洞察，所有分析项目都在这里。')}${stats()}<div class="data-grid">${projects.map((p,i)=>`<article class="surface data-card">${icon(p.type==='云图汇'?'chart':'folder')}<h3>${safe(p.name.replace(/^测试示例-/,''))}</h3><p>${safe(p.code)}<br>${safe(p.category)} · 分析已完成</p><button class="btn" data-open-data="${p.id}">查看项目概况 →</button></article>`).join('')}</div>${pageFoot('本原型用于演示项目与成员管理，不包含真实分析文件。')}</div>`; }
 function render() {
@@ -187,7 +198,7 @@ function render() {
   const labels={projects:'云分析',visual:'云图汇',groups:'课题组管理',members:'成员管理',detail:'项目详情',overview:'项目概况',data:'项目数据'};
   const navPage=page==='detail'?(project().type==='云图汇'?'visual':'projects'):page;
   const nested=['projects','visual','groups','members'].includes(navPage);
-  document.getElementById('crumb').innerHTML=`工作空间 <span>/</span> ${nested?'项目列表 <span>/</span> ':''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;
+  document.getElementById('crumb').innerHTML=`工作空间 <span>/</span> ${nested?'项目列表 <span>/</span> ':''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${{mine:'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;
   document.querySelectorAll('[data-nav]').forEach(n=>{const active=n.dataset.nav===navPage;n.classList.toggle('active',active);if(n.closest('.side-nav')){if(active)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
   const menu=document.getElementById('projectSubnav'),menuButton=document.querySelector('[data-project-menu]');
   menu.hidden=!projectMenuOpen;menuButton.setAttribute('aria-expanded',String(projectMenuOpen));menuButton.classList.toggle('directory-active',nested);
@@ -380,9 +391,10 @@ function confirmCollab() {
 main.addEventListener('click', e => {
   const a=e.target.closest('button'); if(!a||a.disabled) return;
   if(a.dataset.copyTicket) return copyProjectTicket(a.dataset.copyTicket);
+  if(a.hasAttribute('data-back-project-list')) return navigate(detailOrigin.page,{projectTab:detailOrigin.listTab});
   if(a.dataset.nav) return navigate(a.dataset.nav);
-  if(a.dataset.openProject||a.dataset.openData){activeProjectId=a.dataset.openProject||a.dataset.openData;tab=a.dataset.openData?'data':'members';return navigate('detail');}
-  if(a.dataset.tab){tab=a.dataset.tab;search='';return render();}
+  if(a.dataset.openProject||a.dataset.openData) return openProjectDetail(a.dataset.openProject||a.dataset.openData,!!a.dataset.openData);
+  if(a.dataset.tab){if(a.dataset.tab==='members'&&!isCollaborativeDetail())return;tab=a.dataset.tab;search='';return render();}
   if(a.dataset.listTab){listTab=a.dataset.listTab;search='';categoryFilter='';return render();}
   if(a.hasAttribute('data-clear-projects')){selectedProjectIds=[];return render();}
   if(a.hasAttribute('data-add-directory')) return openDirectoryAdd();
