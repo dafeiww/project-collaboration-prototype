@@ -8,7 +8,7 @@
   <meta name="description" content="派森诺科研协作空间：管理项目、课题组与成员，体验单项目和批量项目协作。">
   <meta name="theme-color" content="#1989fa">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231989fa'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261027-account-match">
+  <link rel="stylesheet" href="styles.css?v=20261027-collab-perspective">
 </head>
 <body>
   <div class="app-shell" data-screen-label="项目协作交互原型">
@@ -34,7 +34,7 @@
     </aside>
 
     <div class="workspace">
-      <header class="topbar"><div class="crumb" id="crumb">工作空间 <span>/</span> 项目列表</div><div class="header-actions"><span class="demo-badge"><i></i>交互演示</span><label class="identity-switch"><span>当前身份</span><select id="identitySelect" aria-label="切换体验身份"><option value="owner">项目所有者</option><option value="admin">管理员</option><option value="member">成员</option><option value="visitor">访问者</option></select></label><div class="user-avatar header-avatar" aria-label="当前用户">王</div></div></header>
+      <header class="topbar"><div class="crumb" id="crumb">工作空间 <span>/</span> 项目列表</div><div class="header-actions"><span class="demo-badge"><i></i>交互演示</span><label class="identity-switch"><span>当前身份</span><select id="identitySelect" aria-label="切换体验身份"><option value="owner">项目所有者 · 王老师</option><option value="admin">管理员 · 陈老师</option><option value="member">成员 · 小李</option><option value="visitor">访问者 · 小周</option></select></label><div class="user-avatar header-avatar" aria-label="当前用户">王</div></div></header>
       <main id="main"></main>
       <footer class="workspace-footer"><span>派森诺 · 科研协作空间</span><span>示例数据 · 交互操作保存在当前浏览器</span></footer>
     </div>
@@ -43,6 +43,6 @@
   <div id="modalRoot" class="modal-root" hidden></div>
   <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="script.js?v=20261027-account-match"></script>
+  <script src="script.js?v=20261027-collab-perspective"></script>
 </body>
 </html>
