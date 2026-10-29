@@ -51,6 +51,12 @@ const demoPlatformAccounts = [
   { id: 'demo-sun', name: '孙研究员', phone: '13800000008', email: 'sun.researcher@example.com', emailBound: false, account: 'sun.researcher' },
   { id: 'demo-wu', name: '吴研究员', phone: '13800000009', email: 'wu.researcher@example.com', emailBound: true, account: 'wu.researcher' }
 ];
+const repeatableDemoAccountId='demo-zhao';
+// 重复演示记录使用独立 ID；不加入平台账号索引，避免同一联系方式被误判为多账户。
+let demoMemberInstances=[];
+function isDemoMemberInstance(user) { return user?.demoSourceId===repeatableDemoAccountId&&user.id!==repeatableDemoAccountId; }
+function isRepeatableDemoAccount(user) { return user?.id===repeatableDemoAccountId; }
+function demoMemberLabel(user) { return isDemoMemberInstance(user)?` · ${isEnglishVersion?'Demo':'示例'} ${user.demoSequence}`:''; }
 // 成员库与示例平台注册账号分开保存；移除成员不注销账号，之后仍可重新添加。
 let platformAccounts = [...directory,...demoPlatformAccounts].map(u=>({...u}));
 const accountKeys=['phone','email','account'];
@@ -156,6 +162,7 @@ try {
   collabRecords = Array.isArray(saved.collabRecords) ? saved.collabRecords : [];
   if (Array.isArray(saved.directory)) directory = saved.directory;
   if (Array.isArray(saved.platformAccounts)) platformAccounts = saved.platformAccounts;
+  if (Array.isArray(saved.demoMemberInstances)) demoMemberInstances = saved.demoMemberInstances;
 } catch {
   projects=structuredClone(initialProjects);groups=structuredClone(initialGroups);
   // 仅首次打开提供示例协作，已有浏览器数据不新增授权、不重置。
@@ -163,6 +170,7 @@ try {
 }
 const accountCatalog=new Map();
 for(const u of [...demoPlatformAccounts,...platformAccounts,...directory]){
+  if(isDemoMemberInstance(u))continue;
   const previous=accountCatalog.get(u.id)||{};
   // 缺失邮箱保持为空，旧版自动拼出的邮箱不能作为已绑定邮箱使用。
   const declared=demoPlatformAccounts.find(account=>account.id===u.id);
@@ -173,7 +181,13 @@ for(const u of [...demoPlatformAccounts,...platformAccounts,...directory]){
   accountCatalog.set(u.id,{...previous,...u,phone:String(u.phone??previous.phone??'').trim(),account:String(u.account||'').trim(),email,emailBound:!!email&&emailBound});
 }
 platformAccounts=[...accountCatalog.values()];
-directory=directory.map(u=>({...u,...accountCatalog.get(u.id)}));
+const demoInstanceCatalog=new Map();
+for(const u of [...demoMemberInstances,...directory.filter(isDemoMemberInstance)]){
+  if(!isDemoMemberInstance(u))continue;
+  demoInstanceCatalog.set(u.id,{...u,...accountCatalog.get(repeatableDemoAccountId),id:u.id,demoSourceId:repeatableDemoAccountId,demoSequence:Number.isInteger(u.demoSequence)&&u.demoSequence>0?u.demoSequence:demoInstanceCatalog.size+1});
+}
+demoMemberInstances=[...demoInstanceCatalog.values()];
+directory=directory.map(u=>({...u,...(isDemoMemberInstance(u)?demoInstanceCatalog.get(u.id):accountCatalog.get(u.id))}));
 for(const p of projects){if(p.name==='测试示例-定量蛋白组分析')p.name='测试示例-定量蛋白组云分析';if(p.name==='测试示例-农学 SmallRNA分析')p.name='测试示例-农学SmallRNA分析';}
 for(const p of projects){p.shareUserIds=[...new Set(Array.isArray(p.shareUserIds)?p.shareUserIds:[])];p.shared=!!(p.shared||p.shareUserIds.length);}
 for(const p of projects)if(!Array.isArray(p.files))p.files=[];
@@ -183,15 +197,25 @@ for(const r of collabRecords){if(!r.initiatedBy)r.initiatedBy=projects.find(p=>p
 let projectMenuOpen=true;
 let page = 'projects', activeProjectId = 'analysis', tab = 'data', listTab = 'mine', identity = 'owner', search = '', categoryFilter = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
 identity=previewRoleAliases[previewParams.get('role')]||'owner';
-if(platformAccounts.some(u=>u.id===previewParams.get('user')&&!['owner-1','support-1'].includes(u.id)))recipientUserId=previewParams.get('user');
+if(previewAccounts().some(u=>u.id===previewParams.get('user')&&!['owner-1','support-1'].includes(u.id)))recipientUserId=previewParams.get('user');
 let detailOrigin = { page: 'projects', listTab: 'mine' };
 let filePath=[],selectedFileIds=[];
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
-function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, platformAccounts })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
+function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, platformAccounts, demoMemberInstances })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
 function group(id) { return groups.find(g => g.id === id); }
-function person(id) { return directory.find(d => d.id === id) || platformAccounts.find(d=>d.id===id) || { name: '未知成员', phone: '', account: '' }; }
-function ensureDirectoryPerson(id) { const u=platformAccounts.find(u=>u.id===id);if(u&&!directory.some(d=>d.id===id))directory.push({...u}); }
+function person(id) { return directory.find(d => d.id === id) || demoMemberInstances.find(d=>d.id===id) || platformAccounts.find(d=>d.id===id) || { name: '未知成员', phone: '', account: '' }; }
+function ensureDirectoryPerson(id) { const u=platformAccounts.find(u=>u.id===id)||demoMemberInstances.find(u=>u.id===id);if(u&&!directory.some(d=>d.id===id))directory.push({...u}); }
+function previewAccounts() { return [...platformAccounts,...demoMemberInstances]; }
+function memberAccountIsUnique(id) { const u=person(id);return resolvePlatformAccount(u.account,'account').user?.id===(isDemoMemberInstance(u)?u.demoSourceId:id); }
+function memberForAddition(user) {
+  if(!isRepeatableDemoAccount(user))return user;
+  const demoSequence=demoMemberInstances.reduce((max,u)=>Math.max(max,u.demoSequence),0)+1;
+  const id='demo-member-'+(globalThis.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2));
+  const instance={...user,id,demoSourceId:user.id,demoSequence};
+  demoMemberInstances.push(instance);
+  return instance;
+}
 function isDirectoryOwner(id) { return id==='owner-1'||projects.some(p=>p.members.some(m=>m.id===id&&m.role==='owner')); }
 function safe(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
 function currentUserId() { return identity==='member'?recipientUserId:identityUsers[identity]||'owner-1'; }
@@ -223,7 +247,7 @@ function chooseRoleLanding() {
 function switchPreviewRole(next,userId=null) {
   if(!Object.hasOwn(previewRoleNames,next))return;
   closeModal();identity=next;
-  if(userId&&platformAccounts.some(u=>u.id===userId&&!['owner-1','support-1'].includes(u.id)))recipientUserId=userId;
+  if(userId&&previewAccounts().some(u=>u.id===userId&&!['owner-1','support-1'].includes(u.id)))recipientUserId=userId;
   search='';categoryFilter='';selectedProjectIds=[];filePath=[];selectedFileIds=[];tab='data';
   chooseRoleLanding();
   try{const url=new URL(location.href);url.searchParams.set('role',identity);if(identity==='member')url.searchParams.set('user',recipientUserId);else url.searchParams.delete('user');history.replaceState(null,'',url);}catch{}
@@ -237,7 +261,7 @@ function renderRolePreview() {
   document.getElementById('currentRoleLabel').textContent=`${previewRoleNames[identity]} · ${viewer.name}`;
   document.getElementById('recipientAccountControl').hidden=identity!=='member';
   const select=document.getElementById('recipientSelect');
-  select.innerHTML=platformAccounts.filter(u=>!['owner-1','support-1'].includes(u.id)).map(u=>`<option value="${safe(u.id)}" ${u.id===recipientUserId?'selected':''}>${safe(u.name)}</option>`).join('');
+  select.innerHTML=previewAccounts().filter(u=>!['owner-1','support-1'].includes(u.id)).map(u=>`<option value="${safe(u.id)}" ${u.id===recipientUserId?'selected':''}>${safe(u.name)}${safe(demoMemberLabel(u))}</option>`).join('');
 }
 
 function notify(message) { const el = document.getElementById('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3000); }
@@ -325,14 +349,14 @@ function renderMemberDirectory() {
   const list=directory.filter(d=>accountSearchText(d).includes(q));
   return `<div class="page" data-screen-label="成员列表">${heading('成员管理','每一个伙伴，都是科研协作不可或缺的一部分。',`<button class="btn primary" data-add-directory ${!canManage()?'disabled':''}>${icon('plus')}添加成员</button>`)}
     <section class="surface"><div class="surface-top"><h2 class="surface-title">所有成员 <span class="tab-count">${directory.length}</span></h2><span class="surface-caption">云平台账号与课题组归属</span></div><div class="toolbar">${searchField('memberSearch',isEnglishVersion?'Search name, username or email':'搜索姓名、用户名、手机号或已绑定邮箱')}<span class="small-count">共 ${list.length} 位成员</span></div>
-    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>成员</th><th>用户名</th><th>${memberContactLabel}</th><th>所在课题组</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map((d,i)=>{const gs=groups.filter(g=>g.members.some(m=>m.id===d.id)); const contact=safe(accountContact(d,'',true).value||(isEnglishVersion?'Not provided':'未登记')); return `<tr><td><div class="member-cell">${avatar(d.name,i)}<div><div class="member-name">${safe(d.name)}${d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${d.id==='owner-1'?'项目所有者':d.id==='support-1'?'平台技术支持':'云平台成员'}</span></div></div></td><td>${safe(d.account)}</td><td class="date-cell">${contact}</td><td>${gs.map(g=>`<span class="group-chip">${safe(g.name)}</span>`).join('')||'<span class="fixed">暂未加入课题组</span>'}</td><td class="directory-actions-column"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canManage()||isDirectoryOwner(d.id)||directoryAssociations(d.id).blocked?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':directoryAssociations(d.id).blocked?'已参与协作项目或项目分享，暂不能直接移除':'未参与协作项目，可直接从成员库移除'}" aria-label="移除成员${safe(d.name)}">移除成员</button></td></tr>`;}).join('')||`<tr><td colspan="5" class="empty-cell">${emptyState('未找到匹配的成员','试试其他姓名、用户名、手机号或邮箱。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot('未参与协作项目或项目分享的成员可直接移除；移除仅影响成员库，不删除云平台账号。')}</div>`;
+    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>成员</th><th>用户名</th><th>${memberContactLabel}</th><th>所在课题组</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map((d,i)=>{const gs=groups.filter(g=>g.members.some(m=>m.id===d.id)); const contact=safe(accountContact(d,'',true).value||(isEnglishVersion?'Not provided':'未登记')); return `<tr><td><div class="member-cell">${avatar(d.name,i)}<div><div class="member-name">${safe(d.name)}${d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${d.id==='owner-1'?'项目所有者':d.id==='support-1'?'平台技术支持':'云平台成员'}</span></div></div></td><td>${safe(d.account)}${safe(demoMemberLabel(d))}</td><td class="date-cell">${contact}</td><td>${gs.map(g=>`<span class="group-chip">${safe(g.name)}</span>`).join('')||'<span class="fixed">暂未加入课题组</span>'}</td><td class="directory-actions-column"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canManage()||isDirectoryOwner(d.id)||directoryAssociations(d.id).blocked?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':directoryAssociations(d.id).blocked?'已参与协作项目或项目分享，暂不能直接移除':'未参与协作项目，可直接从成员库移除'}" aria-label="移除成员${safe(d.name)}">移除成员</button></td></tr>`;}).join('')||`<tr><td colspan="5" class="empty-cell">${emptyState('未找到匹配的成员','试试其他姓名、用户名、手机号或邮箱。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot('未参与协作项目或项目分享的成员可直接移除；移除仅影响成员库，不删除云平台账号。')}</div>`;
 }
-function renderMemberRow(member,index) { const u=person(member.id); return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}</span></div></div></td><td><span class="role-pill ${member.role}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(accountContact(u,'',true).value)}</td><td><div class="table-actions">${canManage()?`<button class="btn quiet small text-primary" data-edit-member="${member.id}" ${member.id==='support-1'?'disabled title="技术支持固定为管理员"':''}>调整角色</button><button class="btn quiet small danger" data-remove-member="${member.id}">移除成员</button>`:'<span class="fixed">暂无管理权限</span>'}</div></td></tr>`; }
+function renderMemberRow(member,index) { const u=person(member.id); return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}${safe(demoMemberLabel(u))}</span></div></div></td><td><span class="role-pill ${member.role}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(accountContact(u,'',true).value)}</td><td><div class="table-actions">${canManage()?`<button class="btn quiet small text-primary" data-edit-member="${member.id}" ${member.id==='support-1'?'disabled title="技术支持固定为管理员"':''}>调整角色</button><button class="btn quiet small danger" data-remove-member="${member.id}">移除成员</button>`:'<span class="fixed">暂无管理权限</span>'}</div></td></tr>`; }
 function renderMembers(p) {
   const manageable=canManage();
   const list=projectMemberList().filter(m=>m.role!=='owner'&&`${person(m.id).name} ${person(m.id).account} ${roleNames[m.role]}`.toLowerCase().includes(search.toLowerCase()));
   const groupNames=[...new Set(collabRecords.filter(r=>r.projectId===p.id).map(r=>r.groupName).filter(Boolean))];
-  const readonlyRow=(member,index)=>{const u=person(member.id);return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}</span></div></div></td><td><span class="role-pill ${safe(member.role)}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(accountContact(u,'',true).value)}</td></tr>`;};
+  const readonlyRow=(member,index)=>{const u=person(member.id);return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}${safe(demoMemberLabel(u))}</span></div></div></td><td><span class="role-pill ${safe(member.role)}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(accountContact(u,'',true).value)}</td></tr>`;};
   return `<section class="surface"><div class="section-header"><div><h2>协作列表</h2><p>${manageable?'管理员和技术支持可添加成员、调整角色或移除授权。':'查看当前协作成员与角色，成员变更由分享人管理'}</p>${groupNames.length?`<div class="collab-group-badges">${groupNames.map(g=>`<span class="collab-group-badge">${icon('people')}${safe(g)}</span>`).join('')}</div>`:''}</div>${manageable?`<button class="btn primary" data-add ${!canManage()?'disabled':''}>${icon('plus')}添加成员</button>`:`<span class="collab-readonly-badge">${icon('eye')}仅查看</span>`}</div><div class="toolbar">${searchField('memberSearch','搜索成员姓名或账号')}<span class="small-count">共 ${list.length} 位协作成员</span></div><div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>协作成员</th><th>项目角色</th><th>${memberContactLabel}</th>${manageable?'<th class="table-actions-column">操作</th>':''}</tr></thead><tbody>${list.map((member,index)=>manageable?renderMemberRow(member,index):readonlyRow(member,index)).join('')||`<tr><td colspan="${manageable?4:3}" class="empty-cell">${emptyState('暂无匹配的协作成员','试试其他成员姓名或账号。')}</td></tr>`}</tbody></table></div></div><div class="detail-permission"><span>项目所有者：${safe(person(p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}</span>${groupNames.length?`<span>协作课题组：${safe(groupNames.join('、'))}</span>`:''}<span>访问者下载：${p.visitorDownload?'允许':'不允许'}</span></div></section>`;
 }
 function renderDetail() {
@@ -411,17 +435,17 @@ function openGroupCreate(parent=null) { if(!canManage()) return notify('当前�
 function openDirectoryAdd(parent=null){ if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'directory-add',step:'verify',account:'',contact:'',error:'',parent,parentFocus:'#groupMemberSearch'}; showModal(); }
 function accountIdentityCard(u) {
   const contact=accountContact(u,contactKeyFor(modal.contact));
-  return `<div class="verify-success account-identity-card">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${isEnglishVersion?'Username':'用户名'}：${safe(u.account)}</span><span>${contact.label}：${safe(contact.value)}</span></div><span class="checkmark">${isEnglishVersion?'Account matched':'演示核对通过'}</span></div>`;
+  return `<div class="verify-success account-identity-card">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${isEnglishVersion?'Username':'用户名'}：${safe(u.account)}${safe(demoMemberLabel(u))}</span><span>${contact.label}：${safe(contact.value)}</span></div><span class="checkmark">${isEnglishVersion?'Account matched':'演示核对通过'}</span></div>`;
 }
 function showMemberAccountLookup(title) {
   modal.contact=modal.contact||'';
   modal.account=modal.account||'';
   const fields=[['contact',memberContactLabel,isEnglishVersion?'email':'text',isEnglishVersion?'email':'text',100,isEnglishVersion?'Enter account email':'请输入注册手机号或后续绑定的邮箱',isEnglishVersion?'Enter a valid account email.':'请输入有效手机号或已绑定邮箱'],['account',isEnglishVersion?'Username':'用户名','text','text',80,isEnglishVersion?'Enter username':'请输入云平台用户名',isEnglishVersion?'Enter a valid username.':'请匹配有效的云平台用户名']];
-  const examples=demoPlatformAccounts.map((user,index)=>{
-    const contact=accountContact(user,isEnglishVersion||index===2?'email':'phone');
+  const examples=demoPlatformAccounts.filter(user=>isRepeatableDemoAccount(user)).map(user=>{
+    const contact=accountContact(user,isEnglishVersion?'email':'phone');
     return {user,contact};
   }).filter(example=>example.contact.value);
-  const exampleHtml=`<div class="demo-account-examples"><div class="demo-example-title">${icon('info')}${isEnglishVersion?'Example accounts (click to fill)':'示例账号（点击自动填入）'}</div><div class="demo-example-list">${examples.map(({user,contact})=>`<button type="button" class="demo-example-chip" data-example-contact="${safe(contact.value)}" data-example-account="${safe(user.account)}"><span class="demo-example-avatar">${safe(user.name.slice(0,1))}</span><span class="demo-example-meta"><strong>${safe(user.name)}</strong><small>${safe(contact.label)}：${safe(contact.value)} · ${safe(user.account)}</small></span></button>`).join('')}</div><p class="demo-example-hint">${isEnglishVersion?'Click an example to fill the email and username.':'点击示例自动填入手机号或已绑定邮箱及用户名，再确认账户。'}</p></div>`;
+  const exampleHtml=`<div class="demo-account-examples"><div class="demo-example-title">${icon('info')}${isEnglishVersion?'Example account (click to fill)':'示例账号（点击自动填入）'}</div><div class="demo-example-list">${examples.map(({user,contact})=>`<button type="button" class="demo-example-chip" data-example-contact="${safe(contact.value)}" data-example-account="${safe(user.account)}"><span class="demo-example-avatar">${safe(user.name.slice(0,1))}</span><span class="demo-example-meta"><strong>${safe(user.name)}</strong><small>${safe(contact.label)}：${safe(contact.value)} · ${safe(user.account)}</small></span></button>`).join('')}</div><p class="demo-example-hint">${isEnglishVersion?'Click to fill. This example can be added repeatedly without a limit; each confirmation creates a separate demo record.':'点击自动填入，示例可无限次重复添加；每次确认新增一条独立演示记录。'}</p></div>`;
   const formTitle=isEnglishVersion?'Add member':title;
   modalFrame(formTitle,'',`<form id="verifyForm" novalidate>${fields.map(([key,label,type,inputmode,max,placeholder,errorText])=>`<label class="field" id="${key}Field"><span class="field-label">${label}</span><input id="${key}" data-account-key="${key}" type="${type}" inputmode="${inputmode}" autocomplete="off" maxlength="${max}" placeholder="${placeholder}" value="${safe(modal[key])}" aria-describedby="${key==='contact'?'memberContactHint accountLookup':'accountLookup'}" aria-invalid="false"><span class="field-error">${errorText}</span></label>${key==='contact'?`<p class="member-contact-hint" id="memberContactHint">${accountCopy.contactHint}</p>`:''}`).join('')}<div id="accountLookup" aria-live="polite"></div><div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error)}</div>${exampleHtml}</form>`,`<button class="btn" data-close>${isEnglishVersion?'Cancel':'取消'}</button><button class="btn primary" data-verify>${isEnglishVersion?'Confirm account':'确认账户'}</button>`);
   drawAccountLookup();document.getElementById(modal.lookupSource||'contact')?.focus();
@@ -462,8 +486,9 @@ function showDirectoryAddModal(){
 }
 function confirmDirectoryAdd(){
   if(!canManage()||modal?.type!=='directory-add'||modal.step!=='confirm'||!modal.user)return;
-  const u=modal.user,parent=modal.parent;
-  if(directory.some(d=>visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(u,k)))){modal.error='该成员已在成员库中';modal.step='verify';return showModal();}
+  const parent=modal.parent;
+  if(!isRepeatableDemoAccount(modal.user)&&directory.some(d=>visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(modal.user,k)))){modal.error='该成员已在成员库中';modal.step='verify';return showModal();}
+  const u=memberForAddition(modal.user);
   directory.push({...u});saveAll();
   if(parent?.type==='group-create'){
     if(!parent.members.some(m=>m.id===u.id))parent.members.push({id:u.id,role:u.id==='support-1'?'admin':'member'});
@@ -491,7 +516,7 @@ function showDirectoryRemoveModal() {
   const refs=directoryAssociations(u.id),protectedOwner=isDirectoryOwner(u.id),blocked=refs.blocked||protectedOwner;
   const section=(title,items)=>items.length?`<section class="directory-association-section"><h3>${title}<span>${items.length}</span></h3><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul></section>`:'';
   const associations=section('所属课题组',refs.groups.map(g=>safe(g.name)))+section('协作授权',refs.records.map(r=>`<strong>${safe(projects.find(p=>p.id===r.projectId)?.name||r.projectName||'协作项目')}</strong><small>${safe(r.groupName)} · 协作成员</small>`))+section('项目分享',refs.shares.map(p=>`<strong>${safe(p.name)}</strong><small>共享用户 · ${safe(p.code)}</small>`));
-  modalFrame(blocked?'暂不能移除成员':'移除成员',blocked?'请先解除协作授权或项目分享，再从成员库移除。':'请确认是否从你的成员库移除该成员。',`<div class="directory-remove-person">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${safe(u.account)} · ${safe(accountContact(u,'',true).value)}</span></div></div>${blocked?`<div class="directory-remove-warning">${icon('info')}<p>${protectedOwner?'该成员是项目所有者，不可从成员库移除。':'该成员已参与协作项目或项目分享，暂不能移除，避免影响现有协作。'}</p></div><div class="directory-associations">${associations}</div>`:`<p class="directory-remove-description">该成员未参与协作项目或项目分享，确认后将从成员列表中移除。${refs.groups.length?'其所属课题组信息会保留在原课题组内。':''}</p>${associations}`}<p class="member-library-note">仅移出你的成员库，不会删除对方的云平台账号；以后仍可通过${accountEntryLabel}重新添加。</p>`,`<button class="btn" data-close>${blocked?'知道了':'取消'}</button><button class="btn danger" data-confirm-directory-remove ${blocked?'disabled':''}>确认移除</button>`);
+  modalFrame(blocked?'暂不能移除成员':'移除成员',blocked?'请先解除协作授权或项目分享，再从成员库移除。':'请确认是否从你的成员库移除该成员。',`<div class="directory-remove-person">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${safe(u.account)}${safe(demoMemberLabel(u))} · ${safe(accountContact(u,'',true).value)}</span></div></div>${blocked?`<div class="directory-remove-warning">${icon('info')}<p>${protectedOwner?'该成员是项目所有者，不可从成员库移除。':'该成员已参与协作项目或项目分享，暂不能移除，避免影响现有协作。'}</p></div><div class="directory-associations">${associations}</div>`:`<p class="directory-remove-description">该成员未参与协作项目或项目分享，确认后将从成员列表中移除。${refs.groups.length?'其所属课题组信息会保留在原课题组内。':''}</p>${associations}`}<p class="member-library-note">仅移出你的成员库，不会删除对方的云平台账号；以后仍可通过${accountEntryLabel}重新添加。</p>`,`<button class="btn" data-close>${blocked?'知道了':'取消'}</button><button class="btn danger" data-confirm-directory-remove ${blocked?'disabled':''}>确认移除</button>`);
   modalRoot.querySelector('.modal').classList.add('directory-remove-modal');
 }
 function confirmDirectoryRemove() {
@@ -499,7 +524,7 @@ function confirmDirectoryRemove() {
   const u=directory.find(u=>u.id===modal.id);if(!u)return closeModal();
   // 保存时再次检查，防止弹窗打开后关联发生变化导致误删。
   if(isDirectoryOwner(u.id)||directoryAssociations(u.id).blocked)return showDirectoryRemoveModal();
-  if(!platformAccounts.some(account=>account.id===u.id))platformAccounts.push({...u});
+  if(!isDemoMemberInstance(u)&&!platformAccounts.some(account=>account.id===u.id))platformAccounts.push({...u});
   directory=directory.filter(d=>d.id!==u.id);saveAll();closeModal();render();notify('成员已从成员库移除，云平台账号仍保留');
 }
 function openCollab(groupId=groups[0]?.id, projectIds=[], chooseProjects=false, recordId=null) { if(!canManage()||projectIds.some(id=>!canManageProject(projects.find(p=>p.id===id)))) return notify('当前账号无权修改收到的协作项目'); modal={type:'collab',selectedGroupIds:[groupId].filter(Boolean),selectedMemberIds:[],selectedProjectIds:[...new Set(projectIds)],chooseProjects,recordId,removedMemberIds:[],selectionTouched:false,roleOverrides:{},extraMembers:[]}; refreshCollabSelection(); showModal(); }
@@ -529,7 +554,7 @@ function showShareModal() {
 function drawShareAccountLookup() {
   const slot=document.getElementById('shareAccountLookup');if(!slot)return;
   const result=resolvePlatformAccount(modal.account),u=result.user;
-  slot.innerHTML=u?`<div class="share-account-match">${icon('check')}<span>已匹配：<b>${safe(u.name)}</b> · 用户名 ${safe(u.account)}<small>${safe(accountContact(u,contactKeyFor(modal.account)).label)} ${safe(accountContact(u,contactKeyFor(modal.account)).value)}</small></span></div>`:modal.account&&result.status==='ambiguous'?'<p class="share-error">账号信息存在重复关联，无法唯一匹配。</p>':'';
+  slot.innerHTML=u?`<div class="share-account-match">${icon('check')}<span>已匹配：<b>${safe(u.name)}</b> · 用户名 ${safe(u.account)}${safe(demoMemberLabel(u))}<small>${safe(accountContact(u,contactKeyFor(modal.account)).label)} ${safe(accountContact(u,contactKeyFor(modal.account)).value)}</small></span></div>`:modal.account&&result.status==='ambiguous'?'<p class="share-error">账号信息存在重复关联，无法唯一匹配。</p>':'';
 }
 function shareError(message) {
   modal.error=message;showShareModal();document.getElementById('shareAccount')?.focus();return false;
@@ -609,13 +634,13 @@ function showCloudDownload() {
   modalFrame('下载派森诺云盘','项目数据下载入口',`<div class="result-preview-panel">${icon('download')}<h3>使用云盘客户端下载项目数据</h3><p>本原型仅演示下载入口，不提供安装包。正式产品接入下载地址后，可在此获取客户端。</p></div>`,'<button class="btn primary" data-close>知道了</button>');
 }
 
-function groupCreateMembers() { return modal.members.map(m=>`<div class="picker-member"><div class="member-cell">${avatar(person(m.id).name)}<div><div class="member-name">${safe(person(m.id).name)}${m.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><small>${safe(person(m.id).account)}</small></div></div><div class="picker-right"><select data-group-role="${m.id}" ${m.id==='support-1'?'disabled':''} aria-label="设置成员角色">${['admin','member','visitor'].map(r=>`<option value="${r}" ${m.role===r?'selected':''}>${roleNames[r]}</option>`).join('')}</select><button type="button" class="chip-close" data-remove-group-member="${m.id}" aria-label="移除 ${safe(person(m.id).name)}">×</button></div></div>`).join('') || '<div class="picker-empty">还没有成员，可从上方添加，或直接添加技术支持。</div>'; }
+function groupCreateMembers() { return modal.members.map(m=>`<div class="picker-member"><div class="member-cell">${avatar(person(m.id).name)}<div><div class="member-name">${safe(person(m.id).name)}${m.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><small>${safe(person(m.id).account)}${safe(demoMemberLabel(person(m.id)))}</small></div></div><div class="picker-right"><select data-group-role="${m.id}" ${m.id==='support-1'?'disabled':''} aria-label="设置成员角色">${['admin','member','visitor'].map(r=>`<option value="${r}" ${m.role===r?'selected':''}>${roleNames[r]}</option>`).join('')}</select><button type="button" class="chip-close" data-remove-group-member="${m.id}" aria-label="移除 ${safe(person(m.id).name)}">×</button></div></div>`).join('') || '<div class="picker-empty">还没有成员，可从上方添加，或直接添加技术支持。</div>'; }
 function groupMemberOptions() {
   const q=accountValue(modal.memberQuery);
-  const people=platformAccounts.filter(d=>d.id!=='owner-1'&&accountSearchText(d).includes(q));
+  const people=[...platformAccounts,...demoMemberInstances.filter(d=>directory.some(u=>u.id===d.id)||modal.members.some(m=>m.id===d.id))].filter(d=>d.id!=='owner-1'&&accountSearchText(d).includes(q));
   return people.map(d=>{
-    const unique=resolvePlatformAccount(d.account,'account').user?.id===d.id;
-    return `<label class="group-member-option"><input type="checkbox" data-pick-group-member="${safe(d.id)}" ${modal.members.some(m=>m.id===d.id)?'checked':''} ${unique?'':'disabled'}><span><strong>${safe(d.name)}</strong><small>用户名 ${safe(d.account)} · ${safe(accountContact(d,'',true).label)} ${safe(accountContact(d,'',true).value)}</small></span>${!unique?'<span class="lookup-conflict">无法唯一匹配</span>':d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</label>`;
+    const unique=memberAccountIsUnique(d.id);
+    return `<label class="group-member-option"><input type="checkbox" data-pick-group-member="${safe(d.id)}" ${modal.members.some(m=>m.id===d.id)?'checked':''} ${unique?'':'disabled'}><span><strong>${safe(d.name)}</strong><small>用户名 ${safe(d.account)}${safe(demoMemberLabel(d))} · ${safe(accountContact(d,'',true).label)} ${safe(accountContact(d,'',true).value)}</small></span>${!unique?'<span class="lookup-conflict">无法唯一匹配</span>':d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</label>`;
   }).join('')||'<div class="picker-empty">未匹配到云平台账户，请核对完整手机号、已绑定邮箱或用户名。</div>';
 }
 
@@ -712,7 +737,7 @@ function showCollabModal() {
     const statusText=owner?'所有者':removed?'待移除':existing?'已加入':selected?'待添加':'未选';
     const statusClass=owner?'owner':removed?'removed':existing?'joined':selected?'added':'';
     const roleDisabled=!selected||owner||m.id==='support-1';
-    return `<div class="collab-member-item ${removed?'pending-removal':''} ${(alwaysIn||selected)?'is-selected':''} ${isSupport?'is-support':''}" data-collab-member-row="${m.id}"><label class="collab-member-left"><input type="checkbox" data-collab-member="${m.id}" ${(alwaysIn||selected)?'checked':''} ${alwaysIn?'disabled':''} ${isSupport?'title="技术支持始终参与协作"':''}>${avatar(person(m.id).name,i)}<span class="collab-member-info"><strong>${safe(person(m.id).name)}${isSupport?'<span class="collab-support-tag">固定管理员</span>':''}</strong><small>${safe(person(m.id).account)}</small></span></label><span class="collab-member-status ${statusClass}">${statusText}</span><select class="collab-member-role" id="collabRole-${safe(m.id)}" data-collab-role="${safe(m.id)}" ${roleDisabled?'disabled':''} aria-label="${safe(person(m.id).name)}的项目角色">${value==='preserve'?'<option value="preserve">保留原角色</option>':''}${['admin','member','visitor'].map(role=>`<option value="${role}" ${role===value?'selected':''}>${roleNames[role]}</option>`).join('')}</select>${owner||isSupport?'<span class="collab-member-action-placeholder"></span>':removed?`<button type="button" class="collab-member-action restore" data-restore-collab-member="${m.id}" aria-label="撤销移除${safe(person(m.id).name)}">撤销</button>`:(selected||existing)?`<button type="button" class="collab-member-action remove" data-remove-collab-member="${m.id}" aria-label="移除${safe(person(m.id).name)}">移除</button>`:'<span class="collab-member-action-placeholder"></span>'}</div>`;
+    return `<div class="collab-member-item ${removed?'pending-removal':''} ${(alwaysIn||selected)?'is-selected':''} ${isSupport?'is-support':''}" data-collab-member-row="${m.id}"><label class="collab-member-left"><input type="checkbox" data-collab-member="${m.id}" ${(alwaysIn||selected)?'checked':''} ${alwaysIn?'disabled':''} ${isSupport?'title="技术支持始终参与协作"':''}>${avatar(person(m.id).name,i)}<span class="collab-member-info"><strong>${safe(person(m.id).name)}${isSupport?'<span class="collab-support-tag">固定管理员</span>':''}</strong><small>${safe(person(m.id).account)}${safe(demoMemberLabel(person(m.id)))}</small></span></label><span class="collab-member-status ${statusClass}">${statusText}</span><select class="collab-member-role" id="collabRole-${safe(m.id)}" data-collab-role="${safe(m.id)}" ${roleDisabled?'disabled':''} aria-label="${safe(person(m.id).name)}的项目角色">${value==='preserve'?'<option value="preserve">保留原角色</option>':''}${['admin','member','visitor'].map(role=>`<option value="${role}" ${role===value?'selected':''}>${roleNames[role]}</option>`).join('')}</select>${owner||isSupport?'<span class="collab-member-action-placeholder"></span>':removed?`<button type="button" class="collab-member-action restore" data-restore-collab-member="${m.id}" aria-label="撤销移除${safe(person(m.id).name)}">撤销</button>`:(selected||existing)?`<button type="button" class="collab-member-action remove" data-remove-collab-member="${m.id}" aria-label="移除${safe(person(m.id).name)}">移除</button>`:'<span class="collab-member-action-placeholder"></span>'}</div>`;
   }).join('')||'<div class="picker-empty">该课题组还没有成员，请先添加成员</div>'}</div><button type="button" class="btn collab-add-person" data-add-collab-person>${icon('plus')}添加成员</button></section></div>
   <div class="inline-collab-summary"><span>已选 <b>${modal.selectedMemberIds.length}</b> 位协作成员${modal.removedMemberIds.length?` · <span class="pending-count">待移除 ${modal.removedMemberIds.length} 位</span>`:''}</span><span>仅调整项目协作，不删除课题组成员</span></div>`;
   modalFrame(modal.recordId?'管理协作成员':collabTargetRecords(modal).length?'管理项目协作':'发起项目协作','选择课题组（可多选），在右侧添加或移除协作成员。',body,'<button class="btn" data-close>取消</button><button class="btn primary" data-confirm-collab>保存变更</button>',true);
@@ -768,11 +793,11 @@ function verify() {
   if(!user||accountResult.user?.id!==user.id)return lookupError(!user?accountCopy.unmatched:accountCopy.mismatch,['contact','account']);
 
   if(modal.type==='directory-add'){
-    if(directory.some(d=>d.id===user.id||visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(user,k))))return lookupError('该成员已在成员库中，可在课题组中直接选用');
+    if(!isRepeatableDemoAccount(user)&&directory.some(d=>d.id===user.id||visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(user,k))))return lookupError('该成员已在成员库中，可在课题组中直接选用');
   }else{
     const container=modal.target==='group'?group(modal.groupId)?.members:modal.target==='collab-draft'?collabMembers(modal.parent):projectMemberList();if(!container)return;
     if(user.id==='owner-1')return lookupError('项目所有者无需重复添加');
-    if(container.some(m=>m.id===user.id))return lookupError('该用户已在当前列表中');
+    if(!isRepeatableDemoAccount(user)&&container.some(m=>m.id===user.id))return lookupError('该用户已在当前列表中');
   }
   modal.error='';showAccountConfirmation(user);
 }
@@ -783,7 +808,7 @@ function confirmGroupCreate() {
   if(!modal.name)modal.error='请输入课题组名称';
   else if(groups.some(g=>g.name===modal.name))modal.error='课题组名称已存在';
   if(!modal.members.length)modal.memberError='请至少选择一位成员';
-  else if(modal.members.some(m=>resolvePlatformAccount(person(m.id).account,'account').user?.id!==m.id))modal.memberError='存在无法唯一匹配的成员，请核对手机号/邮箱与用户名后重新选择';
+  else if(modal.members.some(m=>!memberAccountIsUnique(m.id)))modal.memberError='存在无法唯一匹配的成员，请核对手机号/邮箱与用户名后重新选择';
   if(modal.error||modal.memberError){showGroupCreateModal();document.getElementById(modal.error?'groupName':'groupMemberSearch').focus();return;}
   const id='group-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),parent=modal.parent;
   modal.members.forEach(m=>ensureDirectoryPerson(m.id));
@@ -900,17 +925,17 @@ modalRoot.addEventListener('click',e=>{
   if(a.hasAttribute('data-back-verify')){modal.step='verify';return showModal();}
   if(a.hasAttribute('data-confirm-add')&&modal.type==='add'&&modal.step==='role'){
     if(modal.target==='collab-draft'){
-      const parent=modal.parent,u=modal.user,role=u.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
+      const parent=modal.parent,u=memberForAddition(modal.user),role=u.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
       if(!parent.extraMembers.some(m=>m.id===u.id))parent.extraMembers.push({id:u.id,role});
       parent.roleOverrides[u.id]=role;parent.selectedMemberIds=[...new Set([...parent.selectedMemberIds,u.id])];parent.selectionTouched=true;
       modal=parent;showCollabModal();return notify('成员已选入，保存变更后生效');
     }
     const container=modal.target==='group'?group(modal.groupId).members:projectMemberList();
-    if(container.some(m=>m.id===modal.user.id))return notify('该成员已在当前名单中');
-    const role=modal.user.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
-    if(!directory.some(d=>d.id===modal.user.id))directory.push({...modal.user});
-    container.push({id:modal.user.id,role});
-    if(modal.target==='project'&&activeCollabRecord()&&!project().members.some(m=>m.id===modal.user.id))project().members.push({id:modal.user.id,role});
+    if(!isRepeatableDemoAccount(modal.user)&&container.some(m=>m.id===modal.user.id))return notify('该成员已在当前名单中');
+    const u=memberForAddition(modal.user),role=u.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
+    if(!directory.some(d=>d.id===u.id))directory.push({...u});
+    container.push({id:u.id,role});
+    if(modal.target==='project'&&activeCollabRecord()&&!project().members.some(m=>m.id===u.id))project().members.push({id:u.id,role});
     saveAll();closeModal();render();return notify('成员添加成功');
   }
   if(a.hasAttribute('data-save-role')&&modal.type==='edit'){
@@ -937,7 +962,7 @@ modalRoot.addEventListener('change',e=>{
   if(!modal||!canManage())return;
   if(e.target.dataset.collabRole){const id=e.target.dataset.collabRole;if(id!=='support-1'&&['admin','member','visitor'].includes(e.target.value))modal.roleOverrides[id]=e.target.value;return;}
   if(e.target.hasAttribute('data-collab-download')){modal.downloadOverride=e.target.checked;return;}
-  if(e.target.dataset.pickGroupMember){const id=e.target.dataset.pickGroupMember;if(resolvePlatformAccount(person(id).account,'account').user?.id!==id)return notify('该账户无法唯一匹配，请重新核对');if(e.target.checked){if(!modal.members.some(m=>m.id===id))modal.members.push({id,role:id==='support-1'?'admin':'member'});}else modal.members=modal.members.filter(m=>m.id!==id);modal.memberError='';drawGroupPicker();modalRoot.querySelector(`[data-pick-group-member="${id}"]`)?.focus({preventScroll:true});return;}
+  if(e.target.dataset.pickGroupMember){const id=e.target.dataset.pickGroupMember;if(!memberAccountIsUnique(id))return notify('该账户无法唯一匹配，请重新核对');if(e.target.checked){if(!modal.members.some(m=>m.id===id))modal.members.push({id,role:id==='support-1'?'admin':'member'});}else modal.members=modal.members.filter(m=>m.id!==id);modal.memberError='';drawGroupPicker();modalRoot.querySelector(`[data-pick-group-member="${id}"]`)?.focus({preventScroll:true});return;}
   if(e.target.dataset.collabGroup){const gid=e.target.dataset.collabGroup;modal.selectedGroupIds=e.target.checked?[...new Set([...modal.selectedGroupIds,gid])]:modal.selectedGroupIds.filter(x=>x!==gid);modal.roleOverrides={};modal.extraMembers=[];modal.removedMemberIds=[];modal.selectionTouched=false;refreshCollabSelection();return showCollabModal();}
   if(e.target.dataset.collabMember){const id=e.target.dataset.collabMember;changeCollabMember(id,e.target.checked);showCollabModal();modalRoot.querySelector(`[data-collab-member="${id}"]`)?.focus({preventScroll:true});return;}
   if(e.target.dataset.collabProject){const id=e.target.dataset.collabProject;modal.selectedProjectIds=e.target.checked?[...new Set([...modal.selectedProjectIds,id])]:modal.selectedProjectIds.filter(x=>x!==id);refreshCollabSelection(true);return showCollabModal();}
