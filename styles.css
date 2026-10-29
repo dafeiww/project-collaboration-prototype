@@ -244,3 +244,30 @@
 .reference-project-table .project-actions-column{width:290px;text-align:left!important}.reference-project-table .project-actions-column .table-actions{justify-content:flex-start;flex-wrap:nowrap;gap:7px}.reference-project-table .project-actions-column .btn{min-width:0;padding:0 9px;white-space:nowrap}.reference-project-table .project-actions-column .collab-cancel-button{color:#e26666;border-color:#f3cece}
 .collab-state-text{display:block;margin-top:6px;font-size:10px;color:#9a9fa7}.collab-state-text.active{color:#4b9a76}.collab-state-text.cancelled{color:#ac8b6c}
 .team-management-tabs{display:flex;gap:26px;border-bottom:1px solid #dfe5ed;margin-bottom:24px;padding:0 4px}.team-management-tabs button{display:flex;align-items:center;gap:8px;background:transparent;color:#717c89;padding:13px 4px;border-bottom:3px solid transparent;font-size:14px}.team-management-tabs button.active{color:#1989fa;border-bottom-color:#1989fa;font-weight:600}.team-management-tabs button>span{background:#edf1f6;border-radius:10px;padding:1px 7px;font-size:11px}.team-management-tabs .icon{width:17px;height:17px}
+
+/* 取消协作前核对真实项目授权；名单只读、按成员去重，不包含所有者。 */
+.cancel-collab-modal{width:min(800px,100%)}
+.cancel-collab-roster{margin-top:22px;min-width:0}
+.cancel-collab-roster-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cancel-collab-roster-heading h3{margin:0;font-size:13px;font-weight:600;color:#303133}
+.cancel-collab-roster-heading>span{font-size:11px;white-space:nowrap;color:#909399}
+.cancel-collab-roster-heading b{color:#e37a54;font-weight:600}
+.cancel-collab-roster-hint{margin:7px 0 12px;font-size:11px;line-height:1.7;color:#909399}
+.cancel-collab-table-scroll{max-height:320px;overflow:auto;border:1px solid #e4e7ed;border-radius:7px;overscroll-behavior:contain}
+.cancel-collab-table{width:100%;min-width:610px;border-collapse:separate;border-spacing:0;table-layout:fixed;text-align:left}
+.cancel-collab-table th{position:sticky;top:0;z-index:1;background:#f7f8fa;color:#606266;font-size:11px;font-weight:500;padding:11px 13px;border-bottom:1px solid #e4e7ed;text-align:left}
+.cancel-collab-table th:nth-child(1){width:22%}.cancel-collab-table th:nth-child(2){width:25%}.cancel-collab-table th:nth-child(3){width:18%}.cancel-collab-table th:nth-child(4){width:35%}
+.cancel-collab-table td{padding:12px 13px;font-size:12px;color:#606266;vertical-align:middle;border-bottom:1px solid #ebeef5;overflow-wrap:anywhere}
+.cancel-collab-table tr:last-child td{border-bottom:0}
+.cancel-collab-person{display:flex;align-items:center;gap:9px;min-width:0}
+.cancel-collab-person .avatar{width:28px;height:28px;font-size:11px;flex-shrink:0}
+.cancel-collab-person strong{font-size:12px;font-weight:500;color:#303133;overflow-wrap:anywhere}
+.cancel-collab-account{font-size:11px!important;color:#909399!important}
+.cancel-collab-table .role-pill{white-space:nowrap;font-size:11px}
+.cancel-collab-sources{display:flex;flex-wrap:wrap;gap:5px}
+.cancel-collab-sources>span{display:inline-block;background:#f3f6fa;border-radius:4px;padding:3px 6px;font-size:10px;line-height:1.5;overflow-wrap:anywhere;color:#6c7c90}
+.cancel-collab-empty{text-align:center;padding:24px!important;color:#909399!important}
+.cancel-collab-modal .share-cancel-warning{margin-top:16px;padding:12px 14px}
+.cancel-collab-modal .share-cancel-warning p{margin-top:6px}
+@media(max-width:640px){.cancel-collab-table-scroll{max-height:240px}.cancel-collab-modal .modal-body{padding:16px}.cancel-collab-roster-heading{gap:8px}.cancel-collab-modal .share-cancel-warning{padding:10px}}
+@media(max-height:800px){.cancel-collab-table-scroll{max-height:200px}.cancel-collab-roster{margin-top:16px}}

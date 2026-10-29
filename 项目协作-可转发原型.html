@@ -256,6 +256,33 @@
 .collab-state-text{display:block;margin-top:6px;font-size:10px;color:#9a9fa7}.collab-state-text.active{color:#4b9a76}.collab-state-text.cancelled{color:#ac8b6c}
 .team-management-tabs{display:flex;gap:26px;border-bottom:1px solid #dfe5ed;margin-bottom:24px;padding:0 4px}.team-management-tabs button{display:flex;align-items:center;gap:8px;background:transparent;color:#717c89;padding:13px 4px;border-bottom:3px solid transparent;font-size:14px}.team-management-tabs button.active{color:#1989fa;border-bottom-color:#1989fa;font-weight:600}.team-management-tabs button>span{background:#edf1f6;border-radius:10px;padding:1px 7px;font-size:11px}.team-management-tabs .icon{width:17px;height:17px}
 
+/* 取消协作前核对真实项目授权；名单只读、按成员去重，不包含所有者。 */
+.cancel-collab-modal{width:min(800px,100%)}
+.cancel-collab-roster{margin-top:22px;min-width:0}
+.cancel-collab-roster-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.cancel-collab-roster-heading h3{margin:0;font-size:13px;font-weight:600;color:#303133}
+.cancel-collab-roster-heading>span{font-size:11px;white-space:nowrap;color:#909399}
+.cancel-collab-roster-heading b{color:#e37a54;font-weight:600}
+.cancel-collab-roster-hint{margin:7px 0 12px;font-size:11px;line-height:1.7;color:#909399}
+.cancel-collab-table-scroll{max-height:320px;overflow:auto;border:1px solid #e4e7ed;border-radius:7px;overscroll-behavior:contain}
+.cancel-collab-table{width:100%;min-width:610px;border-collapse:separate;border-spacing:0;table-layout:fixed;text-align:left}
+.cancel-collab-table th{position:sticky;top:0;z-index:1;background:#f7f8fa;color:#606266;font-size:11px;font-weight:500;padding:11px 13px;border-bottom:1px solid #e4e7ed;text-align:left}
+.cancel-collab-table th:nth-child(1){width:22%}.cancel-collab-table th:nth-child(2){width:25%}.cancel-collab-table th:nth-child(3){width:18%}.cancel-collab-table th:nth-child(4){width:35%}
+.cancel-collab-table td{padding:12px 13px;font-size:12px;color:#606266;vertical-align:middle;border-bottom:1px solid #ebeef5;overflow-wrap:anywhere}
+.cancel-collab-table tr:last-child td{border-bottom:0}
+.cancel-collab-person{display:flex;align-items:center;gap:9px;min-width:0}
+.cancel-collab-person .avatar{width:28px;height:28px;font-size:11px;flex-shrink:0}
+.cancel-collab-person strong{font-size:12px;font-weight:500;color:#303133;overflow-wrap:anywhere}
+.cancel-collab-account{font-size:11px!important;color:#909399!important}
+.cancel-collab-table .role-pill{white-space:nowrap;font-size:11px}
+.cancel-collab-sources{display:flex;flex-wrap:wrap;gap:5px}
+.cancel-collab-sources>span{display:inline-block;background:#f3f6fa;border-radius:4px;padding:3px 6px;font-size:10px;line-height:1.5;overflow-wrap:anywhere;color:#6c7c90}
+.cancel-collab-empty{text-align:center;padding:24px!important;color:#909399!important}
+.cancel-collab-modal .share-cancel-warning{margin-top:16px;padding:12px 14px}
+.cancel-collab-modal .share-cancel-warning p{margin-top:6px}
+@media(max-width:640px){.cancel-collab-table-scroll{max-height:240px}.cancel-collab-modal .modal-body{padding:16px}.cancel-collab-roster-heading{gap:8px}.cancel-collab-modal .share-cancel-warning{padding:10px}}
+@media(max-height:800px){.cancel-collab-table-scroll{max-height:200px}.cancel-collab-roster{margin-top:16px}}
+
   </style>
 </head>
 <body>
@@ -399,7 +426,20 @@ function resolvePlatformAccount(value,key=null) {
   const conflict=platformAccounts.some(u=>u.id!==user.id&&visibleAccountKeys.some(k=>usableAccountValue(user,k)&&usableAccountValue(u,k)===usableAccountValue(user,k)));
   return conflict?{user:null,status:'ambiguous'}:{user,status:'matched'};
 }
+// 六条从未协作的示例置顶；旧浏览器只补充缺失项，不重置已完成的协作操作。
+const pendingCollaborationExamples = [
+  ['肠道菌群宏基因组测序分析','宏基因组分析'],
+  ['植物根际微生物多样性分析','微生物多样性分析'],
+  ['人外周血单细胞转录组分析','新版单细胞转录组分析'],
+  ['肝组织定量蛋白组分析','定量蛋白组云分析'],
+  ['血清非靶向代谢组分析','非靶向代谢组分析'],
+  ['肿瘤组织转录组联合分析','转录组云分析']
+].map(([name,category],index)=>{
+  const number=String(index+1).padStart(2,'0');
+  return {id:'pending-collab-'+number,ticket:'PT20261029NC0'+number,contract:'CT202610290'+number,code:'PAIS20261029NC0'+number,name:'待协作示例-'+name,category,created:'2026-10-29 09:'+String(30-index).padStart(2,'0')+':00',status:'完成',type:'云分析',collab:false,hasCollaborated:false,members:[{id:'owner-1',role:'owner'}],visitorDownload:false};
+});
 const initialProjects = [
+  ...pendingCollaborationExamples,
   { id: 'analysis', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610201731FS5D', name: '测试示例-定量蛋白组云分析', category: '定量蛋白组云分析', created: '2026-10-20 17:31:42', status: '完成', type: '云分析', collab: true, members: [
     { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
     { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }, { id: 'lin-1', role: 'member' }
@@ -469,8 +509,11 @@ try {
 } catch {
   projects=structuredClone(initialProjects);groups=structuredClone(initialGroups);
   // 仅首次打开提供示例协作，已有浏览器数据不新增授权、不重置。
-  collabRecords=[{id:'demo-collab-analysis-onco',projectId:'analysis',projectName:projects[0].name,code:projects[0].code,initiatedBy:'owner-1',groupId:'group-onco',groupName:groups[0].name,members:structuredClone(groups[0].members),createdAt:'2026-10-27 10:00:00',status:'协作中'}];
+  const analysisExample=projects.find(p=>p.id==='analysis');
+  collabRecords=[{id:'demo-collab-analysis-onco',projectId:'analysis',projectName:analysisExample.name,code:analysisExample.code,initiatedBy:'owner-1',groupId:'group-onco',groupName:groups[0].name,members:structuredClone(groups[0].members),createdAt:'2026-10-27 10:00:00',status:'协作中'}];
 }
+const pendingExampleIds=new Set(pendingCollaborationExamples.map(p=>p.id));
+projects=[...pendingCollaborationExamples.map(example=>projects.find(p=>p.id===example.id)||structuredClone(example)),...projects.filter(p=>!pendingExampleIds.has(p.id))];
 const accountCatalog=new Map();
 for(const u of [...demoPlatformAccounts,...platformAccounts,...directory]){
   if(isDemoMemberInstance(u))continue;
@@ -895,8 +938,17 @@ function openCollab(groupId=groups[0]?.id, projectIds=[], chooseProjects=false, 
 }
 function openCancelCollab(id) {
   const p=projects.find(p=>p.id===id);if(!canManageProject(p)||!p.collab)return notify('仅已协作且有管理权限的项目可取消协作');
+  const records=projectRecords(p),members=p.members.filter(m=>m.role!=='owner');
+  const groupCount=new Set(records.map(r=>r.groupId||r.groupName).filter(Boolean)).size;
+  const roster=`<section class="cancel-collab-roster" aria-labelledby="cancelCollabRosterTitle"><div class="cancel-collab-roster-heading"><h3 id="cancelCollabRosterTitle">将取消协作的人员</h3><span>共 <b data-cancel-collab-count>${members.length}</b> 人 · 已去重</span></div><p class="cancel-collab-roster-hint">以下人员将失去本项目的协作权限，项目所有者不受影响。</p><div class="cancel-collab-table-scroll" tabindex="0" role="region" aria-label="将取消协作的人员名单"><table class="cancel-collab-table"><thead><tr><th scope="col">姓名</th><th scope="col">用户名</th><th scope="col">项目角色</th><th scope="col">协作来源</th></tr></thead><tbody>${members.map((member,index)=>{
+    const u=person(member.id);
+    const sources=[...new Set(records.filter(r=>(r.members||[]).some(m=>m.id===member.id)).map(r=>group(r.groupId)?.name||r.groupName||'未命名课题组'))];
+    if(p.directCollabMembers.some(m=>m.id===member.id))sources.push('直接邀请');
+    return `<tr data-cancel-collab-member="${safe(member.id)}"><td><div class="cancel-collab-person">${avatar(u.name,index)}<strong>${safe(u.name)}</strong></div></td><td class="cancel-collab-account">${safe(u.account||'—')}${safe(demoMemberLabel(u))}</td><td><span class="role-pill ${safe(member.role)}">${icon(roleIcons[member.role]||'person')}${safe(roleNames[member.role]||member.role)}</span></td><td><div class="cancel-collab-sources">${(sources.length?sources:['项目协作']).map(source=>`<span>${safe(source)}</span>`).join('')}</div></td></tr>`;
+  }).join('')||'<tr><td colspan="4" class="cancel-collab-empty">当前没有需要解除权限的协作成员。</td></tr>'}</tbody></table></div></section>`;
   modal={type:'collab-cancel',projectId:id};
-  modalFrame('取消项目协作','请确认取消以下项目的全部协作授权。',`<div class="share-project-card"><div><strong>${safe(p.name)}</strong><small>${safe(p.ticket)} · ${safe(p.code)}</small></div></div><div class="share-cancel-warning"><div><strong>将解除 ${projectRecords(p).length} 个课题组的项目协作与 ${p.members.filter(m=>m.role!=='owner').length} 位成员的项目权限。</strong><p>项目分享、其他项目、课题组和成员库均保留。取消后可重新发起协作。</p></div></div>`,'<button class="btn" data-close>暂不取消</button><button class="btn danger" data-confirm-collab-cancel>确认取消协作</button>');
+  modalFrame('取消项目协作','请核对受影响的人员名单，确认后解除本项目的全部协作授权。',`<div class="share-project-card"><span class="share-project-icon">${icon('folder')}</span><div><strong>${safe(p.name)}</strong><small>${safe(p.ticket)} · ${safe(p.code)}</small></div></div>${roster}<div class="share-cancel-warning">${icon('info')}<div><strong>将解除 ${groupCount} 个课题组的项目协作与 ${members.length} 位成员的协作权限。</strong><p>项目分享、其他项目、课题组和成员库均保留。仍被分享的用户可继续查看共享结果；取消后可重新发起协作。</p></div></div>`,'<button class="btn" data-close>暂不取消</button><button class="btn danger" data-confirm-collab-cancel>确认取消协作</button>');
+  modalRoot.querySelector('.modal').classList.add('cancel-collab-modal');
 }
 function cancelCollab() {
   const p=projects.find(p=>p.id===modal?.projectId);if(modal?.type!=='collab-cancel'||!canManageProject(p)||!p.collab)return;
