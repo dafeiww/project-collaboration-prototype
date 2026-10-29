@@ -283,7 +283,7 @@
 @media(max-width:640px){.cancel-collab-table-scroll{max-height:240px}.cancel-collab-modal .modal-body{padding:16px}.cancel-collab-roster-heading{gap:8px}.cancel-collab-modal .share-cancel-warning{padding:10px}}
 @media(max-height:800px){.cancel-collab-table-scroll{max-height:200px}.cancel-collab-roster{margin-top:16px}}
 
-/* 仅技术支持使用项目管理 / 技术管理 / 技术支持人员管理导航。 */
+/* 技术支持专属四项导航；前两项仅展示，不打开页面。 */
 .sidebar [hidden]{display:none!important}
 .technical-support-navigation .project-menu-button.directory-active{background:transparent;color:#fff}
 .technical-support-navigation .nav-menu-chevron{margin-left:auto;margin-right:18px;color:#fff;font-size:18px}
@@ -291,6 +291,7 @@
 .technical-support-navigation .nav-sub-item{height:48px;font-size:14px;padding-left:49px;color:#fff}
 .technical-support-navigation .nav-sub-item.active{background:#198ffa;color:#fff;font-weight:500}
 .technical-support-navigation .project-menu-button .nav-icon .icon{width:21px;height:21px}
+.technical-support-navigation .support-placeholder:disabled{cursor:default;opacity:1;color:#b8c3cf;background:transparent;box-shadow:none}
 
   </style>
 </head>
@@ -305,6 +306,8 @@
         <div class="project-nav-group">
           <button class="nav-item project-menu-button" data-project-menu aria-expanded="true" aria-controls="projectSubnav"><span class="nav-icon" data-icon="folder"></span><span id="projectMenuLabel">项目列表</span><span class="nav-count" id="navProjectCount">8</span><span class="nav-menu-chevron" aria-hidden="true">⌃</span></button>
           <div class="nav-submenu" id="projectSubnav" aria-label="项目列表子目录">
+            <button class="nav-item nav-sub-item support-placeholder" data-support-placeholder="technical" type="button" disabled hidden>技术管理</button>
+            <button class="nav-item nav-sub-item support-placeholder" data-support-placeholder="personnel" type="button" disabled hidden>技术人员管理</button>
             <button class="nav-item nav-sub-item" data-nav="visual"><span class="nav-sub-dot"></span>云图汇</button>
             <button class="nav-item nav-sub-item active" data-nav="projects"><span class="nav-sub-dot"></span><span id="analysisNavLabel">云分析</span></button>
             <button class="nav-item nav-sub-item" data-nav="team"><span class="nav-sub-dot"></span><span id="teamNavLabel">成员与课题组</span></button>
@@ -641,8 +644,9 @@ function renderRolePreview() {
   const viewer=person(currentUserId()),support=identity==='support';
   document.querySelector('.sidebar').classList.toggle('technical-support-navigation',support);
   document.getElementById('projectMenuLabel').textContent=support?'项目管理':'项目列表';
-  document.getElementById('analysisNavLabel').textContent=support?'技术管理':'云分析';
-  document.getElementById('teamNavLabel').textContent=support?'技术支持人员管理':'成员与课题组';
+  document.getElementById('analysisNavLabel').textContent=support?'项目协作':'云分析';
+  document.getElementById('teamNavLabel').textContent=support?'协作人员管理':'成员与课题组';
+  document.querySelectorAll('.sidebar [data-support-placeholder]').forEach(button=>button.hidden=!support);
   document.getElementById('projectSubnav').setAttribute('aria-label',support?'项目管理子目录':'项目列表子目录');
   document.querySelector('[data-project-menu] .nav-icon').innerHTML=icon(support?'layers':'folder');
   document.getElementById('navProjectCount').hidden=support;
@@ -739,7 +743,7 @@ function renderProjects() {
   const cols=mine?(showSelection?10:9):7;
   const bulk=mine&&isManagementView()&&manageableProjects().some(p=>inScope(p)&&canConfigureCollaboration(p));
   const description=identity==='support'?'展示你受邀参与的项目，按项目授权管理协作。':'拥有与受邀项目统一展示，项目身份以当前账号在该项目中的授权为准。';
-  return `<div class="page" data-screen-label="项目列表">${heading(support?'技术管理':projectType,description,isManagementView()?`<button class="btn ghost" data-nav="team">${icon('people')}${support?'技术支持人员管理':'成员与课题组'}</button>`:'')}
+  return `<div class="page" data-screen-label="项目列表">${heading(support?'项目协作':projectType,description,isManagementView()?`<button class="btn ghost" data-nav="team">${icon('people')}${support?'协作人员管理':'成员与课题组'}</button>`:'')}
     <section class="surface"><div class="surface-top"><div class="list-tabs" role="tablist" aria-label="项目类型">${tabs.map(([key,label])=>`<button role="tab" aria-selected="${listTab===key}" class="${listTab===key?'active':''}" data-list-tab="${key}">${label}<span class="tab-count">${counts[key]}</span></button>`).join('')}</div><span class="surface-caption">${mine?'拥有者 / 协作者 / 访问者':'仅分享原始分析结果'}</span></div>
     <div class="list-toolbar">${searchField('projectSearch','搜索开题单号、项目名称或编号')}<div class="toolbar-right"><label class="filter-label"><span>项目类别</span><select id="categoryFilter" class="filter-select" aria-label="筛选项目类别"><option value="">全部类别</option>${[...new Set(scopedProjects.map(p=>p.category))].map(c=>`<option ${categoryFilter===c?'selected':''} value="${safe(c)}">${safe(c)}</option>`).join('')}</select></label>${bulk?`<button class="btn primary toolbar-collab-action" data-collab-selected>${icon('link')}${selectedCount?`协作已选项目（${selectedCount}）`:'发起项目协作'}</button>`:`<span class="small-count">共 ${list.length} 个项目</span>`}</div></div>
     <div class="project-reference-note">${icon('info')}<span>${mine?'拥有者可管理项目；协作者按授权参与；访问者仅查看。点击开题单号或项目名称查看详情。':'此列表保留项目分享功能，仅查看原始分析结果，不显示协作角色。'}</span></div>
@@ -758,7 +762,7 @@ function renderGroups() {
 function renderTeam() {
   const tabs=`<div class="team-management-tabs" role="tablist" aria-label="成员与课题组"><button type="button" role="tab" data-team-tab="members" aria-selected="${teamTab==='members'}" class="${teamTab==='members'?'active':''}">${icon('person')}成员管理<span>${directory.length}</span></button><button type="button" role="tab" data-team-tab="groups" aria-selected="${teamTab==='groups'}" class="${teamTab==='groups'?'active':''}">${icon('people')}课题组管理<span>${groups.length}</span></button></div>`;
   let content=(teamTab==='members'?renderMemberDirectory():renderGroups()).replace(/(<div class="page"[^>]*>)/,`$1${tabs}`);
-  if(identity==='support'&&teamTab==='members')content=content.replace('<h1>成员管理</h1>','<h1>技术支持人员管理</h1>');
+  if(identity==='support'&&teamTab==='members')content=content.replace('<h1>成员管理</h1>','<h1>协作人员管理</h1>');
   return content;
 }
 function renderMemberDirectory() {
@@ -806,7 +810,7 @@ function render() {
   document.body.classList.remove('reference-mode');
   const renderers={projects:renderProjects,visual:renderProjects,team:renderTeam,detail:renderDetail,overview:renderOverview,data:renderData};
   main.innerHTML=(renderers[page]||renderProjects)();
-  const labels={projects:identity==='support'?'技术管理':'云分析',visual:'云图汇',team:identity==='support'?'技术支持人员管理':'成员与课题组',detail:'项目详情',overview:'项目概况',data:'项目数据'};
+  const labels={projects:identity==='support'?'项目协作':'云分析',visual:'云图汇',team:identity==='support'?'协作人员管理':'成员与课题组',detail:'项目详情',overview:'项目概况',data:'项目数据'};
   const navPage=page==='detail'?(identity!=='support'&&project().type==='云图汇'?'visual':'projects'):page;
   const nested=['projects','visual','team'].includes(navPage);
   document.getElementById('crumb').innerHTML=`工作空间 <span>/</span> ${nested?(identity==='support'?'项目管理 <span>/</span> ':'项目列表 <span>/</span> '):''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${{mine:identity==='support'?'协作项目':'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;

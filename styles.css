@@ -272,7 +272,7 @@
 @media(max-width:640px){.cancel-collab-table-scroll{max-height:240px}.cancel-collab-modal .modal-body{padding:16px}.cancel-collab-roster-heading{gap:8px}.cancel-collab-modal .share-cancel-warning{padding:10px}}
 @media(max-height:800px){.cancel-collab-table-scroll{max-height:200px}.cancel-collab-roster{margin-top:16px}}
 
-/* 仅技术支持使用项目管理 / 技术管理 / 技术支持人员管理导航。 */
+/* 技术支持专属四项导航；前两项仅展示，不打开页面。 */
 .sidebar [hidden]{display:none!important}
 .technical-support-navigation .project-menu-button.directory-active{background:transparent;color:#fff}
 .technical-support-navigation .nav-menu-chevron{margin-left:auto;margin-right:18px;color:#fff;font-size:18px}
@@ -280,3 +280,4 @@
 .technical-support-navigation .nav-sub-item{height:48px;font-size:14px;padding-left:49px;color:#fff}
 .technical-support-navigation .nav-sub-item.active{background:#198ffa;color:#fff;font-weight:500}
 .technical-support-navigation .project-menu-button .nav-icon .icon{width:21px;height:21px}
+.technical-support-navigation .support-placeholder:disabled{cursor:default;opacity:1;color:#b8c3cf;background:transparent;box-shadow:none}
