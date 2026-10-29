@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>项目协作 · 派森诺基因云平台</title>
+  <meta name="description" content="派森诺科研协作空间：管理项目、课题组与成员，体验单项目和批量项目协作。">
+  <meta name="theme-color" content="#1989fa">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231989fa'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <style>
+/* 派森诺科研协作空间 · 统一视觉样式 */
+:root{--ink:#232c37;--text:#45494e;--muted:#8e9195;--blue:#204473;--blue2:#193861;--teal:#204473;--pale:#edeff1;--line:#e8e9eb;--bg:#f6f6f6;--white:#fff;--error:#cd5e5c;--shadow:0 4px 18px #262f3b05;--radius:12px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer;border:0}button:disabled{cursor:not-allowed;opacity:.45}a{color:inherit;text-decoration:none}button,input,select,a{outline-offset:4px}button:focus-visible,a:focus-visible{outline:2px solid #53729a}input:focus,select:focus{outline:none;border-color:#768ba7!important;box-shadow:0 0 0 3px #20447310}button{transition:background .16s,color .16s,border-color .16s,box-shadow .16s}h1,h2,h3,p{margin:0}svg{display:block}.icon{width:19px;height:19px;flex-shrink:0}input[type=checkbox],input[type=radio]{width:16px;height:16px;accent-color:var(--blue);cursor:pointer}::selection{background:#d1dae5}.app-shell{display:grid;grid-template-columns:222px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;display:flex;flex-direction:column;height:100vh;background:#fff;border-right:1px solid var(--line);padding:0 17px;z-index:3}.brand{display:flex;align-items:center;gap:10px;height:93px;padding-left:10px}.brand-symbol{display:grid;place-items:center;width:39px;height:40px;color:#fff;background:var(--blue);border-radius:11px}.brand-symbol svg{width:28px;height:28px}.brand strong{font-size:24px;letter-spacing:1.5px;line-height:1.15;display:block;font-weight:750}.brand-dot{color:var(--blue)}.brand small{display:block;font-size:10px;color:var(--muted);letter-spacing:3px;margin-top:4px}.workspace-label{display:flex;align-items:center;gap:10px;padding:13px 11px;background:#f7f7f7;border:1px solid var(--line);border-radius:8px;margin:9px 0 28px;font-size:12px;font-weight:650}.workspace-label small{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:1px}.workspace-logo{background:white;padding:7px;border:1px solid var(--line);border-radius:7px;color:var(--blue)}.workspace-logo .icon{width:17px;height:17px}.workspace-indicator{width:6px;height:6px;border-radius:50%;background:#6b82a1;margin-left:auto}.side-caption{font-size:10px;letter-spacing:1px;color:#a4a7aa;margin:0 12px 11px}.side-nav{display:grid;gap:6px}.nav-item{display:flex;align-items:center;gap:12px;height:44px;padding:0 13px;border-radius:7px;text-align:left;background:transparent;color:#7b7f83;font-size:13px;white-space:nowrap}.nav-item:hover{background:#f6f6f7;color:var(--ink)}.nav-item.active{background:#edeff1;color:var(--blue);font-weight:650}.nav-icon .icon{width:18px;height:18px}.nav-count{margin-left:auto;padding:0 6px;min-width:21px;border-radius:5px;font-size:10px;background:#dee1e5;color:#49607e}.side-bottom{margin:auto 1px 21px;background:linear-gradient(135deg,#f2f3f4,#f4f5f7);border:1px solid #e7e9eb;border-radius:10px;padding:18px 14px;position:relative;overflow:hidden}.side-note-icon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#e4e7ea;color:#596c85;margin-bottom:13px}.side-note-icon .icon{width:17px;height:17px}.side-bottom strong{font-size:12px;color:#585c62}.side-bottom p{font-size:11px;color:#8d9095;margin:8px 0 17px;line-height:1.85}.side-note-badge{font-size:10px;color:#7f848b;display:flex;gap:6px;align-items:center}.side-note-badge i,.demo-badge i{width:5px;height:5px;display:inline-block;background:#71849d;border-radius:50%}.side-user{display:flex;align-items:center;gap:10px;padding:18px 8px 22px;border-top:1px solid var(--line)}.side-user strong{font-size:12px;font-weight:600}.side-user small{display:block;font-size:10px;color:var(--muted)}.user-avatar{width:33px;height:33px;border-radius:50%;display:grid;place-items:center;background:#f1e6d7;color:#9b7a55;font-size:12px;font-weight:650;flex-shrink:0}.user-online{width:6px;height:6px;border-radius:50%;background:#7c8590;margin-left:auto}
+.workspace{min-width:0;display:flex;flex-direction:column}.topbar{height:67px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:#ffffffda;padding:0 35px;gap:16px}.crumb{font-size:11px;color:#8e9194}.crumb strong{font-weight:500;color:#43484e}.crumb>span{margin:0 12px;color:#c5c7c9}.header-actions{display:flex;align-items:center;gap:21px}.demo-badge{display:flex;align-items:center;gap:7px;font-size:10px;color:#909397}.identity-switch{display:flex;gap:10px;align-items:center;font-size:11px;color:#9c9ea1}.identity-switch select{height:29px;border:1px solid var(--line);border-radius:6px;font-size:11px;padding:0 8px;background:white;color:#5d6166}.header-avatar{width:29px;height:29px;font-size:11px}.page{padding:31px 35px 0;max-width:1680px;margin:0 auto;width:100%;animation:page-in .22s ease}.page-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:25px}.eyebrow{font-size:10px;letter-spacing:1.5px;color:#82868c;font-weight:500;margin-bottom:7px}.page-heading h1{font-size:27px;line-height:1.4;font-weight:650;letter-spacing:.3px;color:#232d3a}.page-heading p{font-size:12px;color:#96999c;margin-top:7px}.heading-actions{display:flex;align-items:center;gap:10px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 14px;white-space:nowrap;border:1px solid #dee0e3;border-radius:7px;background:#fff;color:#686b71;font-size:12px;font-weight:500}.btn:hover:not(:disabled){background:#f4f5f6;border-color:#c3c7cc}.btn .icon{width:15px;height:15px}.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 3px #1e2f4610}.btn.primary:hover:not(:disabled){background:var(--blue2);border-color:var(--blue2);box-shadow:0 3px 8px #1e355420}.btn.small{font-size:11px;min-height:29px;padding:0 10px;border-radius:5px}.btn.quiet{background:transparent;border-color:transparent;padding:0 7px;color:#7e8286}.btn.quiet:hover:not(:disabled){background:#f1f2f4;color:var(--blue)}.btn.text-primary{color:var(--blue);font-weight:550}.btn.danger{background:#fff7f6;color:#c26962;border-color:#f0dcd8}.btn.danger:hover:not(:disabled){background:#fcecea;border-color:#e4b9b2}.btn.ghost{background:transparent}.view-icon{border:1px solid var(--line);background:#fff;width:34px;height:34px;display:grid;place-items:center;border-radius:6px;color:#8b8e93}.view-icon .icon{width:16px;height:16px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 26px}.stat-card{position:relative;background:white;border:1px solid var(--line);border-radius:10px;padding:19px 20px 17px;box-shadow:var(--shadow);overflow:hidden}.stat-top{display:flex;justify-content:space-between;align-items:center;color:#909498;font-size:11px}.stat-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#eff1f3;color:#7f8996}.stat-card:nth-child(2) .stat-icon{background:#edf2fa;color:#83a0c6}.stat-card:nth-child(3) .stat-icon{background:#f8f3e8;color:#c3a465}.stat-card:nth-child(4) .stat-icon{background:#f2eef8;color:#a292bd}.stat-icon .icon{width:16px;height:16px}.stat-number{font-size:29px;font-weight:600;line-height:1.3;margin:7px 0 5px;letter-spacing:-1px}.stat-number small{font-size:10px;font-weight:400;color:#a4a7aa;letter-spacing:0;margin-left:8px}.stat-desc{font-size:10px;color:#a6a9ac}.stat-desc .accent{color:#77818e;margin-right:5px}.stat-spark{position:absolute;right:20px;bottom:19px;width:58px;height:21px;opacity:.7}.surface{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.surface-top{display:flex;justify-content:space-between;align-items:center;padding:0 22px;border-bottom:1px solid var(--line);min-height:58px}.list-tabs{display:flex;gap:28px;min-height:58px}.list-tabs button{display:flex;align-items:center;gap:8px;padding:0;position:relative;background:transparent;color:#96999c;font-size:12px;border:0}.list-tabs button.active{color:var(--blue);font-weight:650}.list-tabs button.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--blue);border-radius:2px}.tab-count{padding:0 5px;border-radius:4px;font-size:9px;color:#9fa1a4;background:#f1f2f3;font-weight:500}.active .tab-count{color:var(--blue);background:#e9ebee}.surface-title{font-size:14px;font-weight:600}.surface-caption{font-size:10px;color:#a4a6a9}.toolbar,.list-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px}.toolbar-right{display:flex;align-items:center;gap:10px}.search-wrap{display:flex;align-items:center;gap:8px;min-height:35px;max-width:350px;width:100%;border:1px solid #e7e8ea;border-radius:6px;background:#fbfbfc;padding:0 11px;transition:border .2s}.search-wrap:focus-within{border-color:#8d9db2}.search-wrap .icon{width:15px;height:15px;color:#9ea1a6}.search-wrap input{width:100%;min-width:0;border:0!important;background:transparent;font-size:11px;color:#4d5258;height:33px;outline:none!important;box-shadow:none!important}.search-wrap input::placeholder{color:#b0b2b5}.small-count{color:#a3a6a9;font-size:10px;white-space:nowrap}.filter-select{height:34px;border:1px solid var(--line);border-radius:6px;padding:0 25px 0 9px;font-size:11px;color:#8e9296;background:#fff;max-width:155px}.filter-label{display:flex;gap:8px;align-items:center;font-size:11px;color:#9c9fa2}.selection-note{padding:0 22px 13px;color:#84898f;font-size:11px;display:flex;gap:10px;align-items:center}.selection-note button{background:transparent;color:var(--blue);font-size:11px}
+.table-scroll{width:100%;overflow:auto}.table-shell table{width:100%;border-collapse:collapse;text-align:left;white-space:normal}.table-shell th{padding:12px 17px;font-size:10px;color:#9ca0a4;font-weight:500;background:#f9f9f9;white-space:nowrap;border-top:1px solid #f0f1f2;border-bottom:1px solid #eeeff1}.table-shell td{padding:17px;font-size:11px;color:#7e8288;border-bottom:1px solid #eeeff1;vertical-align:middle}.table-shell tbody tr:last-child td{border-bottom:0}.table-shell tbody tr{transition:background .15s}.table-shell tbody tr:hover{background:#fcfcfc}.table-shell tbody tr.selected{background:#f4f5f6}.check-cell{width:43px;text-align:center!important;padding-left:17px!important;padding-right:4px!important}.check-cell input{width:14px;height:14px}.project-table table{min-width:950px}.project-title-cell{display:flex;align-items:center;gap:12px;min-width:250px}.project-mark{width:35px;height:39px;border-radius:7px;background:#edeef0;display:grid;place-items:center;flex-shrink:0;color:#949ba4}.project-mark .icon{width:18px;height:18px}.project-mark.lavender{background:#f0edf6;color:#aaa0c1}.project-mark.sand{background:#f9f3e9;color:#c5ad7d}.project-mark.blue{background:#eaf1f6;color:#88a6bd}.project-name{display:block;font-size:11px;font-weight:550;color:#4c5158;text-align:left;background:transparent;padding:0;max-width:290px;line-height:1.7}.project-name:hover{color:var(--blue)}.project-code{display:block;font-size:9px;letter-spacing:.25px;color:#a6a9ac;margin-top:3px;font-variant-numeric:tabular-nums}.project-meta{white-space:nowrap;font-size:10px;color:#a5a8ab}.project-meta small{display:block;font-size:9px;color:#b6b8bb;margin-top:3px}.category-tag{display:inline-block;padding:3px 7px;background:#f2f3f5;color:#8a9097;border:1px solid #e8eaec;border-radius:4px;font-size:9px;white-space:nowrap}.date-cell{white-space:nowrap;font-variant-numeric:tabular-nums;font-size:10px!important;color:#a8aaac!important}.status-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:4px;background:#f0f1f3;font-size:9px;color:#7b8491;white-space:nowrap}.status-chip:before{content:"";width:4px;height:4px;border-radius:50%;background:#89919c}.table-actions{display:flex;gap:3px;align-items:center;justify-content:flex-end;white-space:nowrap}.table-actions .primary{background:#edeff1;border-color:#e4e7ea;color:#566c8a;box-shadow:none;font-size:10px}.table-actions .primary:hover:not(:disabled){background:#e3e6e9;border-color:#c0cad7;color:#405674}.table-actions .btn.quiet{font-size:10px}.table-actions .danger{color:#c07870;background:transparent;border-color:transparent}.table-footer{display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-top:1px solid var(--line);font-size:10px;color:#a6a9ac;gap:12px}.page-info{display:flex;gap:7px;align-items:center}.page-chip{display:grid;place-items:center;width:25px;height:25px;border:1px solid #e2e4e6;background:#f2f3f4;color:#7c8590;border-radius:5px}.table-footer button{background:#f7f7f8;color:#b7b9bc;width:25px;height:25px;border-radius:5px}.list-foot{display:flex;align-items:center;gap:7px;color:#a7aaad;font-size:10px;padding-top:16px}.list-foot .icon{width:13px;height:13px}.workspace-footer{display:flex;justify-content:space-between;gap:10px;margin:auto 35px 0;padding:30px 0 23px;font-size:9px;color:#afb1b4}.empty-cell{text-align:center;padding:55px!important;color:#a0a2a5!important}.empty-icon{display:grid;place-items:center;margin:0 auto 12px;border-radius:13px;background:#f2f3f4;color:#9399a1;width:48px;height:48px}.empty-cell strong{display:block;font-size:13px;color:#72777d;font-weight:500}.empty-cell p{margin-top:6px;font-size:11px}.empty-cell .btn{margin-top:18px}
+.avatar{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:50%;font-size:12px;color:#808791;background:#eaecee}.avatar.lavender{background:#efeaf5;color:#a493b9}.avatar.sand{background:#f6eee1;color:#b6a177}.avatar.blue{background:#e8eff7;color:#8ca6bd}.avatar.coral{background:#f9eae4;color:#c6a295}.member-cell{display:flex;align-items:center;gap:11px}.member-name{font-size:12px;color:#53585e;font-weight:550}.member-note{font-size:10px;display:block;color:#a5a8ab;margin-top:3px}.role-pill{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:4px 8px;font-size:10px;background:#f0f1f2;color:#7c838c}.role-pill .icon{width:12px;height:12px}.role-pill.admin{background:#eaf0f8;color:#7f9dbb}.role-pill.visitor{background:#f6f1e7;color:#b49f74}.role-pill.owner{background:#eceef0;color:#677c97}.support-tag{display:inline-flex;padding:2px 5px;margin-left:5px;font-size:8px;background:#ecf2f9;color:#8b9db7;border-radius:4px;font-weight:400;white-space:nowrap}.roster{display:flex;align-items:center;flex-wrap:wrap;gap:7px}.roster-item{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#898c91;background:#f8f8f9;border:1px solid #ecedef;border-radius:5px;padding:4px 7px}.roster-item .avatar{width:19px;height:19px;font-size:8px}.roster-item .support-tag{display:none}.roster-empty,.more-count{font-size:10px;color:#a3a7ab}.group-chip{display:inline-flex;font-size:10px;color:#818891;background:#f0f2f4;padding:4px 8px;border-radius:4px;margin:3px 5px 3px 0}.group-table table{min-width:850px}.group-cell{display:flex;gap:12px;align-items:center;min-width:190px}.group-cell strong{font-size:12px;color:#595e64;font-weight:550}.group-cell small{display:block;font-size:10px;color:#afb1b3;margin-top:3px}.group-emblem{width:38px;height:38px;border:1px solid #e4e7ea;background:#eff1f3;display:grid;place-items:center;border-radius:9px;color:#838d9a}.group-emblem .icon{width:18px;height:18px}.group-table td{padding-top:23px;padding-bottom:23px}.group-actions{flex-wrap:wrap;gap:5px}.group-actions .support-state{color:#9fa2a6;font-size:9px;padding:0 7px}.info-banner{display:flex;gap:12px;align-items:center;background:#f0f1f3;border:1px solid #e4e6e9;border-radius:9px;padding:14px 18px;margin-bottom:22px}.info-banner>.icon{color:#8d939b;width:18px;height:18px}.info-banner h2{font-size:11px;color:#7a8088;font-weight:550}.info-banner p{font-size:10px;color:#9a9fa5;margin-top:2px}.info-banner .btn{margin-left:auto}.directory-table table{min-width:660px}.directory-table th,.directory-table td{padding-left:25px;padding-right:25px}.directory-table td{height:78px}.fixed{color:#aeb0b3;font-size:10px}
+.back-link{display:inline-flex;align-items:center;gap:5px;background:transparent;color:#91959b;font-size:11px;padding:0;margin-bottom:18px}.back-link .icon{width:13px;height:13px}.detail-card{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:24px;margin-bottom:22px}.detail-title{display:flex;align-items:center;gap:15px}.detail-title h1{font-size:21px;font-weight:600}.detail-title p{color:#9ea2a6;font-size:10px;margin-top:5px}.detail-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;padding:0 24px 22px;margin-top:-8px}.detail-meta span{font-size:10px;color:#a6a9ac}.detail-meta strong{display:block;font-size:11px;color:#767a80;font-weight:400;margin-top:4px}.detail-header{margin-bottom:24px}.detail-header .detail-card{margin:0;border:0;box-shadow:none}.detail-header .project-mark{width:47px;height:49px}.detail-tabs{display:flex;gap:26px;border-top:1px solid var(--line);padding:0 24px}.detail-tabs button{padding:15px 0;background:transparent;color:#a1a4a7;font-size:12px;border-bottom:2px solid transparent}.detail-tabs button.active{color:var(--blue);border-bottom-color:var(--blue)}.section-header{display:flex;align-items:center;justify-content:space-between;padding:19px 23px 0;gap:15px}.section-header h2{font-size:14px;font-weight:550}.section-header p{font-size:10px;color:#a5a8ab;margin-top:3px}.section-actions{display:flex;gap:8px}.summary-panels{display:grid;grid-template-columns:1.5fr 1fr;gap:20px}.summary-panel{padding:25px}.summary-panel h2{font-size:14px;font-weight:550;margin-bottom:19px}.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:11px;color:#898e94}.progress-track{height:6px;border-radius:3px;background:#edeef0;overflow:hidden;margin-top:6px}.progress-track i{display:block;height:100%;background:#8798ae;border-radius:3px}.progress-track.blue i{background:#9bb0c6}.progress-track.sand i{background:#c8b58c}.overview-list{display:grid;gap:13px}.overview-item{display:flex;gap:10px;align-items:center;font-size:11px;color:#7c8289}.overview-item .icon{width:17px;height:17px;color:#a2a7ad}.overview-item small{margin-left:auto;color:#a9acaf}.data-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.data-card{padding:24px}.data-card .icon{color:#959ba2;margin-bottom:18px;width:27px;height:27px}.data-card h3{font-size:14px;font-weight:550;margin-bottom:6px}.data-card p{font-size:11px;color:#a3a7ab;min-height:34px;margin-bottom:20px}.download-toggle{display:flex;gap:8px;align-items:center;font-size:11px;color:#93969a}.detail-permission{display:flex;justify-content:space-between;padding:18px 23px;border-top:1px solid var(--line);gap:12px;flex-wrap:wrap;font-size:10px;color:#a4a7ab}
+.modal-root[hidden],.account-tip[hidden]{display:none}.modal-root{position:fixed;inset:0;z-index:20;background:#1d242e5c;backdrop-filter:blur(4px);display:grid;place-items:center;padding:24px;animation:fade-in .15s ease}.modal{width:min(490px,100%);max-height:calc(100dvh - 48px);overflow:auto;border-radius:15px;background:#fff;box-shadow:0 25px 90px #1c243036;animation:modal-in .2s ease}.modal-wide{width:min(860px,100%)}.modal-head{padding:25px 27px 20px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--line);gap:15px}.modal-head h2{font-size:19px;font-weight:600;margin:0 0 5px;color:#343e4a}.modal-head p{font-size:11px;color:#9ea2a6;line-height:1.8}.modal-close,.chip-close{display:grid;place-items:center;background:#f4f5f7;border-radius:6px;color:#a4a7ab;width:27px;height:27px;flex-shrink:0;font-size:20px;line-height:1}.modal-close:hover,.chip-close:hover{background:#e9ebee;color:#717a85}.modal-body{padding:24px 27px}.modal-foot{position:sticky;bottom:0;padding:17px 27px;display:flex;justify-content:flex-end;gap:9px;background:#fff;border-top:1px solid var(--line);z-index:1}.modal-foot .btn{min-height:37px}.field{display:block;margin-bottom:19px}.field-label{display:block;color:#7a7f85;font-size:11px;font-weight:550;margin-bottom:7px}.field input,.field select,.picker-right select{width:100%;height:39px;border:1px solid #dfe2e5;border-radius:7px;background:#fff;padding:0 11px;font-size:12px;color:#6a6f75}.field input::placeholder{color:#b4b7ba;font-size:11px}.field-error{display:none;margin-top:5px;color:var(--error);font-size:10px}.field.invalid .field-error{display:block}.field.invalid input{border-color:#dca39a}.inline-error{border:1px solid #f0ded7;background:#fff6f1;padding:10px 12px;border-radius:6px;font-size:11px;color:#be8c7b;margin:12px 0}.demo-example{color:#a4a8ae;font-size:10px;margin-top:14px}.autofill-tag{font-size:9px;padding:2px 5px;background:#edeff1;color:#87909b;border-radius:3px;margin-left:5px}.account-preview,.verify-success{display:flex;align-items:center;gap:10px;background:#f0f2f4;border:1px solid #e1e4e7;border-radius:8px;padding:12px;margin-bottom:17px}.account-preview strong,.verify-success strong{display:block;font-size:12px;font-weight:550;color:#747c87}.account-preview small,.verify-success span{display:block;font-size:10px;color:#969ca4;margin-top:3px}.account-preview>span:last-child,.verify-success .checkmark{margin-left:auto;white-space:nowrap;font-size:9px;color:#858e9a}.verify-success .avatar{width:31px;height:31px}.role-choices{display:grid;gap:10px}.role-option{display:flex;align-items:center;gap:11px;border:1px solid #e3e6e9;border-radius:8px;padding:13px;cursor:pointer}.role-option:has(input:checked){border-color:#91a1b5;background:#f3f4f5}.role-option .role-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:7px;background:#e9ebee;color:#878f9a}.role-option .role-icon .icon{width:17px;height:17px}.role-option strong{font-size:12px;font-weight:550;color:#767d87;display:block}.role-option small{font-size:10px;color:#9fa4ab;display:block;margin-top:2px}.verify-hint,.fixed-admin-role{padding:12px;background:#f4f5f6;border:1px solid #e2e5e9;border-radius:7px;font-size:11px;color:#8e949b}.confirm-warning{padding:12px;font-size:11px;background:#fcf6ec;color:#b49b70;border:1px solid #f0e7d2;border-radius:7px;margin-top:16px}.account-tip{position:fixed;z-index:30;left:50%;transform:translateX(-50%);width:min(490px,calc(100vw - 40px));display:flex;align-items:flex-start;gap:10px;background:white;padding:15px 20px;box-shadow:0 8px 40px #2733422b;border-radius:12px;color:#878e97;font-size:12px;border:1px solid #e3e6e9}.account-tip-icon{color:var(--blue);padding-top:2px}.account-tip-icon .icon{width:17px;height:17px}.collab-context{display:flex;justify-content:space-between;align-items:center;background:#f0f1f3;border:1px solid #e2e5e8;border-radius:7px;padding:12px 14px;color:#8f97a1;font-size:11px;margin-bottom:17px;gap:8px}.collab-context b{color:#717b89}.picker-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:16px}.picker-block{background:#f9fafb;border:1px solid #e2e5e9;border-radius:9px;padding:15px}.picker-block h3{color:#7b828b;font-size:12px;font-weight:550;margin-bottom:12px}.check-list{display:grid;gap:7px;max-height:224px;overflow:auto}.check-item{display:flex;align-items:center;gap:9px;padding:11px;border:1px solid #e5e8eb;background:#fff;border-radius:7px;min-width:0}.check-item:has(input:checked){border-color:#9eaec3;background:#f3f4f6}.check-item input{width:14px;height:14px;flex-shrink:0}.check-main{flex:1;min-width:0}.check-main strong{display:block;font-size:11px;font-weight:550;color:#7f858e}.check-main small{display:block;font-size:9px;color:#a6abb1;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.picker-tools{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px;font-size:10px;color:#9fa5ac}.picker-tools .btn{font-size:10px;min-height:23px}.current-members{margin-top:16px}.current-members .check-list{grid-template-columns:1fr 1fr;max-height:175px}.current-members .check-main{min-width:0}.picker-note{font-size:9px;color:#a1a7ae}.owner-tag{font-size:9px;color:#929aa5}.member-picker{display:grid;grid-template-columns:1fr auto;gap:11px;align-items:end;margin-bottom:18px}.picker-select{margin:0}.picker-buttons{display:flex;gap:7px}.picker-buttons .btn{min-height:39px;font-size:10px}.selected-picker{background:#f9f9fa;border:1px solid #e2e5e8;border-radius:9px;padding:14px}.picker-title{font-size:11px;color:#838b95;margin-bottom:10px}.picker-title b{margin-left:6px;font-weight:550;color:#717c8a}.picker-member{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px;background:#fff;border:1px solid #e2e5e9;border-radius:6px;margin-bottom:7px}.picker-member small{font-size:10px;color:#9fa4ab}.picker-right{display:flex;gap:8px;align-items:center}.picker-right select{width:90px;height:30px;font-size:10px}.picker-empty{padding:24px 10px;color:#a2a7ae;border:1px dashed #cfd8e3;border-radius:6px;text-align:center;font-size:11px}.project-picker{margin-bottom:16px}.project-list-picker{max-height:165px}.picker-summary{font-size:10px;color:#989ea7;margin-top:10px}.toast{position:fixed;z-index:50;left:50%;bottom:27px;transform:translate(-50%,10px);opacity:0;pointer-events:none;background:#2c3848;box-shadow:0 4px 20px #232e3d28;color:#fff;border-radius:9px;padding:12px 20px;font-size:12px;transition:opacity .18s,transform .18s}.toast.show{opacity:1;transform:translate(-50%,0)}
+@keyframes page-in{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes fade-in{from{opacity:0}to{opacity:1}}@keyframes modal-in{from{transform:translateY(9px);opacity:.5}to{transform:none;opacity:1}}
+@media(min-width:1600px){.page{padding-top:40px}.stat-card{padding:23px}.table-shell td{padding-top:21px;padding-bottom:21px}}
+@media(max-width:1180px){.app-shell{grid-template-columns:197px minmax(0,1fr)}.page{padding:27px 25px 0}.topbar{padding:0 25px}.workspace-footer{margin-left:25px;margin-right:25px}.stat-card{padding:15px}.stats-grid{gap:12px}.header-actions{gap:13px}.side-bottom strong{font-size:11px}.table-actions{gap:1px}.surface-caption{display:none}.group-actions{justify-content:flex-start}}
+@media(max-width:900px){.app-shell{grid-template-columns:170px minmax(0,1fr)}.sidebar{padding:0 11px}.brand{padding-left:4px}.brand strong{font-size:22px}.brand-symbol{width:33px;height:35px}.workspace-label{padding:10px 7px;gap:7px;font-size:11px}.workspace-logo{padding:5px}.nav-item{font-size:12px;padding:0 9px;gap:9px}.side-bottom{padding:13px 10px}.side-bottom strong{font-size:10px}.stats-grid{gap:10px;grid-template-columns:repeat(2,1fr)}.stat-card{padding:15px 18px}.stat-number{font-size:26px}.stat-top{font-size:11px}.page-heading h1{font-size:24px}.page-heading{align-items:flex-start}.page-heading p{max-width:300px;font-size:11px}.summary-panels{grid-template-columns:1fr}.data-grid{grid-template-columns:1fr}.demo-badge{display:none}.filter-label>span{display:none}.list-tabs{gap:18px}.list-tabs button{font-size:11px}.surface-top,.toolbar,.list-toolbar{padding-left:17px;padding-right:17px}.detail-meta{grid-template-columns:repeat(2,1fr)}.header-actions{gap:10px}.current-members .check-list{grid-template-columns:1fr}}
+@media(max-width:640px){.app-shell{display:block}.sidebar{position:static;height:auto;padding:0 15px;border-right:0;border-bottom:1px solid var(--line)}.brand{height:62px;padding-left:1px}.brand strong{font-size:21px}.brand small{font-size:9px;letter-spacing:2px}.brand-symbol{width:31px;height:33px;border-radius:8px}.workspace-label,.side-caption,.side-bottom,.side-user{display:none}.side-nav{display:flex;gap:5px;padding:0 0 10px;overflow:auto}.nav-item{padding:0 10px;font-size:11px;height:35px;gap:6px;flex-shrink:0}.nav-icon .icon{width:14px;height:14px}.nav-count{font-size:8px;padding:0 4px;min-width:16px}.topbar{height:49px;padding:0 17px}.crumb{font-size:9px}.crumb>span{margin:0 7px}.identity-switch>span,.header-avatar{display:none}.identity-switch select{font-size:10px;height:27px}.page{padding:23px 16px 0}.page-heading{margin-bottom:20px;gap:10px}.page-heading h1{font-size:23px}.page-heading p{font-size:10px;margin-top:5px;max-width:215px}.eyebrow{font-size:9px}.heading-actions{padding-top:18px}.heading-actions .btn{font-size:10px;min-height:33px;padding:0 10px}.heading-actions .btn.ghost{display:none}.stat-card{padding:13px}.stat-top{font-size:10px}.stat-number{font-size:25px;margin-top:6px}.stat-desc{font-size:9px}.stat-spark{width:40px;right:13px}.stats-grid{gap:10px;margin-bottom:18px}.surface{border-radius:9px}.surface-top{padding:0 13px;min-height:53px}.list-tabs{gap:19px;min-height:53px}.tab-count{font-size:8px}.list-tabs button{font-size:11px}.toolbar,.list-toolbar{padding:13px;flex-wrap:wrap}.search-wrap{flex:1;max-width:none;min-width:150px}.search-wrap input{font-size:10px}.toolbar-right{gap:6px}.toolbar-right .btn{font-size:10px;padding:0 9px;min-height:33px}.toolbar-right .small-count{display:none}.filter-select{max-width:110px;font-size:10px;padding-right:12px}.table-footer{padding:13px;font-size:9px}.workspace-footer{margin-left:16px;margin-right:16px;padding-top:24px;font-size:8px}.workspace-footer span:last-child{max-width:140px;text-align:right}.info-banner{padding:12px}.info-banner h2{font-size:10px}.info-banner p{font-size:9px}.list-foot{font-size:9px}.modal-root{padding:12px}.modal{max-height:calc(100dvh - 24px);border-radius:12px}.modal-head{padding:20px}.modal-head h2{font-size:17px}.modal-body{padding:19px}.modal-foot{padding:14px 19px}.picker-layout,.member-picker{grid-template-columns:1fr}.picker-block{padding:12px}.picker-buttons .btn{min-height:34px}.check-list{max-height:160px}.detail-title h1{font-size:16px}.detail-title .project-mark{display:none}.detail-card{padding:20px}.detail-meta{padding:0 20px 20px}.section-header{padding:18px 15px 0}.section-header h2{font-size:12px}.detail-permission{padding:16px}.current-members .check-list{max-height:150px}.toast{max-width:calc(100vw - 30px);width:max-content;font-size:11px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(min-width:641px){.detail-meta.basic-meta{grid-template-columns:repeat(3,minmax(0,1fr))}}
+/* 提升信息密度与文字对比，便于长时间查看项目 */
+.stat-top{color:#767a80;font-size:12px}.stat-desc{color:#898d92;font-size:10px}.stat-desc .accent{color:#6b7582}.stat-number{color:#2c3848}.surface-caption{color:#8c9096}.page-heading p{color:#85888d}.eyebrow{color:#80858c}.table-shell th{color:#82868c;font-size:11px}.table-shell td{color:#75797f;font-size:12px}.project-name{color:#434950;font-size:12px;font-weight:550}.project-code{color:#919499;font-size:10px}.project-meta{color:#909398}.project-meta small{color:#a0a3a7}.date-cell{color:#909398!important;font-size:11px!important}.category-tag{color:#79818b;font-size:10px}.status-chip{color:#6d7784;font-size:10px}.table-actions .btn.quiet{font-size:11px}.table-actions .primary{font-size:11px}.small-count{color:#888c92;font-size:11px}.table-footer{color:#8f9398}.member-name,.group-cell strong{color:#464c54;font-size:13px}.member-note{color:#909398;font-size:11px}.roster-item{color:#6c727a;font-size:11px}.group-chip{color:#6c737c;font-size:11px}.list-tabs button{font-size:13px}.search-wrap input{font-size:12px}.search-wrap input::placeholder{color:#9fa2a6}.field-label{color:#666c73;font-size:12px}.field input,.field select{color:#4d535a;font-size:13px}.modal-head p{color:#878b91;font-size:12px}.check-main strong{color:#636a73;font-size:12px}.check-main small{color:#888e95;font-size:10px}.picker-block h3{color:#646d78;font-size:13px}.picker-tools{color:#818993;font-size:11px}.role-option strong{color:#56667a}.role-option small{color:#7e8691}.picker-note{color:#878d96}.info-banner h2{color:#69707a;font-size:12px}.info-banner p{color:#8a9098;font-size:11px}.table-actions .danger{color:#b56560}.list-foot{color:#96999f}.group-actions .support-state{color:#91959b}.project-table tbody td{padding-top:16px;padding-bottom:16px}
+@media(max-width:640px){.stat-top{font-size:10px}.stat-desc{font-size:9px}.list-tabs button{font-size:11px}.search-wrap input{font-size:10px}.small-count{font-size:10px}.info-banner h2{font-size:10px}.info-banner p{font-size:9px}.project-name{font-size:12px}.table-footer{font-size:9px}}
+/* 项目列表目录及二级菜单 */
+.project-nav-group{display:grid;gap:3px}.project-menu-button{width:100%}.project-menu-button.directory-active{color:var(--blue);font-weight:600}.nav-menu-chevron{font-size:13px;color:#989da3;margin-left:3px;transition:transform .15s}.project-menu-button[aria-expanded=false] .nav-menu-chevron{transform:rotate(180deg)}.nav-submenu{display:grid;gap:4px;padding-left:18px;margin:1px 0 9px;border-left:1px solid #eaebec;margin-left:21px}.nav-submenu[hidden]{display:none}.nav-sub-item{height:36px;font-size:12px;padding-left:10px;gap:9px}.nav-sub-dot{width:4px;height:4px;border-radius:50%;background:#b7babe}.nav-sub-item.active .nav-sub-dot{background:var(--blue)}
+/* 按参考页面完整展示项目字段 */
+.reference-project-table table{min-width:1380px;table-layout:fixed}.reference-project-table .check-cell{width:38px}.ticket-column{width:152px}.contract-column{width:135px}.code-column{width:214px}.name-column{width:215px}.category-column{width:185px}.created-column{width:174px}.status-column{width:82px}.reference-project-table th,.reference-project-table td{padding-left:13px;padding-right:13px}.reference-project-table th{color:#6c7177;font-size:12px}.reference-project-table td{padding-top:20px;padding-bottom:20px;color:#55595f}.ticket-cell{display:flex;align-items:center;gap:9px;white-space:nowrap}.ticket-link{padding:0;background:transparent;color:var(--blue);font-size:12px}.ticket-link:hover{text-decoration:underline}.copy-ticket{display:grid;place-items:center;width:23px;height:25px;border-radius:4px;background:transparent;color:#828b97;padding:3px;flex-shrink:0}.copy-ticket:hover{background:#edeff1;color:var(--blue)}.copy-ticket .icon{width:13px;height:13px}.contract-value{font-variant-numeric:tabular-nums;font-size:12px}.platform-code{font-size:11px;white-space:nowrap;font-variant-numeric:tabular-nums;color:#5a5f66;letter-spacing:-.2px}.project-demo-tag{margin-left:5px;display:inline-block;font-size:9px;line-height:1.5;vertical-align:1px;background:#edeef0;color:#727b87;padding:0 4px;border-radius:3px}.reference-project-name{font-size:12px;line-height:1.8;color:#474d55;text-align:left;background:transparent;padding:0;overflow-wrap:anywhere}.reference-project-name:hover{color:var(--blue)}.reference-category{line-height:1.8}.reference-created{font-size:11px!important;white-space:nowrap;font-variant-numeric:tabular-nums}.reference-status{font-size:12px;color:#6b727c;white-space:nowrap}.project-actions-column{position:sticky;right:0;width:175px;background:#fff;box-shadow:-8px 0 12px -12px #27324055;z-index:2}.reference-project-table thead .project-actions-column{background:#f9f9f9;z-index:3}.reference-project-table tr.selected .project-actions-column{background:#f4f5f6}.reference-project-table tr:hover .project-actions-column{background:#fcfcfc}.reference-project-table .project-actions-column .table-actions{gap:7px;justify-content:center}.project-reference-note{display:flex;align-items:flex-start;gap:7px;background:#f2f3f4;color:#83888e;border:1px solid #e4e6e8;border-radius:6px;margin:0 22px 15px;padding:10px 12px;font-size:11px}.project-reference-note .icon{width:14px;height:14px;margin-top:2px}
+/* 在同一份名单中添加或移除协作成员 */
+.inline-collab-members{max-height:345px}.inline-member-hint{font-size:10px;color:#858c95;margin:0 0 12px;line-height:1.7}.inline-member-row{align-items:center;padding:10px;gap:8px}.inline-member-choice{display:flex;align-items:center;gap:9px;flex:1;min-width:0;cursor:pointer}.inline-member-choice>.avatar{width:29px;height:29px;font-size:11px}.inline-member-actions{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:44px}.member-selection-state{font-size:9px;color:#9198a2;white-space:nowrap}.member-selection-state.removed{color:#bc8174}.inline-member-row.pending-removal{background:#fff8f4;border-color:#eddcd4}.inline-member-row.pending-removal .check-main strong{color:#ad998b}.inline-member-row .btn{min-height:24px;font-size:10px;padding:0 6px}.inline-collab-summary{display:flex;justify-content:space-between;gap:10px;font-size:10px;color:#989ea6;padding-top:17px;flex-wrap:wrap}.inline-collab-summary b{font-weight:600;color:var(--blue)}.pending-count{color:#b78170}
+@media(max-width:640px){.project-nav-group{display:flex;gap:7px;align-items:flex-start}.project-menu-button{width:auto;flex-shrink:0}.nav-submenu{display:flex;gap:4px;align-items:center;padding:0 0 0 7px;margin:0;border-left:1px solid var(--line)}.nav-sub-item{font-size:11px;height:35px;padding:0 8px;gap:5px}.nav-menu-chevron{font-size:11px}.project-reference-note{margin:0 13px 13px;font-size:10px}.inline-collab-members{max-height:300px}.inline-collab-summary{font-size:9px}.project-actions-column{width:162px}.reference-project-table .project-actions-column .table-actions{gap:3px}}
+
+/* 按参考界面统一为深灰蓝导航与蓝色操作色 */
+:root{--ink:#303133;--text:#606266;--muted:#909399;--blue:#1989fa;--blue2:#337ecc;--teal:#1989fa;--pale:#ecf5ff;--line:#e4e7ed;--bg:#f2f3f5;--error:#f56c6c}
+.sidebar{background:#414b57;border-right:0;padding:0}.brand{padding-left:25px;color:#fff}.brand-dot{color:#fff}.brand small{color:#c4cbd4}.brand-symbol{background:#fff;color:#414b57}.workspace-label{margin:9px 17px 27px;background:#38434f;border-color:#526170;color:#fff}.workspace-label small{color:#b7c1cb}.workspace-logo{background:#485563;border-color:#657180;color:#dfe9f4}.workspace-indicator{background:#69b1ff}.side-caption{color:#b1bac4;margin-left:26px}.nav-item{color:#d4dce5;border-radius:0;padding-left:26px;height:46px}.nav-item:hover{background:#485766;color:#fff}.nav-item.active{background:#198ffa;color:#fff}.project-menu-button.directory-active{background:#38434f;color:#fff}.nav-count{color:#dce7f5;background:#5c6a79}.nav-menu-chevron{color:#b9c4cf}.nav-submenu{padding:0;margin:0 0 8px;border:0}.nav-sub-item{padding-left:49px;font-size:12px;height:40px}.nav-sub-dot{display:none}.side-bottom{margin:auto 17px 20px;background:#3a4653;border-color:#566575}.side-note-icon{background:#4a5c70;color:#a9d0ff}.side-bottom strong{color:#e2e9f1}.side-bottom p{color:#aebbc8}.side-note-badge{color:#c4d2e1}.side-note-badge i{background:#6ab2ff}.side-user{border-top-color:#566371;padding-left:25px;padding-right:25px}.side-user strong{color:#fff}.side-user small{color:#b2bdc8}.user-online{background:#69b1ff}.topbar{background:#414b57;border-color:#525e6c}.crumb{color:#c1cbd5}.crumb strong{color:#fff}.crumb>span{color:#8f9ba8}.demo-badge{color:#c0cbd6}.demo-badge i{background:#69b1ff}.identity-switch{color:#b9c4d0}.identity-switch select{background:#485665;border-color:#718090;color:#fff}.page-heading h1,.detail-title h1{color:#303133}.page-heading p,.eyebrow{color:#909399}.stat-number{color:#303133}.stat-top,.stat-desc{color:#909399}.stat-desc .accent{color:#409eff}.list-tabs button.active{color:#1989fa}.active .tab-count{color:#1989fa;background:#ecf5ff}.btn.primary{background:#1989fa;border-color:#1989fa;color:#fff}.btn.primary:hover:not(:disabled){background:#409eff;border-color:#409eff}.btn.text-primary,.table-actions .btn.text-primary,.ticket-link{color:#1989fa}.table-actions .primary{background:#ecf5ff;border-color:#b3d8ff;color:#1989fa}.table-actions .primary:hover:not(:disabled){background:#1989fa;color:#fff;border-color:#1989fa}.btn:hover:not(:disabled){background:#ecf5ff;border-color:#b3d8ff;color:#1989fa}.btn.danger,.table-actions .danger{color:#f56c6c}.btn.danger:hover:not(:disabled){background:#fef0f0;border-color:#fbc4c4;color:#f56c6c}.table-shell th,.reference-project-table th{color:#606266;background:#f7f8fa}.table-shell td,.reference-project-table td{color:#303133}.platform-code,.reference-project-name,.reference-category,.reference-status{color:#303133}.reference-project-name:hover{color:#1989fa}.project-demo-tag{background:#66b1ff;color:#fff;border-radius:1px}.project-reference-note{background:#f0f6ff;border-color:#a0cfff;color:#606266}.project-reference-note .icon{color:#1989fa}.reference-project-table tr.selected{background:#ecf5ff}.reference-project-table tr.selected .project-actions-column{background:#ecf5ff}.reference-project-table tr:hover .project-actions-column{background:#f7fbff}.member-name,.group-cell strong,.check-main strong,.modal-head h2,.role-option strong{color:#303133}.field-label,.picker-block h3{color:#606266}.modal-head p,.check-main small,.inline-member-hint,.picker-note,.picker-tools{color:#909399}.field input,.field select{color:#303133}.check-item:has(input:checked),.role-option:has(input:checked){border-color:#91caff;background:#ecf5ff}.picker-block{background:#fafbfc;border-color:#e4e7ed}.collab-context{background:#ecf5ff;border-color:#d9ecff;color:#606266}.collab-context b{color:#1989fa}.member-selection-state{color:#409eff}.inline-collab-summary b{color:#1989fa}.inline-collab-summary{color:#909399}.inline-member-row.pending-removal{background:#fef0f0;border-color:#fbc4c4}.member-selection-state.removed,.pending-count{color:#f56c6c}.inline-member-row.pending-removal .check-main strong{color:#b7a1a1}.group-chip{background:#ecf5ff;color:#409eff}.role-pill.admin,.support-tag{background:#ecf5ff;color:#409eff}.page-chip{border-color:#b3d8ff;background:#ecf5ff;color:#1989fa}.toast{background:#414b57;color:#fff}.copy-ticket{color:#409eff}.copy-ticket:hover{background:#ecf5ff;color:#1989fa}
+@media(max-width:640px){.sidebar{padding:0 15px}.brand{padding-left:1px}.project-nav-group{align-items:flex-start}.project-menu-button{padding-left:10px}.nav-item{padding:0 10px;height:35px;border-radius:5px}.nav-submenu{margin:0;border-left-color:#637181}.nav-sub-item{padding:0 9px;height:35px;font-size:11px}}
+
+/* 项目分享：明确接收用户、人数限制和取消入口 */
+.share-modal{width:min(640px,100%)}.share-modal .modal-body{padding-top:20px}.share-project-card{display:flex;align-items:center;gap:12px;padding:15px 16px;background:#f7f9fc;border:1px solid #e4eaf2;border-radius:9px;min-width:0}.share-project-icon{width:38px;height:38px;display:grid;place-items:center;flex-shrink:0;background:#ecf5ff;color:#1989fa;border-radius:9px}.share-project-card>div{min-width:0;flex:1}.share-project-card strong{display:block;font-size:13px;font-weight:600;color:#303133;overflow-wrap:anywhere}.share-project-card small{display:block;margin-top:3px;font-size:10px;color:#909399;overflow-wrap:anywhere}.share-scope{flex-shrink:0;font-size:10px;color:#409eff;background:#ecf5ff;border:1px solid #d9ecff;border-radius:4px;padding:3px 6px}.share-info{display:flex;align-items:flex-start;gap:8px;color:#606266;background:#f0f7ff;border-radius:6px;padding:10px 12px;font-size:11px;line-height:1.8;margin:14px 0 22px}.share-info>.icon{color:#1989fa;width:15px;height:15px;margin-top:3px}.share-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}.required-mark{color:#f56c6c;margin-right:4px}.share-limit{font-size:11px;color:#909399}.share-limit b{font-weight:600;color:#1989fa}.share-account-control{display:flex;align-items:center;gap:8px;border:1px solid #dcdfe6;border-radius:7px;padding:4px;transition:border-color .15s}.share-account-control>span{color:#a1a8b3;margin-left:8px}.share-account-control>span>.icon{width:16px;height:16px}.share-account-control:focus-within{border-color:#1989fa}.share-account-control.invalid{border-color:#f56c6c}.share-account-control input{min-width:0;flex:1;width:100%;height:34px;border:0;padding:0 2px;background:transparent;color:#303133;font-size:12px}.share-account-control input:focus{border:0!important;box-shadow:none;outline:none}.share-account-control input::placeholder{color:#b5bac2}.share-account-control .btn{min-height:34px;padding:0 12px}.share-input-hint{font-size:10px;color:#909399;margin:7px 0 0;line-height:1.8}.share-error{font-size:11px;color:#f56c6c;margin-top:7px}.share-error[hidden]{display:none}.share-list-heading{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px}.share-list-heading h3{font-size:12px;font-weight:600;color:#606266}.share-list-heading>span{font-size:10px;color:#a0a5ad}.share-user-list{border:1px solid #e4e7ed;border-radius:8px;overflow:auto;max-height:225px}.share-user-row{display:flex;align-items:center;gap:10px;padding:12px 13px;border-bottom:1px solid #ebeef5}.share-user-row:last-child{border-bottom:0}.share-user-row>.avatar{width:30px;height:30px;font-size:11px;flex-shrink:0}.share-user-meta{flex:1;min-width:0}.share-user-meta strong{display:block;font-size:12px;font-weight:500;color:#303133}.share-user-meta>span{font-size:10px;color:#909399;overflow-wrap:anywhere}.share-user-status{font-size:10px;white-space:nowrap;color:#409eff;background:#ecf5ff;border-radius:4px;padding:2px 5px}.share-user-status.pending{background:#f5f7fa;color:#909399}.share-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:25px 16px;color:#909399;font-size:11px}.share-empty>.icon{width:26px;height:26px;color:#b8c6d8;margin-bottom:3px}.share-empty small{font-size:10px;color:#b1b5bc}.share-access-path{border-top:1px dashed #e4e7ed;margin-top:20px;padding-top:14px;display:flex;align-items:center;gap:18px}.share-access-path>span{font-size:10px;color:#909399;flex-shrink:0}.share-access-path p{font-size:11px;color:#606266}.share-access-path i{font-style:normal;margin:0 8px;color:#b1b8c2}.share-cancel-all{margin-right:auto}.share-cancel-warning{display:flex;gap:11px;background:#fff7ed;border:1px solid #ffdfb8;border-radius:8px;padding:15px;margin-top:18px;color:#ad7025}.share-cancel-warning>.icon{width:18px;height:18px;margin-top:2px}.share-cancel-warning strong{font-size:12px;line-height:1.8;font-weight:550}.share-cancel-warning p{margin-top:8px;font-size:11px;color:#a0896f;line-height:1.8}.share-cancel-users{margin-top:20px;font-size:11px;color:#909399}.share-cancel-users>div{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.share-legacy-note{margin-top:16px;padding:10px;background:#fff7ed;color:#a87935;border-radius:6px;font-size:11px}.reference-project-table table{min-width:1450px}.reference-project-table .project-actions-column{width:242px}.readonly-project-table table{min-width:1140px}.collab-project-group{display:block;margin-top:3px;font-size:10px;color:#909399}
+/* 共用分析详情：项目数据为基础，协作详情额外提供成员管理 */
+.reference-detail-summary{display:grid;grid-template-columns:minmax(240px,1.5fr) repeat(3,minmax(130px,1fr)) auto;align-items:center;gap:20px;padding:27px 24px;background:#f8faff;border:1px solid #d6e4ff;border-radius:10px}.reference-detail-title{display:flex;align-items:center;gap:15px;min-width:0}.detail-project-icon{width:52px;height:58px;display:grid;place-items:center;flex-shrink:0;background:#eaf2ff;border:1px solid #d6e4ff;border-radius:15px;color:#409eff}.detail-project-icon>.icon{width:28px;height:28px}.reference-detail-title h1{font-size:17px;font-weight:600;line-height:1.7;color:#303133;overflow-wrap:anywhere}.reference-detail-status{display:inline-flex;font-size:11px;color:#409eff;background:#ecf5ff;border:1px solid #d9ecff;border-radius:20px;padding:2px 10px;margin-top:10px;white-space:nowrap}.reference-detail-summary>dl{min-width:0;margin:0;padding-left:20px;border-left:1px solid #e4eaf5}.reference-detail-summary dt{font-size:11px;color:#909399;margin-bottom:16px}.reference-detail-summary dd{font-size:12px;color:#303133;margin:0;overflow-wrap:anywhere;min-height:25px;display:flex;align-items:center}.detail-result-button{min-height:39px;padding:0 18px}.detail-download-banner{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#fff9ed;border:1px solid #ffd99a;border-radius:7px;padding:12px 16px;margin:22px 0;color:#cf8a24;font-size:12px}.detail-download-banner>.btn{border-color:#f5c982;color:#d9952d;background:white}.detail-download-banner>.btn>.icon{width:17px;height:17px}.project-detail-content>.detail-tabs{border-top:0;border-bottom:1px solid #ebeef5;padding:0 24px;margin:0}.project-detail-content>.surface{border:0;border-radius:0;box-shadow:none}.project-detail-content .section-header{padding-top:22px}.detail-collab-context{display:flex;align-items:center;gap:12px;padding:15px 24px 0;font-size:10px;color:#909399}.data-toolbar{display:flex;align-items:center;gap:14px;padding:24px}.data-toolbar>.btn{border-radius:5px;min-height:35px}.data-toolbar>.btn.text-primary{border-color:#a0cfff;background:#fff}.file-demo-note{margin-left:auto;font-size:10px;color:#a3a8b0}.file-breadcrumb{display:flex;align-items:center;gap:10px;padding:0 24px 20px;font-size:12px;overflow:auto}.file-breadcrumb>button{background:transparent;padding:0;color:#606266;white-space:nowrap}.file-breadcrumb>button:hover{color:#1989fa}.file-breadcrumb>span{color:#c0c4cc}.project-file-table table{min-width:750px}.project-file-table th:first-child{width:40px}.project-file-table th:nth-child(2){width:34%}.project-file-table .empty-cell{padding-top:75px;padding-bottom:85px}.file-folder-name{display:flex;align-items:center;gap:9px;padding:0;background:transparent;color:#606266;font-size:12px}.file-folder-name>.icon{width:18px;height:18px;color:#69b1ff}.file-folder-name:hover{color:#1989fa}.file-removal-names{font-size:12px;color:#606266;margin-top:15px;overflow-wrap:anywhere}.result-preview-panel{padding:24px 0 8px;text-align:center;color:#606266}.result-preview-panel>.icon{width:38px;height:38px;color:#1989fa;margin:0 auto 14px}.result-preview-panel h3{font-size:16px;margin:12px 0;font-weight:550}.result-preview-panel p{font-size:12px;color:#909399;line-height:1.9}
+@media(max-width:1200px){.reference-detail-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.reference-detail-title{grid-column:1/3}.reference-detail-summary>dl{grid-row:2;padding-left:14px}.reference-detail-summary>dl:first-of-type{border:0;padding-left:0}.detail-result-button{grid-column:3;grid-row:1;justify-self:end}}
+@media(max-width:640px){.reference-project-table .project-actions-column{width:176px}.reference-project-table .project-actions-column .table-actions{flex-wrap:wrap;gap:3px;justify-content:center}.share-modal .modal-head{padding:20px 18px 16px}.share-modal .modal-body{padding:18px}.share-modal .modal-foot{padding:13px 15px;gap:7px;flex-wrap:wrap}.share-modal .modal-foot>.btn{font-size:11px;padding:0 10px}.share-project-card{padding:12px;gap:9px;flex-wrap:wrap}.share-scope{margin-left:47px}.share-access-path{align-items:flex-start;gap:10px;flex-direction:column}.share-access-path i{margin:0 6px}.share-user-row{gap:7px;padding:10px}.share-user-status{font-size:9px}.share-input-hint{font-size:10px}.reference-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr));padding:18px 15px;gap:20px 12px}.reference-detail-title{grid-column:1/-1;gap:11px}.reference-detail-title h1{font-size:15px}.detail-project-icon{width:40px;height:46px;border-radius:11px}.detail-project-icon>.icon{width:23px;height:23px}.reference-detail-summary>dl{grid-row:auto;border:0;padding-left:0}.reference-detail-summary dt{font-size:10px;margin-bottom:7px}.reference-detail-summary dd{font-size:10px}.reference-detail-summary .ticket-link{font-size:10px}.detail-result-button{grid-column:auto;grid-row:auto;justify-self:start;font-size:11px;min-height:34px;padding:0 12px}.detail-download-banner{align-items:flex-start;flex-direction:column;font-size:10px;padding:12px;gap:10px;margin:16px 0}.detail-download-banner>.btn{font-size:10px;min-height:31px}.project-detail-content>.detail-tabs{padding:0 15px}.data-toolbar{padding:18px 14px;gap:8px;flex-wrap:wrap}.data-toolbar>.btn{font-size:10px;padding:0 10px;min-height:32px}.file-demo-note{width:100%;margin-left:0;font-size:9px}.file-breadcrumb{padding:0 15px 18px;font-size:10px}.detail-collab-context{padding:14px 15px 0;align-items:flex-start;flex-direction:column;gap:6px}}
+
+/* 统一成员核验与就地建组：保留草稿，减少跨页面往返 */
+.member-library-note{font-size:11px;line-height:1.9;color:#909399;margin-top:16px;padding:11px 13px;background:#f7f9fc;border-radius:6px}.group-picker-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}.group-picker-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;min-width:0}.group-picker-actions .btn,.group-picker-actions .btn.text-primary{min-height:28px;padding:0 9px;border:1px solid #b3d8ff;border-radius:5px;background:#fff;color:#1989fa;font-size:11px;box-shadow:none}.group-picker-actions .btn:hover:not(:disabled){border-color:#1989fa;background:#ecf5ff;color:#1989fa}.group-picker-label .field-label{margin:0}.group-search-picker{position:relative}.group-search-control{display:flex;align-items:center;gap:8px;border:1px solid #dcdfe6;border-radius:7px;padding:0 11px;background:#fff}.group-search-control:focus-within{border-color:#1989fa;box-shadow:0 0 0 3px #1989fa0b}.group-search-control>.icon{width:16px;height:16px;color:#a3aab4}.group-search-control input{min-width:0;flex:1;width:100%;height:42px;border:0;background:transparent;color:#303133;font-size:12px}.group-search-control input:focus{outline:none;box-shadow:none}.group-picker-toggle{background:transparent;color:#909399;font-size:17px;width:25px;padding:0;flex-shrink:0}.group-member-dropdown{position:relative;margin-top:6px;border:1px solid #dcdfe6;border-radius:8px;background:#fff;box-shadow:0 6px 22px #33465c1c;overflow:hidden}.group-member-dropdown[hidden]{display:none}.group-member-options{max-height:205px;overflow:auto;padding:5px}.group-member-option{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:5px;cursor:pointer}.group-member-option:hover{background:#f5f7fa}.group-member-option:has(input:checked){background:#ecf5ff}.group-member-option>span:nth-child(2){flex:1;min-width:0}.group-member-option strong{display:block;font-size:12px;font-weight:500;color:#303133}.group-member-option small{display:block;font-size:10px;color:#909399;overflow-wrap:anywhere}.group-picker-new{display:flex;align-items:center;gap:7px;width:100%;padding:12px 15px;border-top:1px solid #ebeef5;background:#fbfdff;color:#1989fa;font-size:12px}.group-picker-new>.icon{width:15px;height:15px}.group-add-row{display:flex;align-items:center;gap:5px;color:#909399;font-size:11px;margin:7px 0 15px}.group-member-error{font-size:11px;color:#f56c6c;margin:7px 0}.group-member-error[hidden]{display:none}.picker-title>span{margin-left:auto;font-size:10px;font-weight:400;color:#909399}.picker-heading{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:16px;flex-wrap:wrap}.picker-heading h3{margin:0}.picker-heading>.btn{font-size:11px;min-height:26px;padding:0 4px}.btn.primary:hover:not(:disabled){background:#409eff;border-color:#409eff;color:#fff}
+@media(max-width:640px){.group-picker-label{align-items:flex-start;gap:6px}.group-picker-actions{width:100%;justify-content:flex-end}.group-picker-actions>.btn{font-size:10px;padding:0 5px}.group-search-control input{font-size:11px}.group-member-options{max-height:180px}.picker-title>span{font-size:9px}.member-library-note{font-size:10px}.picker-heading{gap:4px}}
+
+/* 成员库移除：确认操作、展示关联、保留平台账号 */
+.directory-table .directory-actions-column{width:120px;text-align:right;white-space:nowrap}.directory-remove-modal{width:min(620px,100%)}.directory-remove-person{display:flex;align-items:center;gap:12px;padding:15px 16px;background:#f7f9fc;border:1px solid #e4e7ed;border-radius:8px}.directory-remove-person>.avatar{width:38px;height:38px;flex-shrink:0}.directory-remove-person>div{min-width:0}.directory-remove-person strong{display:block;font-size:14px;color:#303133;font-weight:600}.directory-remove-person span:not(.avatar){display:block;font-size:11px;color:#909399;margin-top:3px;overflow-wrap:anywhere}.directory-remove-description{font-size:12px;line-height:1.9;color:#606266;margin:19px 0}.directory-remove-warning{display:flex;align-items:flex-start;gap:9px;padding:12px 14px;background:#fff7ed;border:1px solid #ffe0b8;color:#ad7025;border-radius:7px;margin:17px 0}.directory-remove-warning>.icon{width:17px;height:17px;margin-top:3px}.directory-remove-warning p{font-size:12px;line-height:1.9}.directory-associations{max-height:290px;overflow:auto;overscroll-behavior:contain}.directory-association-section{border:1px solid #ebeef5;border-radius:7px;margin-top:12px;overflow:hidden}.directory-association-section h3{display:flex;gap:8px;align-items:center;padding:9px 13px;background:#f7f8fa;color:#606266;font-size:11px;font-weight:500}.directory-association-section h3>span{font-size:10px;color:#909399;background:#fff;border:1px solid #e4e7ed;border-radius:4px;padding:0 5px}.directory-association-section ul{margin:0;padding:0;list-style:none}.directory-association-section li{font-size:12px;color:#606266;padding:10px 13px;border-top:1px solid #ebeef5;overflow-wrap:anywhere}.directory-association-section li strong{display:block;font-size:12px;font-weight:400}.directory-association-section li small{display:block;font-size:10px;color:#909399;margin-top:2px}.directory-remove-modal .member-library-note{margin-top:18px}.directory-remove-modal .modal-foot .danger:not(:disabled){border-color:#fbc4c4;background:#fef0f0}.directory-remove-modal .modal-foot .danger:hover:not(:disabled){background:#fde2e2}
+@media(max-width:640px){.directory-table .directory-actions-column{width:104px}.directory-remove-modal .modal-body{padding:18px}.directory-remove-person{padding:12px;gap:9px}.directory-remove-person span:not(.avatar){font-size:10px}.directory-remove-warning p,.directory-remove-description{font-size:11px}.directory-associations{max-height:240px}}
+
+/* 统一三项账户互查，操作状态与表格主入口 */
+.lookup-instruction{display:flex;align-items:flex-start;gap:8px;background:#f0f7ff;border:1px solid #d9ecff;border-radius:6px;padding:10px 12px;font-size:11px;line-height:1.8;color:#606266;margin-bottom:18px}.lookup-instruction>.icon{width:15px;height:15px;margin-top:3px;color:#1989fa}.lookup-status{font-size:11px;color:#909399;line-height:1.8;margin:8px 0 0}.lookup-conflict{color:#f56c6c;font-size:10px}.account-identity-card{align-items:flex-start}.account-identity-card>div{min-width:0;flex:1}.account-identity-card>div>span{display:block;overflow-wrap:anywhere;line-height:1.9}.account-identity-card .checkmark{flex-shrink:0;font-size:10px}.group-account-hint{font-size:10px;color:#909399;line-height:1.8;margin-top:9px}.group-member-option small{line-height:1.8}.directory-user-email{display:block;font-size:10px;color:#909399;overflow-wrap:anywhere;margin-top:3px}.share-account-match{display:flex;align-items:flex-start;gap:6px;margin-top:10px;padding:9px 11px;background:#f0f7ff;border-radius:5px;font-size:11px;color:#606266;line-height:1.9;overflow-wrap:anywhere}.share-account-match>.icon{color:#1989fa;width:15px;height:15px;margin-top:3px}.share-account-match b{font-weight:500}.share-account-match small{display:block;font-size:10px;color:#909399}.reference-project-table .project-actions-column{width:212px}.reference-project-table .project-actions-column .btn>.icon{width:13px;height:13px}.reference-project-table .project-actions-column .btn.project-action-done:not(.primary){border:1px solid #b3d8ff;background:#ecf5ff;color:#1989fa}.reference-project-table .project-actions-column .btn.primary.project-action-done{background:#1989fa;border-color:#1989fa;color:#fff}.reference-project-table .project-actions-column .btn.primary.project-action-done:hover:not(:disabled){background:#409eff;color:#fff}.toolbar-collab-action{white-space:nowrap;min-width:140px}.list-toolbar .toolbar-right{gap:14px}#accountLookupError[hidden]{display:none}#verifyForm .demo-example{overflow-wrap:anywhere}
+@media(max-width:640px){.lookup-instruction{font-size:10px;padding:9px 10px}.field-label .autofill-tag{font-size:9px}.account-identity-card{gap:9px;flex-wrap:wrap}.account-identity-card .checkmark{margin-left:41px}.reference-project-table .project-actions-column{width:170px}.toolbar-collab-action{font-size:11px;min-width:128px;padding:0 10px}.list-toolbar .toolbar-right{gap:8px}.share-account-match{font-size:10px}.group-member-option small{font-size:9px}.group-account-hint{font-size:9px}}
+
+/* 协作接收方只读：展示来源和角色，不提供成员变更操作。 */
+.collab-readonly-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid #e4e7ed;border-radius:5px;background:#f7f8fa;color:#909399;font-size:11px;white-space:nowrap}.collab-readonly-badge .icon{width:14px;height:14px}.collab-sharer{color:#606266;white-space:nowrap}.detail-collab-context{flex-wrap:wrap}.collab-project-group{overflow-wrap:anywhere}
+
+.modal-head p:empty{display:none}
+
+/* 协作成员：标题与数量一组，大按钮集中右侧，避免操作分散。 */
+.collab-members-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:13px;min-height:46px}.collab-members-title{min-width:0}.collab-members-title h3{margin:0 0 4px}.collab-members-title>span{display:block;font-size:11px;line-height:1.6;color:#909399;white-space:nowrap}.collab-members-title b{font-weight:600;color:#1989fa}.collab-member-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}.collab-member-actions .btn{height:28px;min-width:56px;padding:0 10px;font-size:11px;border-radius:5px;gap:4px}.collab-member-actions .collab-select-all{color:#1989fa;background:#ecf5ff;border-color:#b3d8ff}.collab-member-actions .collab-select-all:hover:not(:disabled){background:#d9ecff;border-color:#1989fa}.collab-member-actions .collab-clear-all{color:#606266;background:#fff;border-color:#dcdfe6}.collab-member-actions .collab-clear-all:hover:not(:disabled){color:#1989fa;border-color:#b3d8ff}.collab-members-panel>.inline-member-hint{margin:0 0 14px;line-height:1.7}.collab-members-panel .inline-collab-members{display:flex;flex-direction:column;gap:10px}.collab-members-panel .inline-member-row{margin:0;min-height:76px;padding:13px 12px}.collab-members-panel .inline-member-choice{align-items:center;gap:10px}.collab-members-panel .inline-member-actions{flex-shrink:0;min-width:52px}.collab-members-panel .inline-member-actions .btn{min-height:30px;min-width:48px;padding:0 9px}
+@media(max-width:640px){.collab-members-header{gap:10px;margin-bottom:12px;min-height:48px}.collab-member-actions{gap:7px}.collab-member-actions .btn{height:32px;min-width:52px;padding:0 10px;font-size:11px}.collab-members-title>span{font-size:10px}.collab-members-panel .inline-member-row{padding:11px 10px;min-height:74px}.collab-members-panel .inline-member-choice{gap:8px}.collab-members-panel .inline-member-actions{min-width:48px}.collab-member-actions .icon{width:14px;height:14px}}
+
+/* 原型角色预览：三个明确入口，不再让用户猜管理员是否为技术支持。 */
+.role-preview-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:15px;flex-wrap:wrap;padding:14px 35px;background:#fff;border-bottom:1px solid #e4e7ed;box-shadow:0 4px 12px #262f3b06}.role-preview-title{padding:6px 9px;font-size:12px;font-weight:650;color:#204473;background:#edf4fd;border-radius:999px;white-space:nowrap;flex-shrink:0}.role-preview-buttons{display:flex;gap:7px}.role-preview-buttons button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:0 16px;border:1px solid #dcdfe6;background:#fff;color:#606266;border-radius:6px;font-size:12px;white-space:nowrap}.role-preview-buttons .icon{width:15px;height:15px}.role-preview-buttons button.active{background:#1989fa;border-color:#1989fa;color:#fff;box-shadow:0 2px 5px #1989fa20}.role-preview-buttons button:hover:not(.active){border-color:#b3d8ff;background:#ecf5ff;color:#1989fa}.role-preview-caption{margin-left:auto;font-size:11px;color:#909399}.recipient-account-control{display:inline-flex;align-items:center;gap:8px;font-size:11px;color:#909399}.recipient-account-control[hidden]{display:none}.recipient-account-control select{height:34px;border:1px solid #dcdfe6;border-radius:5px;padding:0 24px 0 9px;background:#fff;color:#606266;max-width:160px}.current-role-label{padding:6px 8px;font-size:11px;color:#5a6472;background:#f4f5f7;border-radius:999px;white-space:nowrap}.collab-members-panel .inline-member-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px 10px;align-items:center}.inline-member-permission{grid-column:1/-1;display:flex;align-items:center;gap:9px;padding-left:26px;font-size:10px;color:#909399}.inline-member-permission select{min-width:104px;max-width:165px;height:30px;padding:0 8px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;color:#606266;font-size:11px}.inline-member-permission select:disabled{background:#f5f7fa;color:#909399;cursor:not-allowed}.fixed-role-note{font-size:9px;color:#909399}.collab-add-person{width:100%;margin-top:12px;color:#1989fa;border-color:#b3d8ff;background:#fff;min-height:38px}.collab-members-panel .inline-collab-members{max-height:355px;overflow:auto}
+@media(max-width:1050px){.role-preview-caption{margin-left:0;width:100%}.role-preview-bar{gap:10px 14px}}
+@media(max-width:640px){.role-preview-bar{padding:12px 16px;gap:10px}.role-preview-title{font-size:10px;flex-basis:100%}.role-preview-buttons{width:100%;gap:6px}.role-preview-buttons button{flex:1;min-height:42px;padding:0 8px;font-size:11px;gap:5px}.role-preview-buttons .icon{width:14px;height:14px}.role-preview-caption{font-size:10px;width:auto;margin-left:auto}.current-role-label{font-size:10px}.recipient-account-control{font-size:10px;gap:6px}.recipient-account-control select{height:32px;max-width:130px}.inline-member-permission{gap:7px;padding-left:23px}.inline-member-permission select{height:32px;min-width:92px;max-width:150px}.fixed-role-note{font-size:8px}.collab-project-permissions>label{font-size:11px}.collab-members-panel .inline-collab-members{max-height:380px}}
+
+.nav-item[hidden]{display:none}.shared-detail-context{display:flex;align-items:center;gap:15px;margin:-6px 0 17px;font-size:11px;color:#606266}.shared-detail-context span{color:#909399;font-size:10px}
+
+
+.demo-account-examples{margin-top:18px;padding:14px;background:#f8faff;border:1px solid #d6e4ff;border-radius:8px}
+.demo-example-title{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:#1989fa;margin-bottom:10px}
+.demo-example-title .icon{width:14px;height:14px}
+.demo-example-list{display:flex;flex-direction:column;gap:7px}
+.demo-example-chip{display:flex;align-items:center;gap:9px;width:100%;padding:9px 11px;background:#fff;border:1px solid #d9e8ff;border-radius:7px;cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s}
+.demo-example-chip:hover{border-color:#1989fa;box-shadow:0 2px 8px #1989fa14}
+.demo-example-chip:active{transform:scale(.98)}
+.demo-example-avatar{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#e8f1ff;color:#1989fa;font-size:11px;font-weight:600;flex-shrink:0}
+.demo-example-meta{display:flex;flex-direction:column;min-width:0}
+.demo-example-meta strong{font-size:11px;font-weight:600;color:#303133}
+.demo-example-meta small{font-size:9px;color:#909399;margin-top:1px}
+.demo-example-hint{margin-top:10px;font-size:10px;color:#909399;line-height:1.6}
+
+/* ── 协作弹窗成员行 · 重新设计 ── */
+.collab-member-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e8eaed;border-radius:8px;background:#fff;transition:border-color .15s,background .15s;min-height:52px}
+.collab-member-item+.collab-member-item{margin-top:8px}
+.collab-member-item.is-selected{border-color:#a0cfff;background:#f6faff}
+.collab-member-item.is-support{border-color:#d0d8e2;background:#f8f9fb}
+.collab-member-item.pending-removal{border-color:#fbc4c4;background:#fef4f4}
+.collab-member-left{display:flex;align-items:center;gap:9px;flex:1;min-width:0;cursor:pointer}
+.collab-member-left input[type=checkbox]{width:15px;height:15px;flex-shrink:0;accent-color:#1989fa}
+.collab-member-left input[type=checkbox]:disabled{opacity:.55}
+.collab-member-left .avatar{width:30px;height:30px;font-size:11px;flex-shrink:0}
+.collab-member-info{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.collab-member-info strong{font-size:12px;font-weight:600;color:#303133;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.collab-member-info small{font-size:10px;color:#909399;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.collab-support-tag{display:inline-flex;padding:1px 5px;font-size:8px;font-weight:500;background:#ecf2f9;color:#409eff;border-radius:3px;white-space:nowrap;flex-shrink:0}
+.collab-member-status{flex-shrink:0;font-size:9px;padding:2px 7px;border-radius:10px;background:#f0f1f3;color:#909399;white-space:nowrap}
+.collab-member-status.joined{background:#ecf5ff;color:#1989fa}
+.collab-member-status.added{background:#f0f9eb;color:#67c23a}
+.collab-member-status.removed{background:#fef0f0;color:#f56c6c}
+.collab-member-status.owner{background:#f4f4f5;color:#909399}
+.collab-member-role{height:30px;min-width:82px;max-width:100px;border:1px solid #dcdfe6;border-radius:5px;padding:0 6px;font-size:11px;color:#606266;background:#fff;flex-shrink:0;cursor:pointer}
+.collab-member-role:disabled{background:#f5f7fa;color:#c0c4cc;cursor:not-allowed}
+.collab-member-role:not(:disabled):hover{border-color:#b3d8ff}
+.collab-member-action{height:28px;padding:0 10px;border-radius:5px;border:none;cursor:pointer;font-size:11px;flex-shrink:0;transition:all .15s}
+.collab-member-action.remove{background:#fef0f0;color:#f56c6c}
+.collab-member-action.remove:hover{background:#f56c6c;color:#fff}
+.collab-member-action.restore{background:#f0f9eb;color:#67c23a}
+.collab-member-action.restore:hover{background:#67c23a;color:#fff}
+.collab-member-action-placeholder{width:52px;flex-shrink:0}
+/* Override old messy styles */
+.collab-members-panel .inline-collab-members{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto;padding-right:2px}
+.collab-members-panel .inline-collab-members .check-item.inline-member-row{display:none}
+.inline-member-permission{display:none!important}
+
+.collab-group-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px}
+.collab-group-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:#ecf5ff;border:1px solid #d9ecff;border-radius:12px;font-size:10px;font-weight:500;color:#1989fa;white-space:nowrap}
+.collab-group-badge .icon{width:12px;height:12px}
+
+/* ── 项目列表操作列 · 重新设计 ── */
+.reference-project-table .project-actions-column .table-actions{display:flex;gap:8px;align-items:center;justify-content:flex-start}
+.reference-project-table .project-actions-column .btn{min-height:30px;min-width:74px;padding:0 12px;border-radius:6px;font-size:11px;justify-content:center}
+.reference-project-table .project-actions-column .btn.quiet{background:transparent;border:1px solid #dcdfe6;color:#606266;font-weight:500}
+.reference-project-table .project-actions-column .btn.quiet:hover{border-color:#b3d8ff;background:#ecf5ff;color:#1989fa}
+.reference-project-table .project-actions-column .btn.quiet.project-action-done{background:#ecf5ff;border:1px solid #b3d8ff;color:#1989fa}
+.reference-project-table .project-actions-column .btn.primary{background:#ecf5ff;border:1px solid #b3d8ff;color:#1989fa;box-shadow:none}
+.reference-project-table .project-actions-column .btn.primary:hover:not(:disabled){background:#1989fa;border-color:#1989fa;color:#fff}
+.reference-project-table .project-actions-column .btn.primary.project-action-done{background:#1989fa;border-color:#1989fa;color:#fff}
+.reference-project-table .project-actions-column .btn .icon{width:13px;height:13px}
+
+.reference-project-table th.project-actions-column{text-align:left!important}
+.reference-project-table td.project-actions-column{text-align:left!important}
+
+/* 网页弹窗：统一边距与滚动区域，顶部信息和底部操作始终可见。 */
+:root{--blue:#1989fa;--blue2:#409eff}
+.modal{display:flex;flex-direction:column;overflow:hidden;background:#fff}
+.modal-head,.modal-foot{flex-shrink:0}
+.modal-head{padding:22px 24px 18px}
+.modal-head h2{margin:0;font-size:18px;line-height:1.5;color:#303133}
+.modal-head p{margin-top:5px;font-size:12px;line-height:1.7}
+.modal-body{padding:20px 24px;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.modal-foot{position:static;padding:14px 24px;align-items:center}
+.modal-foot .btn{min-height:34px;padding:0 16px}
+.modal-close{width:28px;height:28px;background:#f5f7fa;color:#909399}
+.modal-close:hover{background:#ecf5ff;color:#1989fa}
+.collaboration-modal{width:min(980px,100%)}
+.collaboration-modal .picker-layout{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.4fr);gap:16px;align-items:start}
+.collaboration-modal .picker-block{min-width:0;padding:14px;background:#fafbfc;border-color:#e4e7ed;border-radius:8px}
+.collaboration-modal .picker-heading{margin-bottom:12px;gap:8px;flex-wrap:nowrap}
+.collaboration-modal .picker-block h3{font-size:13px;font-weight:600}
+.collaboration-modal .picker-heading h3{white-space:nowrap}
+.collaboration-modal .picker-heading>.btn{min-height:28px;flex-shrink:0;font-size:11px}
+.collaboration-modal .group-list-picker{display:grid;grid-auto-rows:max-content;align-content:start;gap:8px;max-height:none;overflow:visible}
+.collaboration-modal .group-list-picker .check-item{min-height:58px;height:auto;padding:10px 12px;cursor:pointer}
+.collaboration-modal .group-list-picker .check-item:hover{border-color:#b3d8ff}
+.collaboration-modal .group-list-picker .check-main strong{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.collaboration-modal .group-list-picker .check-main small{margin-top:2px;font-size:11px;line-height:1.4}
+.collaboration-modal .collab-members-header{min-height:38px;margin-bottom:10px;gap:8px}
+.collaboration-modal .collab-members-title h3{margin-bottom:3px}
+.collaboration-modal .collab-member-actions{gap:6px}
+.collaboration-modal .collab-member-actions .btn{height:28px;min-height:28px;min-width:48px;padding:0 8px;gap:4px;font-size:11px;border-radius:5px;box-shadow:none}
+.collaboration-modal .collab-member-actions .icon{width:12px;height:12px}
+.collaboration-modal .inline-member-hint{font-size:11px;margin-bottom:12px}
+.collaboration-modal .inline-collab-members{display:flex;flex-direction:column;gap:8px;max-height:none;overflow:visible;padding:0}
+.collaboration-modal .collab-member-item{min-height:60px;padding:10px;gap:8px;border-radius:7px}
+.collaboration-modal .collab-member-item+.collab-member-item{margin-top:0}
+.collaboration-modal .collab-member-info strong{flex-wrap:wrap;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.collaboration-modal .collab-member-info small{margin-top:2px;font-size:11px}
+.collaboration-modal .collab-member-role{height:30px;min-width:82px;font-size:12px}
+.collaboration-modal .collab-member-status{font-size:10px}
+.collaboration-modal .collab-member-action,.collaboration-modal .collab-member-action-placeholder{width:44px;min-width:44px;padding-left:0;padding-right:0}
+.collaboration-modal .collab-add-person{min-height:32px;margin-top:10px;font-size:12px}
+.collaboration-modal .inline-collab-summary{padding-top:12px;font-size:11px;line-height:1.7;gap:8px}
+.collab-context{display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px;margin-bottom:16px;border-radius:8px}
+.collab-context-heading{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:#606266}
+.collab-context-heading>.icon{width:15px;height:15px;color:#1989fa}
+.collab-context-heading>b{font-size:11px;font-weight:500;background:#fff;border:1px solid #d9ecff;border-radius:4px;padding:0 6px}
+.collab-context-names{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:10px;max-height:136px;overflow:auto}
+.collab-context-project{min-width:0;padding-left:22px}
+.collab-context-project strong{display:block;font-size:12px;font-weight:500;color:#303133;line-height:1.5;overflow-wrap:anywhere}
+.collab-context-project small{display:block;font-size:11px;color:#909399;line-height:1.6;margin-top:2px;overflow-wrap:anywhere}
+.collab-context-empty{font-size:11px;color:#909399}
+.group-create-modal{width:min(720px,100%)}
+.group-create-modal .field{margin-bottom:18px}
+.group-create-modal .field-label{font-size:12px;color:#606266}
+.group-create-modal .field input{height:38px}
+.group-create-modal .group-picker-label{align-items:center;gap:8px;margin-bottom:10px}
+.group-create-modal .group-picker-label .field-label{flex-shrink:0;white-space:nowrap}
+.group-create-modal .group-picker-actions{width:auto;flex-wrap:nowrap;gap:8px}
+.group-create-modal .group-picker-actions>.btn{height:28px;min-height:28px;padding:0 10px;border:1px solid #91caff;border-radius:5px;background:#fff;color:#1989fa;font-size:11px}
+.group-create-modal .group-account-hint{margin:8px 0 14px;line-height:1.7;font-size:11px}
+.group-create-modal .selected-picker{padding:12px}
+.group-create-modal .picker-title{display:flex;align-items:center;gap:6px;margin-bottom:10px;line-height:1.5}
+.group-create-modal .picker-title b{margin-left:0}
+.group-create-modal .picker-title>span{margin-left:auto}
+.group-create-modal .picker-empty{padding:18px 10px;font-size:11px}
+.group-create-modal .picker-member:last-child{margin-bottom:0}
+.group-create-modal .member-library-note{margin-top:12px;padding:9px 12px;line-height:1.7}
+.member-account-modal{width:min(520px,100%)}
+.member-account-modal .field-label{font-size:12px}
+.member-account-modal .demo-account-examples{padding:12px;margin-top:14px}
+.member-account-modal .demo-example-chip small{overflow-wrap:anywhere}
+.directory-table .directory-actions-column,.group-table .table-actions-column{text-align:left}
+.group-table .group-actions{justify-content:flex-start}
+@media(max-width:760px){
+  .collaboration-modal .picker-layout{grid-template-columns:1fr}
+  .collaboration-modal .group-list-picker{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+}
+@media(max-width:640px){
+  .modal-head{padding:18px 16px 14px}
+  .modal-head h2{font-size:17px}
+  .modal-head p{font-size:11px}
+  .modal-body{padding:16px}
+  .modal-foot{padding:12px 16px}
+  .collaboration-modal .picker-block{padding:12px}
+  .collaboration-modal .group-list-picker{grid-template-columns:1fr}
+  .collaboration-modal .collab-member-left{gap:6px}
+  .collaboration-modal .collab-member-left>.avatar{display:none}
+  .collaboration-modal .collab-member-item{padding:8px;gap:6px}
+  .collaboration-modal .collab-member-info strong{font-size:11px}
+  .collaboration-modal .collab-member-info small{font-size:10px}
+  .collaboration-modal .collab-member-status{display:none}
+  .collaboration-modal .collab-member-role{min-width:72px;max-width:80px;font-size:11px}
+  .collaboration-modal .collab-member-action,.collaboration-modal .collab-member-action-placeholder{width:36px;min-width:36px}
+  .group-create-modal .group-picker-actions{gap:5px}
+  .group-create-modal .group-picker-actions>.btn{padding:0 6px;font-size:10px}
+  .group-create-modal .picker-title>span{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* 成员账户成对核对：手机号或邮箱 + 用户名 */
+.account-match-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;background:#f5f7fa;border:1px solid #e4e7ed;border-radius:7px;margin-bottom:14px}
+.account-match-tab{min-height:30px;border:1px solid transparent;border-radius:5px;background:transparent;color:#606266;font-size:11px;cursor:pointer;transition:all .15s}
+.account-match-tab.active{background:#fff;border-color:#b3d8ff;color:#1989fa}
+.account-match-tab:hover:not(.active){background:#ecf5ff;color:#1989fa}
+@media(max-width:640px){.account-match-tabs{gap:4px}.account-match-tab{font-size:10px;min-height:32px}}
+
+  </style>
+</head>
+<body>
+  <div class="app-shell" data-screen-label="项目协作交互原型">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#projects" aria-label="派森诺基因云平台首页"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M9 7h8a7 7 0 0 1 0 14H9M9 7v20m0-13h8" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg></span><span><strong>派森诺<span class="brand-dot">.</span></strong><small>基因云平台</small></span></a>
+      <div class="workspace-label"><span class="workspace-logo" data-icon="layers"></span><span>我的科研空间<small>项目与团队协作</small></span><span class="workspace-indicator"></span></div>
+      <div class="side-caption">工作空间</div>
+      <nav class="side-nav">
+        <button class="nav-item" data-nav="overview"><span class="nav-icon" data-icon="grid"></span>项目概况</button>
+        <div class="project-nav-group">
+          <button class="nav-item project-menu-button" data-project-menu aria-expanded="true" aria-controls="projectSubnav"><span class="nav-icon" data-icon="folder"></span>项目列表<span class="nav-count" id="navProjectCount">8</span><span class="nav-menu-chevron" aria-hidden="true">⌃</span></button>
+          <div class="nav-submenu" id="projectSubnav" aria-label="项目列表子目录">
+            <button class="nav-item nav-sub-item" data-nav="visual"><span class="nav-sub-dot"></span>云图汇</button>
+            <button class="nav-item nav-sub-item active" data-nav="projects"><span class="nav-sub-dot"></span>云分析</button>
+            <button class="nav-item nav-sub-item" data-nav="groups"><span class="nav-sub-dot"></span>课题组管理</button>
+            <button class="nav-item nav-sub-item" data-nav="members"><span class="nav-sub-dot"></span>成员管理</button>
+          </div>
+        </div>
+        <button class="nav-item" data-nav="data"><span class="nav-icon" data-icon="chart"></span>项目数据</button>
+      </nav>
+      <div class="side-bottom"><div class="side-note-icon" data-icon="shield"></div><strong>让科研协作，井然有序</strong><p>连接课题组与项目，<br>共同探索数据的更多可能。</p><span class="side-note-badge"><i></i>科研协作空间</span></div>
+      <div class="side-user"><span class="user-avatar">王</span><span><strong>王老师</strong><small>个人工作空间</small></span><span class="user-online" aria-label="在线"></span></div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar"><div class="crumb" id="crumb">工作空间 <span>/</span> 项目列表</div><div class="header-actions"><span class="demo-badge"><i></i>交互演示</span><span class="current-role-label" id="currentRoleLabel">项目管理者 · 王老师</span><div class="user-avatar header-avatar" aria-label="当前用户">王</div></div></header>
+      <section class="role-preview-bar" aria-label="角色切换">
+        <span class="role-preview-title">角色切换</span>
+        <div class="role-preview-buttons" role="group" aria-label="选择体验角色">
+          <button type="button" data-preview-role="owner" aria-pressed="true" class="active"><span data-icon="shield"></span>项目管理者</button>
+          <button type="button" data-preview-role="support" aria-pressed="false"><span data-icon="person"></span>技术支持</button>
+          <button type="button" data-preview-role="member" aria-pressed="false"><span data-icon="eye"></span>被分享用户</button>
+        </div>
+        <label class="recipient-account-control" id="recipientAccountControl" hidden><span>查看账号</span><select id="recipientSelect" aria-label="选择被分享用户"></select></label>
+        <span class="role-preview-caption" id="rolePreviewCaption">可管理成员、角色和项目权限</span>
+      </section>
+      <main id="main"></main>
+      <footer class="workspace-footer"><span>派森诺 · 科研协作空间</span><span>示例数据 · 交互操作保存在当前浏览器</span></footer>
+    </div>
+  </div>
+
+  <div id="modalRoot" class="modal-root" hidden></div>
+  <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+/* 本文件只运行交互演示；真实账号核验、授权与数据存储必须由服务端实现。 */
+const icons = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  layers: '<rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/>',
+  folder: '<path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  people: '<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2"/><path d="M16 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 4 5"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  back: '<path d="m14 5-7 7 7 7"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/>',
+  shield: '<path d="M12 2 20 5v6c0 5-3.1 8.6-8 11-4.9-2.4-8-6-8-11V5l8-3z"/><path d="m9 12 2 2 4-4"/>',
+  person: '<circle cx="12" cy="7" r="3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2"/>',
+  eye: '<path d="M2 12s3.7-6 10-6 10 6 10 6-3.7 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.8"/>',
+  pulse: '<path d="M2 12h5l3-7 4 14 3-7h5"/>',
+  chart: '<path d="M4 20V4m0 16h16M8 15l4-4 3 2 5-7"/>',
+  link: '<path d="M10 14a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/>'
+};
+icons.copy = '<rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 4H5a2 2 0 0 0-2 2v11"/>';
+icons.share = '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/>';
+icons.download = '<path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/>';
+icons.trash = '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>';
+icons.check = '<path d="m5 12 4 4L19 6"/>';
+function icon(name, cls = 'icon') { return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]}</svg>`; }
+document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = icon(el.dataset.icon, 'icon'); });
+
+const roleNames = { owner: '项目所有者', admin: '管理员', member: '成员', visitor: '访问者' };
+// 身份切换用于体验发起方与不同接收成员，并非真实登录鉴权。
+const identityUsers = { owner:'owner-1', support:'support-1', member:'li-1' };
+const previewRoleNames={owner:'项目管理者',support:'技术支持',member:'被分享用户'};
+const previewParams=new URLSearchParams(location.search);
+const previewRoleAliases={owner:'owner',manager:'owner',support:'support',member:'member',recipient:'member'};
+let recipientUserId='li-1';
+const roleIcons = { admin: 'shield', member: 'person', visitor: 'eye' };
+const roleDescriptions = {
+  owner: '确认管理归属，指定管理员，负责项目交接。',
+  admin: '管理成员与权限，在授权范围内管理项目。',
+  member: '开展分析，使用授权数据，分享成果。',
+  visitor: '查看授权内容；下载权限单独设置。'
+};
+let directory = [
+  { id: 'owner-1', name: '王老师', phone: '13800000000', account: 'wang.laoshi' },
+  { id: 'support-1', name: '技术支持', phone: '13800000004', account: 'tech.support' },
+  { id: 'chen-1', name: '陈老师', phone: '13800000001', account: 'chen.laoshi' },
+  { id: 'li-1', name: '小李', phone: '13800000002', account: 'xiao.li' },
+  { id: 'zhou-1', name: '小周', phone: '13800000003', account: 'xiao.zhou' },
+  { id: 'xia-1', name: '夏老师', phone: '13800000005', account: 'xia.laoshi' },
+  { id: 'lin-1', name: '林老师', phone: '13800000006', account: 'lin.laoshi' }
+];
+const demoPlatformAccounts = [
+  { id: 'demo-zhao', name: '赵研究员', phone: '13800000007', email: 'zhao.researcher@example.com', account: 'zhao.researcher' },
+  { id: 'demo-sun', name: '孙研究员', phone: '13800000008', email: 'sun.researcher@example.com', account: 'sun.researcher' },
+  { id: 'demo-wu', name: '吴研究员', phone: '13800000009', email: 'wu.researcher@example.com', account: 'wu.researcher' }
+];
+// 成员库与示例平台注册账号分开保存；移除成员不注销账号，之后仍可重新添加。
+let platformAccounts = [...directory,...demoPlatformAccounts].map(u=>({...u}));
+const accountKeys=['phone','email','account'];
+// 成员账户使用“用户名 + 手机号”或“用户名 + 邮箱”成对核对。
+const visibleAccountKeys=accountKeys;
+const accountEntryLabel='手机号/邮箱或用户名';
+const accountPairLabel='手机号或邮箱 + 用户名';
+function accountValue(value) { return String(value||'').trim().toLowerCase(); }
+function resolvePlatformAccount(value,key=null) {
+  const query=accountValue(value);
+  if(!query)return {user:null,status:'empty'};
+  const keys=key?[key]:visibleAccountKeys;
+  const matches=platformAccounts.filter(u=>keys.some(k=>accountValue(u[k])===query));
+  if(matches.length!==1)return {user:null,status:matches.length?'ambiguous':'unmatched'};
+  const user=matches[0];
+  // 手机号或邮箱必须与用户名指向同一唯一账号；有冲突时不猜测匹配结果。
+  const conflict=platformAccounts.some(u=>u.id!==user.id&&accountKeys.some(k=>user[k]&&accountValue(u[k])===accountValue(user[k])));
+  return conflict?{user:null,status:'ambiguous'}:{user,status:'matched'};
+}
+const accountCopy = {
+  subtitle: '',
+  mismatch: '所选手机号/邮箱与用户名不属于同一云平台账户，请重新匹配后确认。'
+};
+const safetyMessage = '请核对所选手机号/邮箱与用户名是否属于同一成员';
+const initialProjects = [
+  { id: 'analysis', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610201731FS5D', name: '测试示例-定量蛋白组云分析', category: '定量蛋白组云分析', created: '2026-10-20 17:31:42', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
+    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }, { id: 'lin-1', role: 'member' }
+  ], visitorDownload: true },
+  { id: 'protein-mod-1', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610100956LETO', name: '测试示例-修饰蛋白组云分析', category: '修饰蛋白组云分析', created: '2026-10-10 09:56:29', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }
+  ], visitorDownload: true },
+  { id: 'protein-mod-2', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610100956Y9BS', name: '测试示例-修饰蛋白组云分析', category: '修饰蛋白组云分析', created: '2026-10-10 09:56:28', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'zhou-1', role: 'member' }, { id: 'lin-1', role: 'member' }
+  ], visitorDownload: true },
+  { id: 'single-cell', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'SC202609031329Z8DE', name: '测试示例-新版单细胞转录组分析', category: '新版单细胞转录组分析', created: '2026-09-03 13:29:41', status: '完成', type: '云分析', collab: true, shared: true, shareUserIds: ['xia-1'], members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'member' }, { id: 'xia-1', role: 'visitor' }
+  ], visitorDownload: true },
+  { id: 'small-rna', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'TR202607290946X73M', name: '测试示例-农学SmallRNA分析', category: 'SmallRNA云分析', created: '2026-07-29 09:46:58', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'li-1', role: 'member' }, { id: 'lin-1', role: 'visitor' }
+  ], visitorDownload: true },
+  { id: 'transcript-metab', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'TR2026070217342DUP', name: '测试示例-新版转录与代谢组联合分析', category: '新版转录与代谢组联合分析', created: '2026-07-02 17:34:06', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' }, { id: 'zhou-1', role: 'member' }
+  ], visitorDownload: true },
+  { id: 'diversity-metab', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'MD202606151415PO0U', name: '测试示例-新版多样性与代谢组联合分析', category: '新版多样性与代谢组联合分析', created: '2026-06-15 14:15:33', status: '完成', type: '云分析', collab: true, members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'li-1', role: 'member' }, { id: 'xia-1', role: 'visitor' }
+  ], visitorDownload: true },
+  { id: 'visual', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'YT20261021008', name: '多组学数据可视化项目', category: '云图汇', created: '2026-10-21 10:08:00', status: '完成', type: '云图汇', collab: true, shared: true, shareUserIds: ['li-1'], members: [
+    { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
+    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'visitor' }, { id: 'lin-1', role: 'member' }
+  ], visitorDownload: true },
+  { id: 'meta-01', ticket: 'PT20261019001', contract: 'CT2026019001', code: 'MT20261019001A', name: '肠道微生物16S多样性分析', category: '微生物多样性分析', created: '2026-10-19 14:20:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'meta-02', ticket: 'PT20261018002', contract: 'CT2026018002', code: 'MT20261018002B', name: '土壤微生物宏基因组测序', category: '宏基因组分析', created: '2026-10-18 09:35:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'rna-01', ticket: 'PT20261017003', contract: 'CT2026017003', code: 'RNA20261017001', name: '人肝癌组织转录组测序', category: '转录组云分析', created: '2026-10-17 16:40:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'rna-02', ticket: 'PT20261016004', contract: 'CT2026016004', code: 'RNA20261016002', name: '小鼠脑组织单细胞测序', category: '新版单细胞转录组分析', created: '2026-10-16 11:22:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'protein-01', ticket: 'PT20261015005', contract: 'CT2026015005', code: 'PT20261015001C', name: '血清定量蛋白组分析', category: '定量蛋白组云分析', created: '2026-10-15 10:10:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'protein-02', ticket: 'PT20261014006', contract: 'CT2026014006', code: 'PT20261014002D', name: '组织磷酸化修饰蛋白组', category: '修饰蛋白组云分析', created: '2026-10-14 15:30:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'metab-01', ticket: 'PT20261013007', contract: 'CT2026013007', code: 'MB20261013001E', name: '血浆非靶向代谢组分析', category: '非靶向代谢组分析', created: '2026-10-13 08:45:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'metab-02', ticket: 'PT20261012008', contract: 'CT2026012008', code: 'MB20261012002F', name: '尿液靶向代谢组检测', category: '靶向代谢组分析', created: '2026-10-12 13:55:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'multi-01', ticket: 'PT20261011009', contract: 'CT2026011009', code: 'MO20261011001G', name: '转录组与代谢组联合分析', category: '新版转录与代谢组联合分析', created: '2026-10-11 09:00:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'multi-02', ticket: 'PT20261010010', contract: 'CT2026010010', code: 'MO20261010002H', name: '多样性与代谢组联合分析', category: '新版多样性与代谢组联合分析', created: '2026-10-10 14:15:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'small-rna-01', ticket: 'PT20261009011', contract: 'CT2026090011', code: 'TR20261009001I', name: '植物SmallRNA测序分析', category: 'SmallRNA云分析', created: '2026-10-09 10:30:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'small-rna-02', ticket: 'PT20261008012', contract: 'CT2026080012', code: 'TR20261008002J', name: '动物circRNA测序分析', category: 'circRNA云分析', created: '2026-10-08 16:00:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'lnc-01', ticket: 'PT20261007013', contract: 'CT2026070013', code: 'LN20261007001K', name: '人全转录组测序（lncRNA）', category: 'lncRNA云分析', created: '2026-10-07 11:45:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'methy-01', ticket: 'PT20261006014', contract: 'CT2026060014', code: 'ME20261006001L', name: '全基因组甲基化测序', category: '甲基化云分析', created: '2026-10-06 09:20:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'chip-01', ticket: 'PT20261005015', contract: 'CT2026050015', code: 'CP20261005001M', name: 'ChIP-seq转录因子结合', category: 'ChIP-seq云分析', created: '2026-10-05 15:50:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'gw-01', ticket: 'PT20261004016', contract: 'CT2026040016', code: 'GW20261004001N', name: '全基因组关联分析（GWAS）', category: 'GWAS云分析', created: '2026-10-04 12:05:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'wes-01', ticket: 'PT20261003017', contract: 'CT2026030017', code: 'WE20261003001O', name: '全外显子组测序分析', category: 'WES云分析', created: '2026-10-03 10:40:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'visual-01', ticket: 'YT20261002001', contract: 'CT2026020018', code: 'YT20261002001P', name: '蛋白组数据可视化看板', category: '云图汇', created: '2026-10-02 14:30:00', status: '完成', type: '云图汇', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'visual-02', ticket: 'YT20261001002', contract: 'CT2026010019', code: 'YT20261001002Q', name: '微生物丰度热图可视化', category: '云图汇', created: '2026-10-01 09:15:00', status: '完成', type: '云图汇', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false },
+  { id: 'qc-01', ticket: 'PT20260930001', contract: 'CT2026090001', code: 'QC20260930001R', name: 'RNA-seq数据质控分析', category: '数据质控分析', created: '2026-09-30 11:00:00', status: '完成', type: '云分析', collab: false, members: [{ id: 'owner-1', role: 'owner' }], visitorDownload: false }
+];
+const initialGroups = [
+  { id: 'group-onco', name: '肿瘤早筛课题组', members: [
+    { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' },
+    { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'member' }
+  ]},
+  { id: 'group-micro', name: '微生物多样性课题组', members: [
+    { id: 'support-1', role: 'admin', initial: true }, { id: 'lin-1', role: 'member' }, { id: 'xia-1', role: 'visitor' }
+  ]}
+];
+const storageKey = 'personalbio-project-collaboration-preview-v6-collab-records';
+let projects, groups, collabRecords = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(storageKey));
+  if (!saved || !Array.isArray(saved.projects) || !Array.isArray(saved.groups)) throw new Error('无本地记录');
+  projects = saved.projects; groups = saved.groups;
+  collabRecords = Array.isArray(saved.collabRecords) ? saved.collabRecords : [];
+  if (Array.isArray(saved.directory)) directory = saved.directory;
+  if (Array.isArray(saved.platformAccounts)) platformAccounts = saved.platformAccounts;
+} catch {
+  projects=structuredClone(initialProjects);groups=structuredClone(initialGroups);
+  // 仅首次打开提供示例协作，已有浏览器数据不新增授权、不重置。
+  collabRecords=[{id:'demo-collab-analysis-onco',projectId:'analysis',projectName:projects[0].name,code:projects[0].code,initiatedBy:'owner-1',groupId:'group-onco',groupName:groups[0].name,members:structuredClone(groups[0].members),createdAt:'2026-10-27 10:00:00',status:'协作中'}];
+}
+const accountCatalog=new Map();
+for(const u of [...demoPlatformAccounts,...platformAccounts,...directory]){
+  const previous=accountCatalog.get(u.id)||{};
+  // 兼容旧版演示数据；缺失邮箱使用保留的示例域名，不推断真实邮箱。
+  const demoEmail=`${String(u.account||u.id).replace(/[^a-zA-Z0-9._-]/g,'-')}@example.com`;
+  accountCatalog.set(u.id,{...previous,...u,phone:String(u.phone||'').trim(),account:String(u.account||'').trim(),email:accountValue(u.email||previous.email||demoEmail)});
+}
+platformAccounts=[...accountCatalog.values()];
+directory=directory.map(u=>({...u,...accountCatalog.get(u.id)}));
+for(const p of projects){if(p.name==='测试示例-定量蛋白组分析')p.name='测试示例-定量蛋白组云分析';if(p.name==='测试示例-农学 SmallRNA分析')p.name='测试示例-农学SmallRNA分析';}
+for(const p of projects){p.shareUserIds=[...new Set(Array.isArray(p.shareUserIds)?p.shareUserIds:[])];p.shared=!!(p.shared||p.shareUserIds.length);}
+for(const p of projects)if(!Array.isArray(p.files))p.files=[];
+for (const container of [...projects, ...groups]) for (const m of container.members || []) if (m.id === 'support-1') m.role = 'admin';
+// 历史记录没有发起人时，保留授权并按原项目所有者补充来源。
+for(const r of collabRecords){if(!r.initiatedBy)r.initiatedBy=projects.find(p=>p.id===r.projectId)?.members.find(m=>m.role==='owner')?.id||'owner-1';}
+let projectMenuOpen=true;
+let page = 'projects', activeProjectId = 'analysis', tab = 'data', listTab = 'mine', identity = 'owner', search = '', categoryFilter = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
+identity=previewRoleAliases[previewParams.get('role')]||'owner';
+if(platformAccounts.some(u=>u.id===previewParams.get('user')&&!['owner-1','support-1'].includes(u.id)))recipientUserId=previewParams.get('user');
+let detailOrigin = { page: 'projects', listTab: 'mine' };
+let filePath=[],selectedFileIds=[];
+const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
+function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, platformAccounts })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
+function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
+function group(id) { return groups.find(g => g.id === id); }
+function person(id) { return directory.find(d => d.id === id) || platformAccounts.find(d=>d.id===id) || { name: '未知成员', phone: '', account: '' }; }
+function ensureDirectoryPerson(id) { const u=platformAccounts.find(u=>u.id===id);if(u&&!directory.some(d=>d.id===id))directory.push({...u}); }
+function isDirectoryOwner(id) { return id==='owner-1'||projects.some(p=>p.members.some(m=>m.id===id&&m.role==='owner')); }
+function safe(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+function currentUserId() { return identity==='member'?recipientUserId:identityUsers[identity]||'owner-1'; }
+function isManagementView() { return identity==='owner'||identity==='support'; }
+function canManageProject(p) {
+  if(!p||!isManagementView())return false;
+  const uid=currentUserId();
+  return (p.members||[]).some(m=>m.id===uid&&(m.role==='owner'||m.role==='admin'))||(identity==='support'&&collabRecords.some(r=>r.projectId===p.id&&(r.members||[]).some(m=>m.id===uid&&m.role==='admin')));
+}
+function receivedCollabRecords() {
+  const uid=currentUserId();
+  return collabRecords.filter(r=>{
+    const p=projects.find(p=>p.id===r.projectId);
+    return p&&!canManageProject(p)&&r.initiatedBy!==uid&&(r.members||[]).some(m=>m.id===uid);
+  });
+}
+function isReceivedProject(p) { return receivedCollabRecords().some(r=>r.projectId===p.id); }
+function personalProjects() { return projects.filter(canManageProject); }
+function sharedProjects() { return projects.filter(p=>isManagementView()?canManageProject(p)&&p.shared:p.shareUserIds.includes(currentUserId())); }
+function visibleProjects() { return projects.filter(p=>canManageProject(p)||isReceivedProject(p)||sharedProjects().some(x=>x.id===p.id)); }
+function canManage() { return isManagementView()&&(page!=='detail'||canManageProject(project())); }
+function chooseRoleLanding() {
+  const visible=visibleProjects();
+  if(!['projects','visual'].includes(page))page='projects';
+  if(!visible.some(p=>p.type===(page==='visual'?'云图汇':'云分析'))&&visible.length)page=visible[0].type==='云图汇'?'visual':'projects';
+  const type=page==='visual'?'云图汇':'云分析';
+  listTab=isManagementView()?'mine':receivedCollabRecords().some(r=>projects.find(p=>p.id===r.projectId)?.type===type)?'collab':sharedProjects().some(p=>p.type===type)?'shared':'collab';
+}
+function switchPreviewRole(next,userId=null) {
+  if(!Object.hasOwn(previewRoleNames,next))return;
+  closeModal();identity=next;
+  if(userId&&platformAccounts.some(u=>u.id===userId&&!['owner-1','support-1'].includes(u.id)))recipientUserId=userId;
+  search='';categoryFilter='';selectedProjectIds=[];filePath=[];selectedFileIds=[];tab='data';
+  chooseRoleLanding();
+  try{const url=new URL(location.href);url.searchParams.set('role',identity);if(identity==='member')url.searchParams.set('user',recipientUserId);else url.searchParams.delete('user');history.replaceState(null,'',url);}catch{}
+  render();notify(`已切换为${previewRoleNames[identity]}：${person(currentUserId()).name}`);
+}
+function renderRolePreview() {
+  const viewer=person(currentUserId());
+  document.querySelectorAll('[data-preview-role]').forEach(button=>{const active=button.dataset.previewRole===identity;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
+  document.querySelectorAll('.sidebar [data-nav=groups],.sidebar [data-nav=members]').forEach(button=>button.hidden=!isManagementView());
+  document.getElementById('rolePreviewCaption').textContent=isManagementView()?'可管理成员、角色和项目权限':'仅查看收到的共享与协作项目';
+  document.getElementById('currentRoleLabel').textContent=`${previewRoleNames[identity]} · ${viewer.name}`;
+  document.getElementById('recipientAccountControl').hidden=identity!=='member';
+  const select=document.getElementById('recipientSelect');
+  select.innerHTML=platformAccounts.filter(u=>!['owner-1','support-1'].includes(u.id)).map(u=>`<option value="${safe(u.id)}" ${u.id===recipientUserId?'selected':''}>${safe(u.name)}</option>`).join('');
+}
+
+function notify(message) { const el = document.getElementById('toast'); el.textContent = message; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3000); }
+function syncRecords(pid) { const p = projects.find(x => x.id === pid); if (!p) return; collabRecords.filter(r => r.projectId === pid).forEach(r => { r.members = (r.members || []).filter(m => p.members.some(pm => pm.id === m.id)).map(m => ({ ...m, role: p.members.find(pm => pm.id === m.id).role })); }); }
+function navigate(next, options = {}) { if(!isManagementView()&&['groups','members'].includes(next))return notify('被分享用户仅可查看收到的项目'); if(['projects','visual'].includes(next)&&next!==page){selectedProjectIds=[];const type=next==='visual'?'云图汇':'云分析';listTab=isManagementView()?'mine':receivedCollabRecords().some(r=>projects.find(p=>p.id===r.projectId)?.type===type)?'collab':'shared';} if(options.projectTab&&['projects','visual'].includes(next))listTab=options.projectTab; if(['projects','visual','groups','members'].includes(next))projectMenuOpen=true; page = next; search = ''; categoryFilter = ''; render(); window.scrollTo({ top: 0, behavior: 'instant' }); }
+function isCollaborativeDetail() { return page === 'detail' && detailOrigin.listTab === 'collab'; }
+function activeCollabRecord() { return isCollaborativeDetail()?receivedCollabRecords().find(r=>r.id===detailOrigin.recordId&&r.projectId===activeProjectId):null; }
+function isManageableCollabDetail() { const p=project(); return page==='detail'&&detailOrigin.listTab==='mine'&&canManageProject(p)&&collabRecords.some(r=>r.projectId===p.id); }
+function projectMemberList() { return activeCollabRecord()?.members||project().members; }
+function openProjectDetail(id, recordId = null) {
+  const target = projects.find(p => p.id === id);
+  if (!target||!visibleProjects().some(p=>p.id===id))return notify('当前身份没有该项目的查看权限');
+  const sourceTab=['projects','visual'].includes(page)?listTab:isReceivedProject(target)?'collab':!isManagementView()&&sharedProjects().some(p=>p.id===id)?'shared':'mine';
+  if(sourceTab==='collab'&&!['projects','visual'].includes(page))recordId=receivedCollabRecords().find(r=>r.projectId===id)?.id;
+  if(sourceTab==='collab'&&!receivedCollabRecords().some(r=>r.id===recordId&&r.projectId===id))return notify('该项目不在当前账号收到的协作邀请中');
+  detailOrigin = { page: target.type === '云图汇' ? 'visual' : 'projects', listTab: sourceTab, recordId: sourceTab==='collab'?recordId:null };
+  activeProjectId = target.id;
+  tab = 'data';filePath=[];selectedFileIds=[];
+  navigate('detail');
+}
+function avatar(name, index = 0) { return `<span class="avatar ${['','lavender','sand','blue','coral'][index % 5]}">${safe(name.slice(0, 1))}</span>`; }
+function heading(title, subtitle, actions = '') { return `<div class="page-heading"><div><div class="eyebrow">我的科研空间</div><h1>${title}</h1><p>${subtitle}</p></div>${actions ? `<div class="heading-actions">${actions}</div>` : ''}</div>`; }
+function emptyState(title, subtitle = '', action = '') { return `<div class="empty-icon">${icon('folder')}</div><strong>${title}</strong><p>${subtitle}</p>${action}`; }
+function memberRoster(members, max = 5) { return members.length ? `<div class="roster">${members.slice(0,max).map((m,i)=>`<span class="roster-item">${avatar(person(m.id).name,i)}<span>${safe(person(m.id).name)}</span></span>`).join('')}${members.length>max?`<span class="more-count">+${members.length-max}</span>`:''}</div>` : '<span class="roster-empty">暂无成员</span>'; }
+function searchField(id, label) { return `<label class="search-wrap">${icon('search')}<input id="${id}" type="search" placeholder="${label}" aria-label="${label}" value="${safe(search)}"></label>`; }
+function tableFooter(count, noun='个项目') { return `<div class="table-footer"><span>共 ${count} ${noun}${count ? `，显示全部 ${count} 条` : ''}</span><div class="page-info"><span>全部记录</span><button disabled aria-label="上一页">‹</button><span class="page-chip">1</span><button disabled aria-label="下一页">›</button></div></div>`; }
+function pageFoot(text) { return `<p class="list-foot">${icon('info')}${text}</p>`; }
+function stats() {
+  const items = [
+    ['全部项目',visibleProjects().length,'个','folder','全部科研项目，一处管理','项目总览'],
+    ['共享项目',sharedProjects().length,'个','link','已共享的项目与分析成果','共享空间'],
+    ['协作项目',receivedCollabRecords().length,'条','people','他人邀请我参与的项目','收到的协作'],
+    ['课题组',groups.length,'个','shield',`${directory.length} 位成员，一同探索`,'成员组织']
+  ];
+  return `<div class="stats-grid">${items.map(([label,num,unit,ico,desc,aria],i)=>`<article class="stat-card" aria-label="${aria}"><div class="stat-top"><span>${label}</span><span class="stat-icon">${icon(ico)}</span></div><div class="stat-number">${String(num).padStart(2,'0')}<small>${unit}</small></div><div class="stat-desc"><span class="accent">${i===0?'已就绪':i===2?'有序协作':'持续连接'}</span>${desc}</div><svg class="stat-spark" viewBox="0 0 64 24" aria-hidden="true"><path d="M1 21 10 15 18 18 26 8 35 12 44 5 53 9 63 2" fill="none" stroke="${['#9dc4f4','#adc0d3','#d1c29c','#c4b6d3'][i]}" stroke-width="1.5"/></svg></article>`).join('')}</div>`;
+}
+function filteredProjects() { const q=search.trim().toLowerCase(),source=listTab==='mine'?personalProjects():listTab==='shared'?sharedProjects():visibleProjects();return source.filter(p=>p.type===(page==='visual'?'云图汇':'云分析')&&(!categoryFilter||p.category===categoryFilter)&&`${p.name} ${p.code} ${p.category} ${p.ticket} ${p.contract}`.toLowerCase().includes(q)); }
+
+async function copyProjectTicket(id) {
+  const value=projects.find(p=>p.id===id)?.ticket;if(!value)return;
+  let copied=false;
+  try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(value);copied=true;}}catch{}
+  if(!copied){const field=document.createElement('textarea');field.value=value;field.style.cssText='position:fixed;left:-9999px;top:0';document.body.append(field);field.select();try{copied=document.execCommand('copy');}catch{}field.remove();}
+  notify(copied?'开题单号已复制':'复制未成功，请手动选中开题单号复制');
+}
+function projectCell(p, i = 0) { return `<div class="project-title-cell"><span class="project-mark ${['','lavender','sand','blue'][i%4]}">${icon(p.id==='single-cell'?'grid':p.id==='visual'?'chart':'folder')}</span><div><button class="project-name" data-open-project="${safe(p.id)}">${safe(p.name.replace(/^测试示例-/,'').replace(/^测试示例—/,''))}</button><span class="project-code">${safe(p.code)}</span></div></div>`; }
+function renderProjects() {
+  const projectType=page==='visual'?'云图汇':'云分析';
+  const scopedProjects=visibleProjects().filter(p=>p.type===projectType);
+  const scopedRecords=receivedCollabRecords().filter(r=>scopedProjects.some(p=>p.id===r.projectId));
+  const counts={mine:personalProjects().filter(p=>p.type===projectType).length,shared:sharedProjects().filter(p=>p.type===projectType).length,collab:scopedRecords.length};
+  const tabs=[['mine','派森诺项目'],['shared','共享项目'],['collab','协作项目']];
+  const mine=listTab==='mine',collab=listTab==='collab',q=search.trim().toLowerCase();
+  const list=collab?scopedRecords.filter(r=>{
+    const p=scopedProjects.find(p=>p.id===r.projectId);
+    return (!categoryFilter||p.category===categoryFilter)&&`${p.name} ${p.code} ${p.ticket} ${p.contract} ${p.category} ${r.groupName} ${(r.members||[]).map(m=>person(m.id).name).join(' ')}`.toLowerCase().includes(q);
+  }):filteredProjects().filter(p=>mine||p.shared);
+  const selectedCount=selectedProjectIds.length;
+  const head=`<tr>${mine?'<th class="check-cell"><input type="checkbox" data-select-all-projects aria-label="全选当前筛选项目"></th>':''}<th class="ticket-column">开题单号</th><th class="contract-column">合同编号</th><th class="code-column">云平台项目编号</th><th class="name-column">项目名称</th><th class="category-column">所属类别</th><th class="created-column">创建时间</th><th class="status-column">状态</th>${mine?'<th class="project-actions-column">操作</th>':''}</tr>`;
+  const rows=list.map(item=>{
+    const p=collab?scopedProjects.find(p=>p.id===item.projectId):item;
+    const projectRecords=collabRecords.filter(r=>r.projectId===p.id),hasCollab=projectRecords.length>0;
+    const recordAttr=collab?`data-collab-record="${safe(item.id)}"`:'';
+    return `<tr class="${mine&&selectedProjectIds.includes(p.id)?'selected':''}">${mine?`<td class="check-cell"><input type="checkbox" data-select-project="${p.id}" ${selectedProjectIds.includes(p.id)?'checked':''} aria-label="选择 ${safe(p.name)}"></td>`:''}<td><div class="ticket-cell"><button class="ticket-link" data-open-project="${p.id}" ${recordAttr}>${safe(p.ticket)}</button><button class="copy-ticket" data-copy-ticket="${p.id}" aria-label="复制开题单号 ${safe(p.ticket)}" title="复制开题单号">${icon('copy')}</button></div></td><td class="contract-value">${safe(p.contract)}</td><td><span class="platform-code">${safe(p.code)}</span><span class="project-demo-tag">DEMO</span></td><td><button class="reference-project-name" data-open-project="${p.id}" ${recordAttr}>${safe(p.name)}</button>${collab?`<span class="collab-project-group">${safe(item.groupName)} · 分享人：${safe(person(item.initiatedBy).name)}</span>`:listTab==='shared'?`<span class="collab-project-group">分享人：${safe(person(p.shareInitiatedBy||p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}</span>`:''}</td><td class="reference-category">${safe(p.category)}</td><td class="reference-created">${safe(p.created)}</td><td><span class="reference-status">${safe(p.status)}</span></td>${mine?`<td class="project-actions-column"><div class="table-actions"><button class="btn quiet small text-primary ${p.shared?'project-action-done':''}" data-share-project="${p.id}" title="${p.shared?'管理分享，取消分享请在弹窗中操作':'分享原始分析结果'}" ${!canManage()?'disabled':''}>${p.shared?icon('check'):''}${p.shared?'已分享':'分享'}</button><button class="btn primary small ${hasCollab?'project-action-done':''}" data-collab-one="${p.id}" title="${hasCollab?`已有 ${projectRecords.length} 条协作，点击管理或发起新的协作`:'选择课题组发起协作'}" ${!canManage()?'disabled':''}>${icon(hasCollab?'check':'link')}${hasCollab?'已协作':'协作项目'}</button></div></td>`:''}</tr>`;
+  }).join('');
+  const cols=mine?9:7;
+  return `<div class="page" data-screen-label="项目列表">${heading(projectType,`管理${projectType}项目，按课题组组织协作，共享数据与分析成果。`,isManagementView()?`<button class="btn ghost" data-nav="groups">${icon('people')}课题组管理</button>`:'')}
+    <section class="surface"><div class="surface-top"><div class="list-tabs" role="tablist" aria-label="项目类型">${tabs.map(([key,label])=>`<button role="tab" aria-selected="${listTab===key}" class="${listTab===key?'active':''}" data-list-tab="${key}">${label}<span class="tab-count">${counts[key]}</span></button>`).join('')}</div><span class="surface-caption">所有项目，有序协同</span></div>
+    <div class="list-toolbar">${searchField('projectSearch',collab?'搜索项目名称、编号或成员':'搜索开题单号、项目名称或编号')}
+    <div class="toolbar-right"><label class="filter-label"><span>项目类别</span><select id="categoryFilter" class="filter-select" aria-label="筛选项目类别"><option value="">全部类别</option>${[...new Set(scopedProjects.map(p=>p.category))].map(c=>`<option ${categoryFilter===c?'selected':''} value="${safe(c)}">${safe(c)}</option>`).join('')}</select></label>${mine?`<button class="btn primary toolbar-collab-action" data-collab-selected ${!canManage()?'disabled':''}>${icon('link')}${selectedCount?`协作已选项目（${selectedCount}）`:'发起项目协作'}</button>`:`<span class="small-count">${list.length} ${collab?'条协作':'个项目'}</span>`}</div></div>
+    <div class="project-reference-note">${icon('info')}<span>开题单号用于项目查找和问题反馈，可点击右侧图标复制；点击开题单号或项目名称可进入${collab?'协作项目':'项目'}详情。</span></div>
+    ${mine&&selectedCount?`<div class="selection-note">已选择 ${selectedCount} 个项目<button data-clear-projects>清空选择</button></div>`:''}
+    <div class="table-shell project-table reference-project-table ${mine?'':'readonly-project-table'}"><div class="table-scroll"><table><thead>${head}</thead><tbody>${rows||`<tr><td colspan="${cols}" class="empty-cell">${emptyState(collab?(q||categoryFilter?'未找到匹配的协作项目':'暂无受邀协作项目'):'未找到匹配的项目',collab?'这里只显示他人邀请你参与的项目；你发起的协作仍在派森诺项目中查看“已协作”状态。':'试试其他关键词或项目类别。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,collab?'条协作记录':'个项目')}</section>${pageFoot(collab?'仅展示当前账号收到的协作项目；可查看分享人与成员信息，成员和角色由发起方管理。':'支持选择一个或多个项目、一个或多个课题组，确认成员后保存协作。')}</div>`;
+}
+function renderGroups() {
+  const q = search.trim().toLowerCase();
+  const list = groups.filter(g=>`${g.name} ${g.members.map(m=>person(m.id).name).join(' ')}`.toLowerCase().includes(q));
+  return `<div class="page" data-screen-label="课题组列表">${heading('课题组管理','把志同道合的人聚在一起，让每一次协作更高效。',`<button class="btn primary" data-create-group ${!canManage()?'disabled':''}>${icon('plus')}添加课题组</button>`)}
+    <div class="info-banner">${icon('shield')}<div><h2>技术支持，为课题组提供专业协助</h2><p>可在课题组中直接添加技术支持，加入后固定为管理员角色。</p></div></div>
+    <section class="surface"><div class="surface-top"><h2 class="surface-title">我的课题组 <span class="tab-count">${groups.length}</span></h2><span class="surface-caption">一个课题组，一次专注的探索</span></div><div class="toolbar">${searchField('groupSearch','搜索课题组名称或成员')}<span class="small-count">共 ${list.length} 个课题组</span></div>
+    <div class="table-shell group-table"><div class="table-scroll"><table><thead><tr><th>课题组</th><th>成员名单</th><th class="table-actions-column">操作</th></tr></thead><tbody>${list.map(g=>`<tr><td><div class="group-cell"><span class="group-emblem">${icon('people')}</span><div><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员 · 科研协作</small></div></div></td><td>${memberRoster(g.members)}</td><td><div class="table-actions group-actions"><button class="btn primary small" data-open-collab="${g.id}" ${!canManage()?'disabled':''}>${icon('link')}协作项目</button><button class="btn quiet small" data-group-add="${g.id}" ${!canManage()?'disabled':''}>添加成员</button>${g.members.some(m=>m.id==='support-1')?'<span class="support-state">技术支持已加入</span>':`<button class="btn quiet small text-primary" data-add-support-group="${g.id}" ${!canManage()?'disabled':''}>添加技术支持</button>`}</div></td></tr>`).join('')||`<tr><td colspan="3" class="empty-cell">${emptyState('还没有课题组','点击“添加课题组”，邀请成员一起探索。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'个课题组')}</section></div>`;
+}
+function renderMemberDirectory() {
+  const q=search.trim().toLowerCase();
+  const list=directory.filter(d=>`${d.name} ${d.account} ${d.phone} ${d.email}`.toLowerCase().includes(q));
+  return `<div class="page" data-screen-label="成员列表">${heading('成员管理','每一个伙伴，都是科研协作不可或缺的一部分。',`<button class="btn primary" data-add-directory ${!canManage()?'disabled':''}>${icon('plus')}添加成员</button>`)}
+    <section class="surface"><div class="surface-top"><h2 class="surface-title">所有成员 <span class="tab-count">${directory.length}</span></h2><span class="surface-caption">云平台账号与课题组归属</span></div><div class="toolbar">${searchField('memberSearch','搜索姓名、用户名、手机号或邮箱')}<span class="small-count">共 ${list.length} 位成员</span></div>
+    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>成员</th><th>用户名</th><th>手机号/邮箱</th><th>所在课题组</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map((d,i)=>{const gs=groups.filter(g=>g.members.some(m=>m.id===d.id)); const contact=d.phone?`${safe(d.phone.slice(0,3))} **** ${safe(d.phone.slice(-4))}`:safe(d.email||'未登记'); return `<tr><td><div class="member-cell">${avatar(d.name,i)}<div><div class="member-name">${safe(d.name)}${d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${d.id==='owner-1'?'项目所有者':d.id==='support-1'?'平台技术支持':'云平台成员'}</span></div></div></td><td>${safe(d.account)}</td><td class="date-cell">${contact}</td><td>${gs.map(g=>`<span class="group-chip">${safe(g.name)}</span>`).join('')||'<span class="fixed">暂未加入课题组</span>'}</td><td class="directory-actions-column"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canManage()||isDirectoryOwner(d.id)||directoryAssociations(d.id).blocked?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':directoryAssociations(d.id).blocked?'已参与协作项目或项目分享，暂不能直接移除':'未参与协作项目，可直接从成员库移除'}" aria-label="移除成员${safe(d.name)}">移除成员</button></td></tr>`;}).join('')||`<tr><td colspan="5" class="empty-cell">${emptyState('未找到匹配的成员','试试其他姓名、用户名、手机号或邮箱。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot('未参与协作项目或项目分享的成员可直接移除；移除仅影响成员库，不删除云平台账号。')}</div>`;
+}
+function renderMemberRow(member,index) { const u=person(member.id); return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}</span></div></div></td><td><span class="role-pill ${member.role}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(u.phone.slice(0,3))} **** ${safe(u.phone.slice(-4))}</td><td><div class="table-actions">${canManage()?`<button class="btn quiet small text-primary" data-edit-member="${member.id}" ${member.id==='support-1'?'disabled title="技术支持固定为管理员"':''}>调整角色</button><button class="btn quiet small danger" data-remove-member="${member.id}">移除成员</button>`:'<span class="fixed">暂无管理权限</span>'}</div></td></tr>`; }
+function renderMembers(p) {
+  const manageable=canManage();
+  const list=projectMemberList().filter(m=>m.role!=='owner'&&`${person(m.id).name} ${person(m.id).account} ${roleNames[m.role]}`.toLowerCase().includes(search.toLowerCase()));
+  const groupNames=[...new Set(collabRecords.filter(r=>r.projectId===p.id).map(r=>r.groupName).filter(Boolean))];
+  const readonlyRow=(member,index)=>{const u=person(member.id);return `<tr><td><div class="member-cell">${avatar(u.name,index)}<div><div class="member-name">${safe(u.name)}${member.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><span class="member-note">${safe(u.account)}</span></div></div></td><td><span class="role-pill ${safe(member.role)}">${icon(roleIcons[member.role]||'person')}${roleNames[member.role]}</span></td><td class="date-cell">${safe(u.phone.slice(0,3))} **** ${safe(u.phone.slice(-4))}</td></tr>`;};
+  return `<section class="surface"><div class="section-header"><div><h2>协作列表</h2><p>${manageable?'管理员和技术支持可添加成员、调整角色或移除授权。':'查看当前协作成员与角色，成员变更由分享人管理'}</p>${groupNames.length?`<div class="collab-group-badges">${groupNames.map(g=>`<span class="collab-group-badge">${icon('people')}${safe(g)}</span>`).join('')}</div>`:''}</div>${manageable?`<button class="btn primary" data-add ${!canManage()?'disabled':''}>${icon('plus')}添加成员</button>`:`<span class="collab-readonly-badge">${icon('eye')}仅查看</span>`}</div><div class="toolbar">${searchField('memberSearch','搜索成员姓名或账号')}<span class="small-count">共 ${list.length} 位协作成员</span></div><div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>协作成员</th><th>项目角色</th><th>手机号</th>${manageable?'<th class="table-actions-column">操作</th>':''}</tr></thead><tbody>${list.map((member,index)=>manageable?renderMemberRow(member,index):readonlyRow(member,index)).join('')||`<tr><td colspan="${manageable?4:3}" class="empty-cell">${emptyState('暂无匹配的协作成员','试试其他成员姓名或账号。')}</td></tr>`}</tbody></table></div></div><div class="detail-permission"><span>项目所有者：${safe(person(p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}</span>${groupNames.length?`<span>协作课题组：${safe(groupNames.join('、'))}</span>`:''}<span>访问者下载：${p.visitorDownload?'允许':'不允许'}</span></div></section>`;
+}
+function renderDetail() {
+  const p=project(),collaborative=isCollaborativeDetail()||isManageableCollabDetail(),record=activeCollabRecord();
+  if(!collaborative)tab='data';
+  return `<div class="page project-detail-page" data-screen-label="项目详情"><button class="back-link" data-back-project-list>${icon('back')}返回${{mine:'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}列表</button>
+    <section class="reference-detail-summary"><div class="reference-detail-title"><span class="detail-project-icon">${icon(p.type==='云图汇'?'chart':'folder')}</span><div><h1>${safe(p.name)}</h1><span class="reference-detail-status">状态：${safe(p.status)}</span></div></div>
+    <dl><dt>开题单号</dt><dd><span class="ticket-cell"><span class="ticket-link">${safe(p.ticket)}</span><button class="copy-ticket" data-copy-ticket="${p.id}" aria-label="复制开题单号 ${safe(p.ticket)}">${icon('copy')}</button></span></dd></dl><dl><dt>合同号</dt><dd>${safe(p.contract)}</dd></dl><dl><dt>云平台项目编号</dt><dd>${safe(p.code)}</dd></dl><button class="btn primary detail-result-button" data-show-result>查看结果</button></section>
+    <div class="detail-download-banner"><span>下载派森诺云盘，一键下载全部项目数据。</span><button class="btn" data-cloud-download>${icon('download')}下载派森诺云盘</button></div>
+    ${detailOrigin.listTab==='shared'?`<div class="shared-detail-context">分享人：${safe(person(p.shareInitiatedBy||p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}<span>仅查看原始分析结果</span></div>`:''}
+    <section class="surface project-detail-content"><div class="detail-tabs"><button data-tab="data" class="${tab==='data'?'active':''}">项目数据</button>${collaborative?`<button data-tab="members" class="${tab==='members'?'active':''}">协作列表</button>`:''}</div>${collaborative&&tab==='members'?`${record?`<div class="detail-collab-context"><span class="group-chip">${safe(record.groupName)}</span><span class="collab-sharer">分享人：${safe(person(record.initiatedBy).name)}</span><span>你是协作接收方，仅可查看；人员和角色由分享人管理。</span></div>`:''}${renderMembers(p)}`:renderProjectFiles(p)}</section></div>`;
+}
+function currentProjectFiles() { return project().files.filter(f=>(f.parentId||null)===(filePath.at(-1)||null)); }
+function renderProjectFiles(p) {
+  const files=currentProjectFiles();
+  return `<div class="project-file-manager"><div class="data-toolbar"><button class="btn" data-delete-selected-files ${!canManage()||!selectedFileIds.length?'disabled':''}>${icon('trash')}删除${selectedFileIds.length?`（${selectedFileIds.length}）`:''}</button><button class="btn text-primary" data-create-folder ${!canManage()?'disabled':''}>${icon('folder')}新建文件夹</button><span class="file-demo-note">示例文件操作，保存在当前浏览器</span></div>
+    <nav class="file-breadcrumb" aria-label="文件目录"><button data-file-path="-1">根目录</button>${filePath.map((id,i)=>`<span>›</span><button data-file-path="${i}">${safe(p.files.find(f=>f.id===id)?.name||'文件夹')}</button>`).join('')}</nav>
+    <div class="table-shell project-file-table"><div class="table-scroll"><table><thead><tr><th class="check-cell"><input type="checkbox" data-select-all-files aria-label="全选当前目录文件" ${files.length&&files.every(f=>selectedFileIds.includes(f.id))?'checked':''}></th><th>文件名称</th><th>大小</th><th>项目分析时间</th><th>创建者</th><th>操作</th></tr></thead><tbody>${files.map(f=>`<tr><td class="check-cell"><input type="checkbox" data-select-file="${safe(f.id)}" ${selectedFileIds.includes(f.id)?'checked':''} aria-label="选择文件夹 ${safe(f.name)}"></td><td><button class="file-folder-name" data-open-folder="${safe(f.id)}">${icon('folder')}${safe(f.name)}</button></td><td>—</td><td class="date-cell">${safe(f.createdAt)}</td><td>${safe(f.creator)}</td><td><button class="btn quiet small danger" data-delete-file="${safe(f.id)}" ${!canManage()?'disabled':''}>删除</button></td></tr>`).join('')||`<tr><td colspan="6" class="empty-cell">${emptyState('暂无数据','可新建文件夹，整理项目分析数据。')}</td></tr>`}</tbody></table></div></div>${tableFooter(files.length,'项')}</div>`;
+}
+function renderOverview() { return `<div class="page" data-screen-label="项目概况">${heading(`欢迎回来，${safe(person(currentUserId()).name)}`,'科研的每一步探索，都值得被妥善连接。',`<button class="btn primary" data-nav="projects">${icon('folder')}查看全部项目</button>`)}${stats()}<div class="summary-panels"><section class="surface summary-panel"><h2>项目类别分布</h2>${[...new Set(visibleProjects().map(p=>p.type))].map((t,i)=>{const count=visibleProjects().filter(p=>p.type===t).length;return `<div style="margin-bottom:23px"><div class="progress-row"><span>${safe(t)}</span><span>${count} 个项目</span></div><div class="progress-track ${i?'blue':''}"><i style="width:${count/visibleProjects().length*100}%"></i></div></div>`;}).join('')}<div class="overview-list"><div class="overview-item">${icon('shield')}所有示例项目分析已完成<small>可开始协作</small></div></div></section><section class="surface summary-panel"><h2>我的课题组</h2><div class="overview-list">${groups.map((g,i)=>`<button class="btn ghost" data-open-collab="${g.id}" style="justify-content:flex-start">${avatar(g.name,i)}${safe(g.name)}<span style="margin-left:auto" class="small-count">${g.members.length} 人</span></button>`).join('')}</div><button class="btn quiet text-primary" data-nav="groups" style="margin-top:18px">查看全部课题组 →</button></section></div></div>`; }
+function renderData() { return `<div class="page" data-screen-label="项目数据">${heading('项目数据','从数据到洞察，所有分析项目都在这里。')}${stats()}<div class="data-grid">${visibleProjects().map((p,i)=>`<article class="surface data-card">${icon(p.type==='云图汇'?'chart':'folder')}<h3>${safe(p.name.replace(/^测试示例-/,''))}</h3><p>${safe(p.code)}<br>${safe(p.category)} · 分析已完成</p><button class="btn" data-open-data="${p.id}">查看项目概况 →</button></article>`).join('')}</div>${pageFoot('本原型用于演示项目与成员管理，不包含真实分析文件。')}</div>`; }
+function render() {
+  renderRolePreview();
+  if(isCollaborativeDetail()&&!activeCollabRecord()){page=detailOrigin.page;listTab='collab';tab='data';search='';}
+  const viewer=person(currentUserId());
+  document.querySelector('.side-user strong').textContent=viewer.name;
+  document.querySelectorAll('.side-user .user-avatar,.header-avatar').forEach(el=>{el.textContent=viewer.name.slice(0,1);el.setAttribute('aria-label',`当前用户：${viewer.name}`);});
+  document.body.classList.remove('reference-mode');
+  const renderers={projects:renderProjects,visual:renderProjects,groups:renderGroups,members:renderMemberDirectory,detail:renderDetail,overview:renderOverview,data:renderData};
+  main.innerHTML=(renderers[page]||renderProjects)();
+  const labels={projects:'云分析',visual:'云图汇',groups:'课题组管理',members:'成员管理',detail:'项目详情',overview:'项目概况',data:'项目数据'};
+  const navPage=page==='detail'?(project().type==='云图汇'?'visual':'projects'):page;
+  const nested=['projects','visual','groups','members'].includes(navPage);
+  document.getElementById('crumb').innerHTML=`工作空间 <span>/</span> ${nested?'项目列表 <span>/</span> ':''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${{mine:'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;
+  document.querySelectorAll('[data-nav]').forEach(n=>{const active=n.dataset.nav===navPage;n.classList.toggle('active',active);if(n.closest('.side-nav')){if(active)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
+  const menu=document.getElementById('projectSubnav'),menuButton=document.querySelector('[data-project-menu]');
+  menu.hidden=!projectMenuOpen;menuButton.setAttribute('aria-expanded',String(projectMenuOpen));menuButton.classList.toggle('directory-active',nested);
+  document.getElementById('navProjectCount').textContent=visibleProjects().length;
+  const selectAll=main.querySelector('[data-select-all-projects]');
+  if(selectAll){const list=filteredProjects();const count=list.filter(p=>selectedProjectIds.includes(p.id)).length;selectAll.checked=!!list.length&&count===list.length;selectAll.indeterminate=count>0&&count<list.length;}
+}
+function modalFrame(title, subtitle, body, footer, wide=false) {
+  if(modalRoot.hidden) returnFocus=document.activeElement;
+  document.querySelector('.app-shell').inert=true;
+  document.body.style.overflow='hidden';
+  modalRoot.hidden=false;
+  const modalClass=modal?.type==='collab'?'collaboration-modal':modal?.type==='group-create'?'group-create-modal':['add','directory-add'].includes(modal?.type)?'member-account-modal':'';
+  modalRoot.innerHTML=`<div class="modal ${wide?'modal-wide':''} ${modalClass}" role="dialog" aria-modal="true" aria-label="${safe(title)}"><div class="modal-head"><div><h2>${title}</h2>${subtitle?`<p>${subtitle}</p>`:''}</div><button class="modal-close" data-close aria-label="关闭">×</button></div><div class="modal-body">${body}</div><div class="modal-foot">${footer}</div></div>`;
+  const initialField=modalRoot.querySelector('input:not(:disabled),select:not(:disabled)')||modalRoot.querySelector('[data-close]');
+  initialField?.focus({preventScroll:true});
+}
+function closeConfirmation() {
+  clearTimeout(confirmationTimer); confirmRoot.hidden=true; confirmRoot.textContent=''; modalRoot.inert=false; if(modal) modal.pendingUser=null;
+}
+function closeModal() { closeConfirmation(); modal=null; modalRoot.hidden=true; modalRoot.innerHTML=''; document.querySelector('.app-shell').inert=false; document.body.style.overflow=''; if(returnFocus?.isConnected) returnFocus.focus(); }
+function dismissModal() {
+  if(!modal?.parent)return closeModal();
+  const parent=modal.parent,focus=modal.parentFocus;
+  closeConfirmation();modal=parent;showModal();
+  if(focus)modalRoot.querySelector(focus)?.focus({preventScroll:true});
+}
+function showAccountConfirmation(user) {
+  modal.pendingUser=user; modalRoot.inert=true;
+  confirmRoot.innerHTML=`<span class="account-tip-icon">${icon('info')}</span><span>${safe(safetyMessage)}</span>`;
+  confirmRoot.hidden=false;
+  const modalTop=modalRoot.querySelector('.modal').getBoundingClientRect().top;
+  confirmRoot.style.top=`${Math.max(12,Math.round(modalTop-confirmRoot.getBoundingClientRect().height-16))}px`;
+  confirmationTimer=setTimeout(()=>{
+    if(!modal || !['add','directory-add'].includes(modal.type) || modal.step!=='verify' || modal.pendingUser!==user) return;
+    closeConfirmation(); modal.user=user; modal.step=modal.type==='directory-add'?'confirm':'role'; showModal(); modalRoot.querySelector('input[name=role], [data-confirm-add], [data-directory-add-confirm]')?.focus();
+  },1600);
+}
+function rolesRadio(selected='member') { return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option ${r}"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span class="role-icon">${icon(roleIcons[r])}</span><span><strong>${roleNames[r]}</strong><small>${roleDescriptions[r]}</small></span></label>`).join('')}</div>`; }
+function openAdd(target='project', groupId=null) { if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'add',target,groupId,step:'verify',contactType:'phone',error:''}; showModal(); }
+function openGroupCreate(parent=null) { if(!canManage()) return notify('当前角色不能添加课题组'); modal={type:'group-create',name:'',members:[],memberQuery:'',pickerOpen:false,error:'',memberError:'',parent,parentFocus:'[data-new-collab-group]'}; showModal(); }
+function openDirectoryAdd(parent=null){ if(!canManage()) return notify('当前角色不能添加成员'); modal={type:'directory-add',step:'verify',account:'',phone:'',email:'',contactType:'phone',error:'',parent,parentFocus:'#groupMemberSearch'}; showModal(); }
+function accountIdentityCard(u) {
+  const emailMode=modal.contactType==='email';
+  return `<div class="verify-success account-identity-card">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>用户名：${safe(u.account)}</span><span>${emailMode?'邮箱':'手机号'}：${safe(emailMode?u.email:u.phone)}</span></div><span class="checkmark">演示核对通过</span></div>`;
+}
+function showMemberAccountLookup(title) {
+  const contactKey=['phone','email'].includes(modal.contactType)?modal.contactType:'phone';
+  const contactFields={phone:['phone','手机号','tel','numeric','11','请输入注册手机号','请输入有效的 11 位中国大陆手机号'],email:['email','邮箱','email','email','100','请输入注册邮箱','请输入有效的注册邮箱']};
+  const fields=[contactFields[contactKey],['account','用户名','text','text','80','请输入云平台用户名','请匹配有效的云平台用户名']];
+  const demoExamples=demoPlatformAccounts.slice(0,3);
+  const contactText=u=>contactKey==='email'?`${u.email} · ${u.account}`:`${u.phone} · ${u.account}`;
+  const exampleHtml=`<div class="demo-account-examples"><div class="demo-example-title">${icon('info')}示例账号（点击自动填入）</div><div class="demo-example-list">${demoExamples.map(u=>`<button type="button" class="demo-example-chip" data-fill-contact-type="${contactKey}" data-fill-phone="${safe(u.phone)}" data-fill-email="${safe(u.email)}" data-fill-account="${safe(u.account)}"><span class="demo-example-avatar">${safe(u.name.slice(0,1))}</span><span class="demo-example-meta"><strong>${safe(u.name)}</strong><small>${safe(contactText(u))}</small></span></button>`).join('')}</div><p class="demo-example-hint">成员信息只需“用户名 + 手机号”或“用户名 + 邮箱”；点击示例自动填入，然后确认账户。</p></div>`;
+  const tabs=`<div class="account-match-tabs" role="group" aria-label="选择成员核对方式"><button type="button" class="account-match-tab ${contactKey==='phone'?'active':''}" aria-pressed="${contactKey==='phone'}" data-account-contact-type="phone">手机号 + 用户名</button><button type="button" class="account-match-tab ${contactKey==='email'?'active':''}" aria-pressed="${contactKey==='email'}" data-account-contact-type="email">邮箱 + 用户名</button></div>`;
+  modalFrame(title,'',`<form id="verifyForm" novalidate>${tabs}${fields.map(([key,label,type,inputmode,max,placeholder,errorText])=>`<label class="field" id="${key}Field"><span class="field-label">${label}</span><input id="${key}" data-account-key="${key}" type="${type}" inputmode="${inputmode}" autocomplete="off" maxlength="${max}" placeholder="${placeholder}" value="${safe(modal[key]||'')}" aria-describedby="phoneLookup" aria-invalid="false"><span class="field-error">${errorText}</span></label>`).join('')}<div id="phoneLookup" aria-live="polite"></div><div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error)}</div>${exampleHtml}</form>`,'<button class="btn" data-close>取消</button><button class="btn primary" data-verify>确认账户</button>');
+  drawAccountLookup();document.getElementById(modal.lookupSource||contactKey)?.focus();
+  modalRoot.querySelectorAll('.demo-example-chip').forEach(btn=>btn.addEventListener('click',()=>{
+    const type=btn.dataset.fillContactType||contactKey;
+    modal.contactType=type;
+    const phoneInput=document.getElementById('phone'),emailInput=document.getElementById('email'),accountInput=document.getElementById('account');
+    const fill=(input,value)=>{if(input){input.value=value;input.dispatchEvent(new Event('input',{bubbles:true}));}};
+    if(phoneInput&&type==='phone')fill(phoneInput,btn.dataset.fillPhone);
+    if(emailInput&&type==='email')fill(emailInput,btn.dataset.fillEmail);
+    fill(accountInput,btn.dataset.fillAccount);
+    document.getElementById(type)?.focus();
+  }));
+}
+function lookupError(message,keys=[]) {
+  modal.error=message;
+  const el=document.getElementById('accountLookupError');el.textContent=message;el.hidden=false;
+  keys.forEach(key=>{document.getElementById(key+'Field')?.classList.add('invalid');document.getElementById(key)?.setAttribute('aria-invalid','true');});
+}
+function drawAccountLookup() {
+  const slot=document.getElementById('phoneLookup');if(!slot)return;
+  const key=modal.lookupSource||accountKeys.find(k=>modal[k])||'phone';
+  const result=resolvePlatformAccount(modal[key],key),u=result.user;
+  slot.innerHTML=u?`<div class="account-preview">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><small>已匹配唯一云平台账户：${safe(u.account)}</small></div><span>已匹配</span></div>`:modal[key]?`<p class="lookup-status ${result.status==='ambiguous'?'lookup-conflict':''}">${result.status==='ambiguous'?'账号信息存在重复关联，无法唯一匹配，请核对后重试。':`暂未匹配，请输入完整的${accountEntryLabel}。`}</p>`:'';
+}
+function updateAccountLookup(key,value) {
+  modal.lookupSource=key;modal.error='';modal.user=null;
+  const result=resolvePlatformAccount(value,key);
+  accountKeys.forEach(k=>{
+    const next=k===key?value:result.user?.[k]||'';
+    modal[k]=next;const input=document.getElementById(k);if(input){input.value=next;input.setAttribute('aria-invalid','false');}
+    document.getElementById(k+'Field')?.classList.remove('invalid');
+  });
+  const error=document.getElementById('accountLookupError');error.hidden=true;error.textContent='';drawAccountLookup();
+}
+
+function showDirectoryAddModal(){
+  if(modal.step==='verify')return showMemberAccountLookup('添加成员',accountCopy.subtitle);
+  const u=modal.user;
+  modalFrame('确认添加成员','账号核对通过，请确认成员信息。',`${accountIdentityCard(u)}`,'<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-directory-add-confirm>确认添加</button>');
+}
+function confirmDirectoryAdd(){
+  if(!canManage()||modal?.type!=='directory-add'||modal.step!=='confirm'||!modal.user)return;
+  const u=modal.user,parent=modal.parent;
+  if(directory.some(d=>accountKeys.some(k=>accountValue(d[k])&&accountValue(d[k])===accountValue(u[k])))){modal.error='该成员已在成员库中';modal.step='verify';return showModal();}
+  directory.push({...u});saveAll();
+  if(parent?.type==='group-create'){
+    if(!parent.members.some(m=>m.id===u.id))parent.members.push({id:u.id,role:u.id==='support-1'?'admin':'member'});
+    parent.memberError='';modal=parent;showGroupCreateModal();return notify('成员已添加，并自动选入当前课题组');
+  }
+  search='';closeModal();render();notify('成员已添加，可在课题组中选用');
+}
+function directoryAssociations(id) {
+  const relatedGroups=groups.filter(g=>g.members.some(m=>m.id===id));
+  const relatedRecords=collabRecords.filter(r=>(r.members||[]).some(m=>m.id===id));
+  const collaborationProjectIds=[...new Set(relatedRecords.map(r=>r.projectId))];
+  const relatedProjects=projects.filter(p=>collaborationProjectIds.includes(p.id));
+  const relatedShares=projects.filter(p=>p.shareUserIds.includes(id));
+  // 课题组只是成员组织关系；只有已授权的协作项目或项目分享才阻止从成员库移除。
+  return {groups:relatedGroups,projects:relatedProjects,records:relatedRecords,shares:relatedShares,blocked:!!(relatedProjects.length||relatedShares.length||relatedRecords.length)};
+}
+function openDirectoryRemove(id) {
+  if(!canManage())return notify('当前角色不能移除成员');
+  if(!directory.some(u=>u.id===id))return;
+  if(isDirectoryOwner(id))return notify('项目所有者不可从成员库移除');
+  modal={type:'directory-remove',id};showDirectoryRemoveModal();
+}
+function showDirectoryRemoveModal() {
+  const u=directory.find(u=>u.id===modal.id);if(!u)return closeModal();
+  const refs=directoryAssociations(u.id),protectedOwner=isDirectoryOwner(u.id),blocked=refs.blocked||protectedOwner;
+  const section=(title,items)=>items.length?`<section class="directory-association-section"><h3>${title}<span>${items.length}</span></h3><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul></section>`:'';
+  const associations=section('所属课题组',refs.groups.map(g=>safe(g.name)))+section('协作授权',refs.records.map(r=>`<strong>${safe(projects.find(p=>p.id===r.projectId)?.name||r.projectName||'协作项目')}</strong><small>${safe(r.groupName)} · 协作成员</small>`))+section('项目分享',refs.shares.map(p=>`<strong>${safe(p.name)}</strong><small>共享用户 · ${safe(p.code)}</small>`));
+  modalFrame(blocked?'暂不能移除成员':'移除成员',blocked?'请先解除协作授权或项目分享，再从成员库移除。':'请确认是否从你的成员库移除该成员。',`<div class="directory-remove-person">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${safe(u.account)} · ${safe(u.phone.slice(0,3))}****${safe(u.phone.slice(-4))}</span></div></div>${blocked?`<div class="directory-remove-warning">${icon('info')}<p>${protectedOwner?'该成员是项目所有者，不可从成员库移除。':'该成员已参与协作项目或项目分享，暂不能移除，避免影响现有协作。'}</p></div><div class="directory-associations">${associations}</div>`:`<p class="directory-remove-description">该成员未参与协作项目或项目分享，确认后将从成员列表中移除。${refs.groups.length?'其所属课题组信息会保留在原课题组内。':''}</p>${associations}`}<p class="member-library-note">仅移出你的成员库，不会删除对方的云平台账号；以后仍可通过${accountEntryLabel}重新添加。</p>`,`<button class="btn" data-close>${blocked?'知道了':'取消'}</button><button class="btn danger" data-confirm-directory-remove ${blocked?'disabled':''}>确认移除</button>`);
+  modalRoot.querySelector('.modal').classList.add('directory-remove-modal');
+}
+function confirmDirectoryRemove() {
+  if(!canManage()||modal?.type!=='directory-remove')return;
+  const u=directory.find(u=>u.id===modal.id);if(!u)return closeModal();
+  // 保存时再次检查，防止弹窗打开后关联发生变化导致误删。
+  if(isDirectoryOwner(u.id)||directoryAssociations(u.id).blocked)return showDirectoryRemoveModal();
+  if(!platformAccounts.some(account=>account.id===u.id))platformAccounts.push({...u});
+  directory=directory.filter(d=>d.id!==u.id);saveAll();closeModal();render();notify('成员已从成员库移除，云平台账号仍保留');
+}
+function openCollab(groupId=groups[0]?.id, projectIds=[], chooseProjects=false, recordId=null) { if(!canManage()||projectIds.some(id=>!canManageProject(projects.find(p=>p.id===id)))) return notify('当前账号无权修改收到的协作项目'); modal={type:'collab',selectedGroupIds:[groupId].filter(Boolean),selectedMemberIds:[],selectedProjectIds:[...new Set(projectIds)],chooseProjects,recordId,removedMemberIds:[],selectionTouched:false,roleOverrides:{},extraMembers:[]}; refreshCollabSelection(); showModal(); }
+function openShare(projectId) {
+  if(!canManage())return notify('当前角色不能管理项目分享');
+  const p=projects.find(x=>x.id===projectId);if(!p||!canManageProject(p))return;
+  modal={type:'share',projectId,selectedUserIds:[...p.shareUserIds],account:'',error:''};showShareModal();
+}
+function shareProjectCard(p) {
+  return `<div class="share-project-card"><span class="share-project-icon">${icon('folder')}</span><div><strong>${safe(p.name.replace(/^测试示例-/,''))}</strong><small>${safe(p.code)}</small></div><span class="share-scope">原始分析结果</span></div>`;
+}
+function showShareModal() {
+  const p=projects.find(x=>x.id===modal.projectId);if(!p)return closeModal();
+  const ownerId=p.members.find(m=>m.role==='owner')?.id;
+  const body=`${shareProjectCard(p)}
+    <div class="share-info">${icon('info')}<span>仅分享原始分析结果，不授予项目协作或成员管理权限。</span></div>
+    <form id="shareForm" novalidate><div class="share-label-row"><label class="field-label" for="shareAccount"><span class="required-mark">*</span>共享用户</label><span class="share-limit">已选 <b>${modal.selectedUserIds.length}</b> / 5 人</span></div>
+    <div class="share-account-control ${modal.error?'invalid':''}"><span>${icon('person')}</span><input id="shareAccount" type="text" maxlength="100" list="shareAccountOptions" autocomplete="off" placeholder="输入${accountEntryLabel}" value="${safe(modal.account)}" aria-describedby="shareAccountHint shareAccountError" aria-invalid="${!!modal.error}"><button type="submit" class="btn primary" data-add-share-user>${icon('plus')}添加</button></div>
+    <datalist id="shareAccountOptions">${platformAccounts.filter(u=>u.id!==ownerId&&!modal.selectedUserIds.includes(u.id)).flatMap(u=>visibleAccountKeys.map(key=>`<option value="${safe(u[key])}">${safe(u.name)} · ${key==='phone'?'手机号':key==='email'?'邮箱':'用户名'}</option>`)).join('')}</datalist>
+    <div id="shareAccountLookup" aria-live="polite"></div><p id="shareAccountError" class="share-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error)}</p><p id="shareAccountHint" class="share-input-hint">${accountEntryLabel}可匹配同一账户；最多分享给 5 位用户，保存后才生效。</p></form>
+    ${p.shared&&!p.shareUserIds.length?'<div class="share-legacy-note">旧版分享记录未保存接收用户。可重新添加用户并保存，或取消全部分享。</div>':''}
+    <section class="share-recipients" aria-label="共享用户名单"><div class="share-list-heading"><h3>共享用户名单</h3><span>仅查看原始结果</span></div><div class="share-user-list">${modal.selectedUserIds.map((id,i)=>`<div class="share-user-row" data-share-user-row="${safe(id)}">${avatar(person(id).name,i)}<div class="share-user-meta"><strong>${safe(person(id).name)}</strong><span>${safe(person(id).account)}</span></div><span class="share-user-status ${p.shareUserIds.includes(id)?'':'pending'}">${p.shareUserIds.includes(id)?'已分享':'待分享'}</span><button type="button" class="btn quiet small danger" data-remove-share-user="${safe(id)}" aria-label="移除共享用户${safe(person(id).name)}">移除</button></div>`).join('')||`<div class="share-empty">${icon('people')}<span>还没有添加共享用户</span><small>输入对方${accountEntryLabel}，即可添加</small></div>`}</div></section>
+    <div class="share-access-path"><span>对方查看路径</span><p>项目列表 <i>›</i> ${safe(p.type)} <i>›</i> 共享项目</p></div>`;
+  modalFrame('项目分享','指定共享用户，让分析成果安全、清晰地传递。',body,`${p.shared?'<button class="btn quiet danger share-cancel-all" data-open-share-cancel>取消全部分享</button>':''}<button class="btn" data-close>取消</button><button class="btn primary" data-save-share>${p.shared?'保存分享设置':'确认分享'}</button>`);
+  modalRoot.querySelector('.modal').classList.add('share-modal');drawShareAccountLookup();
+}
+function drawShareAccountLookup() {
+  const slot=document.getElementById('shareAccountLookup');if(!slot)return;
+  const result=resolvePlatformAccount(modal.account),u=result.user;
+  slot.innerHTML=u?`<div class="share-account-match">${icon('check')}<span>已匹配：<b>${safe(u.name)}</b> · 用户名 ${safe(u.account)}<small>${u.phone?`手机号 ${safe(u.phone)}`:`邮箱 ${safe(u.email)}`}</small></span></div>`:modal.account&&result.status==='ambiguous'?'<p class="share-error">账号信息存在重复关联，无法唯一匹配。</p>':'';
+}
+function shareError(message) {
+  modal.error=message;showShareModal();document.getElementById('shareAccount')?.focus();return false;
+}
+function addShareUser() {
+  if(!canManage()||modal?.type!=='share')return false;
+  modal.account=(document.getElementById('shareAccount')?.value||modal.account).trim();
+  if(!modal.account)return shareError(`请输入要分享的${accountEntryLabel}`);
+  const p=projects.find(x=>x.id===modal.projectId);
+  const result=resolvePlatformAccount(modal.account),user=result.user;
+  if(!user)return shareError(result.status==='ambiguous'?'账号信息存在重复关联，无法唯一匹配，请核对后重试。':`未找到该云平台账户，请核对完整${accountEntryLabel}`);
+  if(p.members.some(m=>m.role==='owner'&&m.id===user.id))return shareError('无需将项目分享给项目所有者');
+  if(modal.selectedUserIds.includes(user.id))return shareError('该用户已在共享名单中，请勿重复添加');
+  if(modal.selectedUserIds.length>=5)return shareError('每个项目最多分享给 5 位用户，请先移除一位用户');
+  modal.selectedUserIds.push(user.id);modal.account='';modal.error='';showShareModal();return true;
+}
+function saveShare() {
+  if(!canManage()||modal?.type!=='share')return;
+  if(modal.account.trim()&&!addShareUser())return;
+  const p=projects.find(x=>x.id===modal.projectId);if(!p)return;
+  if(!modal.selectedUserIds.length){if(p.shared)return openCancelShare(p.id,modal);return shareError('请至少添加一位共享用户');}
+  if(modal.selectedUserIds.length>5)return shareError('每个项目最多分享给 5 位用户');
+  modal.selectedUserIds.forEach(id=>ensureDirectoryPerson(id));
+  p.shareUserIds=[...modal.selectedUserIds];p.shared=true;p.shareInitiatedBy=currentUserId();saveAll();closeModal();render();notify('分享设置已保存，共享项目列表已更新');
+}
+function openCancelShare(projectId, previous=null) {
+  if(!canManage())return;
+  const p=projects.find(x=>x.id===projectId);if(!p?.shared)return;
+  modal={type:'share-cancel',projectId,previous};showCancelShareModal();
+}
+function showCancelShareModal() {
+  const p=projects.find(x=>x.id===modal.projectId);if(!p)return closeModal();
+  modalFrame('取消项目分享','请确认是否收回本项目的全部分享权限。',`${shareProjectCard(p)}<div class="share-cancel-warning">${icon('info')}<div><strong>取消后，接收用户将无法再从“共享项目”查看该项目。</strong><p>仅取消分享，不删除项目，也不影响已有协作关系和课题组成员。</p></div></div>${p.shareUserIds.length?`<div class="share-cancel-users"><span>将取消以下 ${p.shareUserIds.length} 位用户的分享</span><div>${p.shareUserIds.map(id=>`<span class="group-chip">${safe(person(id).name)}</span>`).join('')}</div></div>`:''}`,'<button class="btn" data-keep-share>暂不取消</button><button class="btn danger" data-confirm-share-cancel>确认取消分享</button>');
+  modalRoot.querySelector('.modal').classList.add('share-modal');
+}
+function cancelShare() {
+  if(!canManage()||modal?.type!=='share-cancel')return;
+  const p=projects.find(x=>x.id===modal.projectId);if(!p)return;
+  p.shareUserIds=[];p.shared=false;saveAll();closeModal();render();notify('已取消项目分享，不影响项目协作');
+}
+function openCreateFolder() {
+  if(!canManage())return;
+  modal={type:'folder-create',projectId:project().id,parentId:filePath.at(-1)||null,name:'',error:''};showFolderModal();
+}
+function showFolderModal() {
+  modalFrame('新建文件夹','在当前项目目录中新建文件夹。',`<form id="folderForm" novalidate><label class="field ${modal.error?'invalid':''}"><span class="field-label">文件夹名称</span><input id="folderName" type="text" maxlength="50" placeholder="请输入文件夹名称" value="${safe(modal.name)}"><span class="field-error">${safe(modal.error)}</span></label></form>`,'<button class="btn" data-close>取消</button><button class="btn primary" data-confirm-folder>创建文件夹</button>');
+}
+function confirmFolder() {
+  if(!canManage()||modal?.type!=='folder-create')return;
+  const p=projects.find(p=>p.id===modal.projectId);if(!p)return;
+  modal.name=document.getElementById('folderName').value.trim();
+  if(!modal.name){modal.error='请输入文件夹名称';return showFolderModal();}
+  if(/[\\/]/.test(modal.name)){modal.error='文件夹名称不能包含斜杠';return showFolderModal();}
+  if(p.files.some(f=>f.parentId===modal.parentId&&f.name===modal.name)){modal.error='当前目录已存在同名文件夹';return showFolderModal();}
+  p.files.push({id:'folder-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:modal.name,parentId:modal.parentId,createdAt:new Date().toLocaleString('zh-CN',{hour12:false}),creator:person(currentUserId()).name});
+  saveAll();closeModal();render();notify('文件夹已创建');
+}
+function openFileRemoval(ids) {
+  if(!canManage())return;
+  const files=currentProjectFiles().filter(f=>ids.includes(f.id));if(!files.length)return;
+  modal={type:'file-remove',projectId:project().id,ids:files.map(f=>f.id)};
+  modalFrame('删除文件夹','请确认要删除的示例内容。',`<div class="confirm-warning">将删除 ${files.length} 个文件夹及其子目录。此操作仅影响当前浏览器内的示例数据。</div><p class="file-removal-names">${files.map(f=>safe(f.name)).join('、')}</p>`,'<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-file-remove>确认删除</button>');
+}
+function removeProjectFiles() {
+  if(!canManage()||modal?.type!=='file-remove')return;
+  const p=projects.find(p=>p.id===modal.projectId);if(!p)return;
+  const removed=new Set(modal.ids);let changed=true;
+  while(changed){changed=false;for(const f of p.files)if(removed.has(f.parentId)&&!removed.has(f.id)){removed.add(f.id);changed=true;}}
+  p.files=p.files.filter(f=>!removed.has(f.id));selectedFileIds=[];saveAll();closeModal();render();notify('示例文件夹已删除');
+}
+function showResultPreview() {
+  modal={type:'result-preview'};
+  modalFrame('分析结果预览','原始分析结果 · 交互演示',`${shareProjectCard(project())}<div class="result-preview-panel"><span class="reference-detail-status">分析已完成</span><h3>原始分析结果已就绪</h3><p>正式平台可在这里查看分析报告。本原型使用示例数据，不包含真实分析文件。</p></div>`,'<button class="btn" data-close>关闭</button><button class="btn primary" data-result-to-data>查看项目数据</button>');
+}
+function showCloudDownload() {
+  modal={type:'cloud-download'};
+  modalFrame('下载派森诺云盘','项目数据下载入口',`<div class="result-preview-panel">${icon('download')}<h3>使用云盘客户端下载项目数据</h3><p>本原型仅演示下载入口，不提供安装包。正式产品接入下载地址后，可在此获取客户端。</p></div>`,'<button class="btn primary" data-close>知道了</button>');
+}
+
+function groupCreateMembers() { return modal.members.map(m=>`<div class="picker-member"><div class="member-cell">${avatar(person(m.id).name)}<div><div class="member-name">${safe(person(m.id).name)}${m.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</div><small>${safe(person(m.id).account)}</small></div></div><div class="picker-right"><select data-group-role="${m.id}" ${m.id==='support-1'?'disabled':''} aria-label="设置成员角色">${['admin','member','visitor'].map(r=>`<option value="${r}" ${m.role===r?'selected':''}>${roleNames[r]}</option>`).join('')}</select><button type="button" class="chip-close" data-remove-group-member="${m.id}" aria-label="移除 ${safe(person(m.id).name)}">×</button></div></div>`).join('') || '<div class="picker-empty">还没有成员，可从上方添加，或直接添加技术支持。</div>'; }
+function groupMemberOptions() {
+  const q=accountValue(modal.memberQuery);
+  const people=platformAccounts.filter(d=>d.id!=='owner-1'&&`${d.name} ${d.account} ${d.phone} ${d.email}`.toLowerCase().includes(q));
+  return people.map(d=>{
+    const unique=resolvePlatformAccount(d.account,'account').user?.id===d.id;
+    return `<label class="group-member-option"><input type="checkbox" data-pick-group-member="${safe(d.id)}" ${modal.members.some(m=>m.id===d.id)?'checked':''} ${unique?'':'disabled'}><span><strong>${safe(d.name)}</strong><small>用户名 ${safe(d.account)} · ${d.phone?`手机号 ${safe(d.phone.slice(0,3))}****${safe(d.phone.slice(-4))}`:`邮箱 ${safe(d.email)}`}</small></span>${!unique?'<span class="lookup-conflict">无法唯一匹配</span>':d.id==='support-1'?'<span class="support-tag">固定管理员</span>':''}</label>`;
+  }).join('')||'<div class="picker-empty">未匹配到云平台账户，请核对完整的手机号/邮箱或用户名。</div>';
+}
+
+function drawGroupPicker() {
+  document.getElementById('groupMemberOptions').innerHTML=groupMemberOptions();
+  document.getElementById('groupMemberDropdown').hidden=!modal.pickerOpen;
+  document.getElementById('groupMemberSearch').setAttribute('aria-expanded',String(modal.pickerOpen));
+  document.getElementById('selectedGroupMembers').innerHTML=groupCreateMembers();
+  document.getElementById('groupSelectedCount').textContent=modal.members.length;
+  const error=document.getElementById('groupMemberError');error.textContent=modal.memberError;error.hidden=!modal.memberError;
+}
+function showGroupCreateModal() {
+  modalFrame('添加课题组','填写名称，选择已有成员；也可以当场添加新成员，无需离开当前页面。',
+    `<form id="groupForm" novalidate><label class="field ${modal.error?'invalid':''}" id="groupNameField"><span class="field-label">课题组名称</span><input id="groupName" type="text" maxlength="40" placeholder="例如：肿瘤早筛课题组" value="${safe(modal.name)}"><span class="field-error">${safe(modal.error||'请输入课题组名称')}</span></label>
+    <div class="group-picker-label"><label class="field-label" for="groupMemberSearch">选择成员 <span class="picker-note">可多选</span></label><div class="group-picker-actions"><button type="button" class="btn quiet small text-primary" data-new-group-person>添加新成员</button><button type="button" class="btn quiet small text-primary" data-add-support>直接添加技术支持</button></div></div>
+    <div class="group-search-picker"><div class="group-search-control">${icon('search')}<input id="groupMemberSearch" type="search" autocomplete="off" placeholder="输入手机号/邮箱或用户名匹配云平台账户" value="${safe(modal.memberQuery)}" aria-expanded="${modal.pickerOpen}" aria-controls="groupMemberDropdown"><button type="button" class="group-picker-toggle" data-toggle-group-picker aria-label="展开或收起成员选项">⌄</button></div>
+    <div class="group-member-dropdown" id="groupMemberDropdown" ${modal.pickerOpen?'':'hidden'}><div id="groupMemberOptions" class="group-member-options">${groupMemberOptions()}</div></div></div>
+    <p class="group-account-hint">手机号或邮箱与用户名对应同一账户；创建课题组时自动加入成员库。</p><p class="group-member-error" id="groupMemberError" role="alert" ${modal.memberError?'':'hidden'}>${safe(modal.memberError)}</p>
+    <div class="selected-picker"><div class="picker-title">已选成员 <b id="groupSelectedCount">${modal.members.length}</b><span>可调整角色或直接移除</span></div><div id="selectedGroupMembers">${groupCreateMembers()}</div></div><p class="member-library-note">创建课题组仅建立成员归属；项目权限将在确认项目协作后生效。</p></form>`,
+    `<button class="btn" data-close>${modal.parent?'返回项目协作':'取消'}</button><button class="btn primary" data-create-group-confirm>${modal.parent?'创建并选用':'创建课题组'}</button>`, true);
+}
+function collabMembers(state) {
+  const seen=new Set(),out=[];
+  const add=m=>{if(!seen.has(m.id)){seen.add(m.id);out.push({...m});}};
+  state.selectedGroupIds.forEach(gid=>(group(gid)?.members||[]).forEach(add));
+  collabTargetRecords(state).forEach(r=>(r.members||[]).forEach(add));
+  (state.extraMembers||[]).forEach(add);
+  return out;
+}
+function collabRoleValue(state,member) {
+  if(member.id==='support-1')return 'admin';
+  if(state.roleOverrides?.[member.id])return state.roleOverrides[member.id];
+  const roles=[...new Set(collabTargetRecords(state).flatMap(r=>(r.members||[]).filter(m=>m.id===member.id).map(m=>m.role)))];
+  return roles.length>1?'preserve':roles[0]||member.role;
+}
+function openCollabPerson() {
+  if(!canManage()||modal?.type!=='collab')return;
+  modal={type:'add',target:'collab-draft',parent:modal,step:'verify',error:'',parentFocus:'[data-add-collab-person]'};showModal();
+}
+
+function collabProjectMembers(state) {
+  const seen=new Set(),out=[];
+  const containers=collabTargetRecords(state);
+  containers.forEach(p=>(p.members||[]).forEach(m=>{if(!seen.has(m.id)){seen.add(m.id);out.push({...m});}}));
+  return out;
+}
+function collabTargetRecords(state) {
+  const gids=new Set(state.selectedGroupIds.filter(Boolean));
+  return collabRecords.filter(r=>{
+    if(!state.selectedProjectIds.includes(r.projectId))return false;
+    if(state.recordId)return r.id===state.recordId;
+    if(!gids.size)return false;
+    return gids.has(r.groupId)||[...gids].some(gid=>group(gid)?.name===r.groupName);
+  });
+}
+function refreshCollabSelection(preserve=false) {
+  const records=collabTargetRecords(modal);
+  const current=new Set(collabProjectMembers(modal).map(m=>m.id));
+  const isNew=!modal.selectedProjectIds.length||modal.selectedProjectIds.some(id=>!records.some(r=>r.projectId===id));
+  const selected=new Set(preserve&&modal.selectionTouched?modal.selectedMemberIds:collabMembers(modal).filter(m=>isNew||current.has(m.id)).map(m=>m.id));
+  // 技术支持始终自动带入协作，不可取消。
+  if(collabMembers(modal).some(m=>m.id==='support-1'))selected.add('support-1');
+  modal.selectedMemberIds=collabMembers(modal).filter(m=>m.role!=='owner'&&selected.has(m.id)).map(m=>m.id);
+  modal.removedMemberIds=collabMembers(modal).filter(m=>current.has(m.id)&&!selected.has(m.id)&&m.id!=='support-1').map(m=>m.id);
+}
+function changeCollabMember(id,selected) {
+  const member=collabMembers(modal).find(m=>m.id===id);
+  if(!member||member.role==='owner'||(id==='support-1'&&!selected))return notify('技术支持始终参与协作，不可移除');
+  modal.selectionTouched=true;
+  const exists=collabProjectMembers(modal).some(m=>m.id===id);
+  if(selected){modal.selectedMemberIds=[...new Set([...modal.selectedMemberIds,id])];modal.removedMemberIds=modal.removedMemberIds.filter(x=>x!==id);}
+  else {modal.selectedMemberIds=modal.selectedMemberIds.filter(x=>x!==id);if(exists)modal.removedMemberIds=[...new Set([...modal.removedMemberIds,id])];}
+}
+function selectAllCollabMembers() {
+  collabMembers(modal).forEach(m=>{if(m.role!=='owner')changeCollabMember(m.id,true);});
+  return showCollabModal();
+}
+function clearCollabMembers() {
+  collabMembers(modal).forEach(m=>{if(m.role!=='owner'&&m.id!=='support-1')changeCollabMember(m.id,false);});
+  return showCollabModal();
+}
+function showCollabModal() {
+  const members=collabMembers(modal),current=collabProjectMembers(modal);
+  const selectedProjects=projects.filter(p=>modal.selectedProjectIds.includes(p.id));
+  const download=typeof modal.downloadOverride==='boolean'?modal.downloadOverride:selectedProjects.length>0&&selectedProjects.every(p=>p.visitorDownload);
+  const body=`${modal.chooseProjects?`<section class="picker-block project-picker"><h3>选择协作项目 <span class="picker-note">可单选或多选</span></h3><div class="check-list project-list-picker">${personalProjects().map(p=>`<label class="check-item"><input type="checkbox" data-collab-project="${p.id}" ${modal.selectedProjectIds.includes(p.id)?'checked':''}><span class="check-main"><strong>${safe(p.name.replace(/^测试示例-/,''))}</strong><small>${safe(p.code)}</small></span></label>`).join('')}</div></section>`:''}
+  <section class="collab-context" aria-label="当前协作项目"><div class="collab-context-heading">${icon('folder')}<span>协作项目</span><b>${selectedProjects.length} 个</b></div><div class="collab-context-names">${selectedProjects.length?selectedProjects.map(p=>`<div class="collab-context-project"><strong>${safe(p.name)}</strong><small>${safe(p.code)}</small></div>`).join(''):'<span class="collab-context-empty">请先选择协作项目</span>'}</div></section>
+  <div class="picker-layout"><section class="picker-block group-picker-panel"><div class="picker-heading"><h3>选择课题组 <span class="picker-note">可多选</span></h3>${modal.recordId?'':'<button class="btn quiet small text-primary" data-new-collab-group>＋ 新建课题组</button>'}</div><div class="check-list group-list-picker">${groups.map(g=>`<label class="check-item"><input type="checkbox" data-collab-group="${g.id}" ${modal.selectedGroupIds.includes(g.id)?'checked':''} ${modal.recordId?'disabled':''}><span class="check-main"><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员</small></span></label>`).join('')||'<div class="picker-empty">暂无课题组，点击上方“新建课题组”即可创建</div>'}</div></section>
+  <section class="picker-block collab-members-panel"><div class="collab-members-header"><div class="collab-members-title"><h3>协作成员</h3><span id="collabMemberCount">已选 <b>${modal.selectedMemberIds.length}</b> / ${members.length} 位成员</span></div><div class="collab-member-actions"><button type="button" class="btn collab-select-all" data-select-all-collab-members>${icon("check")}全选</button><button type="button" class="btn collab-clear-all" data-clear-collab-members>清空</button></div></div><p class="inline-member-hint">仅勾选成员获得项目权限，保存后生效。</p><div class="check-list inline-collab-members">${members.map((m,i)=>{
+    const selected=modal.selectedMemberIds.includes(m.id),removed=modal.removedMemberIds.includes(m.id),existing=current.some(x=>x.id===m.id),owner=m.role==='owner';
+    const value=collabRoleValue(modal,m);
+    const isSupport=m.id==='support-1';
+    const alwaysIn=isSupport||owner;
+    const statusText=owner?'所有者':removed?'待移除':existing?'已加入':selected?'待添加':'未选';
+    const statusClass=owner?'owner':removed?'removed':existing?'joined':selected?'added':'';
+    const roleDisabled=!selected||owner||m.id==='support-1';
+    return `<div class="collab-member-item ${removed?'pending-removal':''} ${(alwaysIn||selected)?'is-selected':''} ${isSupport?'is-support':''}" data-collab-member-row="${m.id}"><label class="collab-member-left"><input type="checkbox" data-collab-member="${m.id}" ${(alwaysIn||selected)?'checked':''} ${alwaysIn?'disabled':''} ${isSupport?'title="技术支持始终参与协作"':''}>${avatar(person(m.id).name,i)}<span class="collab-member-info"><strong>${safe(person(m.id).name)}${isSupport?'<span class="collab-support-tag">固定管理员</span>':''}</strong><small>${safe(person(m.id).account)}</small></span></label><span class="collab-member-status ${statusClass}">${statusText}</span><select class="collab-member-role" id="collabRole-${safe(m.id)}" data-collab-role="${safe(m.id)}" ${roleDisabled?'disabled':''} aria-label="${safe(person(m.id).name)}的项目角色">${value==='preserve'?'<option value="preserve">保留原角色</option>':''}${['admin','member','visitor'].map(role=>`<option value="${role}" ${role===value?'selected':''}>${roleNames[role]}</option>`).join('')}</select>${owner||isSupport?'<span class="collab-member-action-placeholder"></span>':removed?`<button type="button" class="collab-member-action restore" data-restore-collab-member="${m.id}" aria-label="撤销移除${safe(person(m.id).name)}">撤销</button>`:(selected||existing)?`<button type="button" class="collab-member-action remove" data-remove-collab-member="${m.id}" aria-label="移除${safe(person(m.id).name)}">移除</button>`:'<span class="collab-member-action-placeholder"></span>'}</div>`;
+  }).join('')||'<div class="picker-empty">该课题组还没有成员，请先添加成员</div>'}</div><button type="button" class="btn collab-add-person" data-add-collab-person>${icon('plus')}添加成员</button></section></div>
+  <div class="inline-collab-summary"><span>已选 <b>${modal.selectedMemberIds.length}</b> 位协作成员${modal.removedMemberIds.length?` · <span class="pending-count">待移除 ${modal.removedMemberIds.length} 位</span>`:''}</span><span>仅调整项目协作，不删除课题组成员</span></div>`;
+  modalFrame(modal.recordId?'管理协作成员':collabTargetRecords(modal).length?'管理项目协作':'发起项目协作','选择课题组（可多选），在右侧添加或移除协作成员。',body,'<button class="btn" data-close>取消</button><button class="btn primary" data-confirm-collab>保存变更</button>',true);
+}
+function showModal() {
+  if(!modal) return;
+  if(modal.type==='share')return showShareModal();
+  if(modal.type==='share-cancel')return showCancelShareModal();
+  if(modal.type==='folder-create')return showFolderModal();
+  if(modal.type==='group-create') return showGroupCreateModal();
+  if(modal.type==='directory-add') return showDirectoryAddModal();
+  if(modal.type==='directory-remove') return showDirectoryRemoveModal();
+  if(modal.type==='collab') return showCollabModal();
+  if(modal.type==='add' && modal.step==='verify') {
+    const title=modal.target==='group'?'添加课题组成员':'添加项目成员';
+    return showMemberAccountLookup(title,accountCopy.subtitle);
+  }
+  if(modal.type==='add' && modal.step==='role') {
+    const u=modal.user;
+    const title=modal.target==='group'?'确认课题组成员与角色':'确认成员与项目角色';
+    modalFrame(title,'账号核对通过，请为该用户选择角色',
+      `${accountIdentityCard(u)}<span class="field-label">${modal.target==='group'?'课题组角色':'项目角色'}</span>${u.id==='support-1'?'<div class="fixed-admin-role">技术支持默认为管理员，角色不可调整。</div>':rolesRadio('member')}`,
+      '<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-confirm-add>添加成员</button>'); return;
+  }
+  if(modal.type==='edit') {
+    modalFrame('调整项目角色',`为 ${safe(person(modal.id).name)} 设置新的协作权限`,
+      `<span class="field-label">选择角色</span>${rolesRadio(modal.role)}<div class="verify-hint" style="margin-top:16px">项目所有者不可在这里调整；角色变化仅对当前项目生效。</div>`,
+      '<button class="btn" data-close>取消</button><button class="btn primary" data-save-role>保存角色</button>'); return;
+  }
+  if(modal.type==='remove') {
+    modalFrame('移除项目成员','确认后，此人将无法继续访问本项目的协作内容',
+      `<p>确定从「${safe(project().name)}」移除 <strong>${safe(person(modal.id).name)}</strong> 吗？</p><div class="confirm-warning">${modal.id==='support-1'?'技术支持被移除后不会自动重新加入，需要管理员重新核对账号并手动添加。':'这不会删除对方的云平台账号，也不会影响其在其他项目的角色。'}</div>`,
+      '<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-remove>确认移除</button>');
+  }
+}
+function verify() {
+  if(!canManage()||!modal||!['add','directory-add'].includes(modal.type)||modal.step!=='verify')return;
+  const contactKey=['phone','email'].includes(modal.contactType)?modal.contactType:'phone';
+  [contactKey,'account'].forEach(k=>{modal[k]=document.getElementById(k)?.value.trim()||'';document.getElementById(k+'Field')?.classList.remove('invalid');document.getElementById(k)?.setAttribute('aria-invalid','false');});
+  if(!modal[contactKey]&&!modal.account)return lookupError(`请输入${accountPairLabel}`,[contactKey,'account']);
+  const invalid=[];
+  if(contactKey==='phone'&&!/^1[3-9]\d{9}$/.test(modal.phone))invalid.push('phone');
+  if(contactKey==='email'&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(modal.email))invalid.push('email');
+  if(!modal.account)invalid.push('account');
+  if(invalid.length)return lookupError(`暂未匹配到完整账户，请核对输入的${accountPairLabel}。`,invalid);
+  const contactResult=resolvePlatformAccount(modal[contactKey],contactKey);
+  const accountResult=resolvePlatformAccount(modal.account,'account');
+  if(contactResult.status==='ambiguous'||accountResult.status==='ambiguous')return lookupError('账号信息存在重复关联，无法唯一匹配，请核对后重试。',[contactKey,'account']);
+  const user=contactResult.user;
+  if(!user||accountResult.user?.id!==user.id)return lookupError(accountCopy.mismatch,[contactKey,'account']);
+
+  if(modal.type==='directory-add'){
+    if(directory.some(d=>d.id===user.id||accountKeys.some(k=>accountValue(d[k])&&accountValue(d[k])===accountValue(user[k]))))return lookupError('该成员已在成员库中，可在课题组中直接选用');
+  }else{
+    const container=modal.target==='group'?group(modal.groupId)?.members:modal.target==='collab-draft'?collabMembers(modal.parent):projectMemberList();if(!container)return;
+    if(user.id==='owner-1')return lookupError('项目所有者无需重复添加');
+    if(container.some(m=>m.id===user.id))return lookupError('该用户已在当前列表中');
+  }
+  modal.error='';showAccountConfirmation(user);
+}
+
+function confirmGroupCreate() {
+  if(!canManage()||modal?.type!=='group-create')return;
+  modal.name=document.getElementById('groupName').value.trim();modal.error='';modal.memberError='';
+  if(!modal.name)modal.error='请输入课题组名称';
+  else if(groups.some(g=>g.name===modal.name))modal.error='课题组名称已存在';
+  if(!modal.members.length)modal.memberError='请至少选择一位成员';
+  else if(modal.members.some(m=>resolvePlatformAccount(person(m.id).account,'account').user?.id!==m.id))modal.memberError='存在无法唯一匹配的成员，请核对手机号/邮箱与用户名后重新选择';
+  if(modal.error||modal.memberError){showGroupCreateModal();document.getElementById(modal.error?'groupName':'groupMemberSearch').focus();return;}
+  const id='group-'+Date.now()+'-'+Math.random().toString(36).slice(2,6),parent=modal.parent;
+  modal.members.forEach(m=>ensureDirectoryPerson(m.id));
+  groups.push({id,name:modal.name,members:structuredClone(modal.members)});saveAll();
+  if(parent?.type==='collab'){
+    parent.selectedGroupIds=[id];parent.roleOverrides={};parent.extraMembers=[];parent.removedMemberIds=[];parent.selectionTouched=false;
+    modal=parent;refreshCollabSelection();showCollabModal();return notify('课题组已创建并选用，确认协作后才授予项目权限');
+  }
+  closeModal();render();notify('课题组已创建，可在项目协作中选用');
+}
+function confirmCollab() {
+  if(!canManage()||modal?.type!=='collab')return;
+  const selectedProjects=projects.filter(p=>modal.selectedProjectIds.includes(p.id));
+  const selectedGroups=modal.selectedGroupIds.map(gid=>group(gid)).filter(Boolean);
+  const members=collabMembers(modal).filter(m=>modal.selectedMemberIds.includes(m.id));
+  if(selectedProjects.some(p=>!canManageProject(p)))return notify('收到的协作项目仅可查看，无权再次发起或修改协作');
+  if(!selectedProjects.length)return notify('请至少选择一个项目');
+  if(!selectedGroups.length)return notify('请至少选择一个课题组');
+  if(!members.length)return notify('请至少选择一位协作成员');
+  const createdAt=new Date().toLocaleString('zh-CN',{hour12:false});
+  let added=0,updated=0;
+  selectedProjects.forEach(p=>{
+    if(typeof modal.downloadOverride==='boolean')p.visitorDownload=modal.downloadOverride;
+    members.forEach(m=>ensureDirectoryPerson(m.id));
+    selectedGroups.forEach(g=>{
+      members.forEach(m=>{if(!p.members.some(x=>x.id===m.id))p.members.push({id:m.id,role:m.id==='support-1'?'admin':modal.roleOverrides[m.id]||m.role});});
+      // Find existing record for this project + group combo
+      const record=collabRecords.find(r=>r.projectId===p.id&&(r.groupId===g.id||(r.groupName===g.name&&!r.groupId)));
+      if(record){
+        record.members=members.map(m=>({id:m.id,role:m.id==='support-1'?'admin':modal.roleOverrides[m.id]||m.role}));
+        record.updatedAt=createdAt;updated++;
+      }else{
+        collabRecords.push({id:'record-'+Date.now()+'-'+p.id+'-'+g.id+'-'+Math.random().toString(36).slice(2,6),projectId:p.id,projectName:p.name,code:p.code,initiatedBy:currentUserId(),groupId:g.id,groupName:g.name,members:members.map(m=>({id:m.id,role:m.id==='support-1'?'admin':modal.roleOverrides[m.id]||m.role})),createdAt,status:'协作中'});added++;
+      }
+    });
+  });
+  saveAll();closeModal();selectedProjectIds=[];render();notify(added?`已发起 ${added} 条协作记录`:`已更新 ${updated} 条协作记录`);
+}
+
+main.addEventListener('click', e => {
+  const a=e.target.closest('button'); if(!a||a.disabled) return;
+  if(a.dataset.copyTicket) return copyProjectTicket(a.dataset.copyTicket);
+  if(a.hasAttribute('data-back-project-list')) return navigate(detailOrigin.page,{projectTab:detailOrigin.listTab});
+  if(a.dataset.nav) return navigate(a.dataset.nav);
+  if(a.dataset.openProject||a.dataset.openData) return openProjectDetail(a.dataset.openProject||a.dataset.openData,a.dataset.collabRecord||null);
+  if(a.hasAttribute('data-show-result'))return showResultPreview();
+  if(a.hasAttribute('data-cloud-download'))return showCloudDownload();
+  if(a.hasAttribute('data-create-folder'))return openCreateFolder();
+  if(a.hasAttribute('data-delete-selected-files'))return openFileRemoval(selectedFileIds);
+  if(a.dataset.deleteFile)return openFileRemoval([a.dataset.deleteFile]);
+  if(a.dataset.openFolder){const folder=currentProjectFiles().find(f=>f.id===a.dataset.openFolder);if(folder){filePath.push(folder.id);selectedFileIds=[];return render();}}
+  if(a.hasAttribute('data-file-path')){filePath=filePath.slice(0,Number(a.dataset.filePath)+1);selectedFileIds=[];return render();}
+  if(a.dataset.tab){if(a.dataset.tab==='members'&&!isCollaborativeDetail()&&!isManageableCollabDetail())return;tab=a.dataset.tab;search='';return render();}
+  if(a.dataset.listTab){listTab=a.dataset.listTab;search='';categoryFilter='';return render();}
+  if(a.hasAttribute('data-clear-projects')){selectedProjectIds=[];return render();}
+  if(a.hasAttribute('data-add-directory')) return openDirectoryAdd();
+  if(a.dataset.removeDirectory)return openDirectoryRemove(a.dataset.removeDirectory);
+  if(a.hasAttribute('data-create-group')) return openGroupCreate();
+  if(a.hasAttribute('data-add')) return openAdd('project');
+  if(a.dataset.groupAdd) return openAdd('group',a.dataset.groupAdd);
+  if(a.dataset.addSupportGroup){if(!canManage()) return;const g=group(a.dataset.addSupportGroup);if(!g||g.members.some(m=>m.id==='support-1')) return;ensureDirectoryPerson('support-1');g.members.push({id:'support-1',role:'admin'});saveAll();render();return notify('技术支持已加入课题组，角色为管理员');}
+  if(a.dataset.openCollab) return openCollab(a.dataset.openCollab,[],true);
+  if(a.hasAttribute('data-collab-selected')) return openCollab(groups[0]?.id,[...selectedProjectIds],!selectedProjectIds.length);
+  if(a.dataset.collabOne){const existing=collabRecords.find(r=>r.projectId===a.dataset.collabOne);return openCollab(existing?.groupId||groups.find(g=>g.name===existing?.groupName)?.id||groups[0]?.id,[a.dataset.collabOne]);}
+  if(a.dataset.manageRecord){const r=collabRecords.find(x=>x.id===a.dataset.manageRecord);if(!r) return;return openCollab(r.groupId||groups.find(g=>g.name===r.groupName)?.id,[r.projectId],false,r.id);}
+  if(a.dataset.shareProject)return openShare(a.dataset.shareProject);
+  if(a.dataset.editMember){if(!canManage())return;const m=projectMemberList().find(x=>x.id===a.dataset.editMember);if(!m||m.role==='owner'||m.id==='support-1')return;modal={type:'edit',id:m.id,role:m.role};return showModal();}
+  if(a.dataset.removeMember){if(!canManage())return;const m=projectMemberList().find(x=>x.id===a.dataset.removeMember);if(!m||m.role==='owner')return;modal={type:'remove',id:m.id};return showModal();}
+});
+document.querySelector('.sidebar').addEventListener('click',e=>{const menu=e.target.closest('[data-project-menu]');if(menu){projectMenuOpen=!projectMenuOpen;document.getElementById('projectSubnav').hidden=!projectMenuOpen;menu.setAttribute('aria-expanded',String(projectMenuOpen));return;}const a=e.target.closest('[data-nav],.brand');if(a){e.preventDefault();navigate(a.dataset.nav||'projects');}});
+main.addEventListener('input',e=>{
+  if(['projectSearch','memberSearch','groupSearch'].includes(e.target.id)){
+    const id=e.target.id,pos=e.target.selectionStart;search=e.target.value;render();const next=document.getElementById(id);next.focus();try{next.setSelectionRange(pos,pos);}catch{}
+  }
+});
+main.addEventListener('change',e=>{
+  if(e.target.dataset.selectFile){const id=e.target.dataset.selectFile;selectedFileIds=e.target.checked?[...new Set([...selectedFileIds,id])]:selectedFileIds.filter(x=>x!==id);return render();}
+  if(e.target.hasAttribute('data-select-all-files')){selectedFileIds=e.target.checked?currentProjectFiles().map(f=>f.id):[];return render();}
+  if(e.target.dataset.selectProject){const id=e.target.dataset.selectProject;selectedProjectIds=e.target.checked?[...new Set([...selectedProjectIds,id])]:selectedProjectIds.filter(x=>x!==id);return render();}
+  if(e.target.hasAttribute('data-select-all-projects')){const ids=filteredProjects().map(p=>p.id);selectedProjectIds=e.target.checked?[...new Set([...selectedProjectIds,...ids])]:selectedProjectIds.filter(id=>!ids.includes(id));return render();}
+  if(e.target.id==='categoryFilter'){categoryFilter=e.target.value;return render();}
+  if(e.target.id==='visitorDownload'&&canManage()){project().visitorDownload=e.target.checked;saveAll();render();notify('访问者下载权限已更新');}
+});
+document.querySelectorAll('[data-preview-role]').forEach(button=>button.addEventListener('click',()=>switchPreviewRole(button.dataset.previewRole)));
+document.getElementById('recipientSelect').addEventListener('change',e=>switchPreviewRole('member',e.target.value));
+modalRoot.addEventListener('click',e=>{
+  if(e.target===modalRoot||e.target.closest('[data-close]')) return dismissModal();
+  const a=e.target.closest('button');if(!a||a.disabled||!modal) return;
+  if(a.hasAttribute('data-result-to-data')){closeModal();tab='data';return render();}
+  if(!canManage())return closeModal();
+  if(a.hasAttribute('data-confirm-folder'))return confirmFolder();
+  if(a.hasAttribute('data-confirm-file-remove'))return removeProjectFiles();
+  if(a.hasAttribute('data-add-share-user')){e.preventDefault();return addShareUser();}
+  if(a.dataset.removeShareUser&&modal.type==='share'){modal.selectedUserIds=modal.selectedUserIds.filter(id=>id!==a.dataset.removeShareUser);modal.error='';return showShareModal();}
+  if(a.hasAttribute('data-save-share'))return saveShare();
+  if(a.hasAttribute('data-open-share-cancel')&&modal.type==='share')return openCancelShare(modal.projectId,modal);
+  if(a.hasAttribute('data-keep-share')&&modal.type==='share-cancel'){if(modal.previous){modal=modal.previous;return showShareModal();}return closeModal();}
+  if(a.hasAttribute('data-confirm-share-cancel'))return cancelShare();
+  if(a.hasAttribute('data-directory-add-confirm'))return confirmDirectoryAdd();
+  if(a.hasAttribute('data-confirm-directory-remove'))return confirmDirectoryRemove();
+  if(a.hasAttribute('data-create-group-confirm'))return confirmGroupCreate();
+  if(a.hasAttribute('data-new-collab-group')&&modal.type==='collab'&&!modal.recordId)return openGroupCreate(modal);
+  if(a.hasAttribute('data-new-group-person')&&modal.type==='group-create')return openDirectoryAdd(modal);
+  if(a.hasAttribute('data-toggle-group-picker')){modal.pickerOpen=!modal.pickerOpen;return drawGroupPicker();}
+  if(a.hasAttribute('data-add-support')){if(!modal.members.some(m=>m.id==='support-1'))modal.members.push({id:'support-1',role:'admin'});modal.memberError='';return drawGroupPicker();}
+  if(a.dataset.removeGroupMember){modal.members=modal.members.filter(m=>m.id!==a.dataset.removeGroupMember);drawGroupPicker();return document.getElementById('groupMemberSearch').focus({preventScroll:true});}
+  if(a.hasAttribute('data-select-all-collab-members'))return selectAllCollabMembers();
+  if(a.hasAttribute('data-clear-collab-members'))return clearCollabMembers();
+  if(a.dataset.removeCollabMember){changeCollabMember(a.dataset.removeCollabMember,false);return showCollabModal();}
+  if(a.dataset.restoreCollabMember){changeCollabMember(a.dataset.restoreCollabMember,true);return showCollabModal();}
+  if(a.hasAttribute('data-add-collab-person'))return openCollabPerson();
+  if(a.hasAttribute('data-confirm-collab'))return confirmCollab();
+  if(a.dataset.accountContactType){modal.contactType=a.dataset.accountContactType;modal.lookupSource=modal.contactType;modal.error='';return showMemberAccountLookup(modal.type==='directory-add'?'添加成员':modal.target==='group'?'添加课题组成员':'添加项目成员');}
+  if(a.hasAttribute('data-verify'))return verify();
+  if(a.hasAttribute('data-back-verify')){modal.step='verify';return showModal();}
+  if(a.hasAttribute('data-confirm-add')&&modal.type==='add'&&modal.step==='role'){
+    if(modal.target==='collab-draft'){
+      const parent=modal.parent,u=modal.user,role=u.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
+      if(!parent.extraMembers.some(m=>m.id===u.id))parent.extraMembers.push({id:u.id,role});
+      parent.roleOverrides[u.id]=role;parent.selectedMemberIds=[...new Set([...parent.selectedMemberIds,u.id])];parent.selectionTouched=true;
+      modal=parent;showCollabModal();return notify('成员已选入，保存变更后生效');
+    }
+    const container=modal.target==='group'?group(modal.groupId).members:projectMemberList();
+    if(container.some(m=>m.id===modal.user.id))return notify('该成员已在当前名单中');
+    const role=modal.user.id==='support-1'?'admin':modalRoot.querySelector('input[name=role]:checked')?.value||'member';
+    if(!directory.some(d=>d.id===modal.user.id))directory.push({...modal.user});
+    container.push({id:modal.user.id,role});
+    if(modal.target==='project'&&activeCollabRecord()&&!project().members.some(m=>m.id===modal.user.id))project().members.push({id:modal.user.id,role});
+    saveAll();closeModal();render();return notify('成员添加成功');
+  }
+  if(a.hasAttribute('data-save-role')&&modal.type==='edit'){
+    const m=projectMemberList().find(x=>x.id===modal.id);if(!m||m.role==='owner'||m.id==='support-1')return closeModal();
+    m.role=modalRoot.querySelector('input[name=role]:checked')?.value||m.role;if(!activeCollabRecord())syncRecords(project().id);saveAll();closeModal();render();return notify('成员角色已更新');
+  }
+  if(a.hasAttribute('data-confirm-remove')&&modal.type==='remove'){
+    const m=projectMemberList().find(x=>x.id===modal.id);if(!m||m.role==='owner')return closeModal();
+    const record=activeCollabRecord();if(record)record.members=record.members.filter(x=>x.id!==modal.id);else{project().members=project().members.filter(x=>x.id!==modal.id);syncRecords(project().id);}saveAll();closeModal();render();return notify(record?'成员已从本条协作记录中移除':'成员已从项目中移除');
+  }
+});
+modalRoot.addEventListener('submit',e=>{e.preventDefault();if(!canManage())return;if(e.target.id==='folderForm')confirmFolder();else if(e.target.id==='shareForm')addShareUser();else if(e.target.id==='verifyForm')verify();else if(e.target.id==='groupForm')confirmGroupCreate();});
+modalRoot.addEventListener('input',e=>{
+  if(!modal)return;
+  e.target.closest('.field')?.classList.remove('invalid');
+  if(e.target.id==='shareAccount'){modal.account=e.target.value;modal.error='';e.target.setAttribute('aria-invalid','false');e.target.closest('.share-account-control').classList.remove('invalid');document.getElementById('shareAccountError').hidden=true;drawShareAccountLookup();}
+  if(e.target.id==='folderName')modal.name=e.target.value;
+  if(e.target.dataset.accountKey)return updateAccountLookup(e.target.dataset.accountKey,e.target.value);
+  if(e.target.id==='groupName'){modal.name=e.target.value;modal.error='';}
+  if(e.target.id==='groupMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;drawGroupPicker();}
+});
+modalRoot.addEventListener('focusin',e=>{if(modal?.type==='group-create'&&e.target.id==='groupMemberSearch'){modal.pickerOpen=true;drawGroupPicker();}});
+modalRoot.addEventListener('change',e=>{
+  if(!modal||!canManage())return;
+  if(e.target.dataset.collabRole){const id=e.target.dataset.collabRole;if(id!=='support-1'&&['admin','member','visitor'].includes(e.target.value))modal.roleOverrides[id]=e.target.value;return;}
+  if(e.target.hasAttribute('data-collab-download')){modal.downloadOverride=e.target.checked;return;}
+  if(e.target.dataset.pickGroupMember){const id=e.target.dataset.pickGroupMember;if(resolvePlatformAccount(person(id).account,'account').user?.id!==id)return notify('该账户无法唯一匹配，请重新核对');if(e.target.checked){if(!modal.members.some(m=>m.id===id))modal.members.push({id,role:id==='support-1'?'admin':'member'});}else modal.members=modal.members.filter(m=>m.id!==id);modal.memberError='';drawGroupPicker();modalRoot.querySelector(`[data-pick-group-member="${id}"]`)?.focus({preventScroll:true});return;}
+  if(e.target.dataset.collabGroup){const gid=e.target.dataset.collabGroup;modal.selectedGroupIds=e.target.checked?[...new Set([...modal.selectedGroupIds,gid])]:modal.selectedGroupIds.filter(x=>x!==gid);modal.roleOverrides={};modal.extraMembers=[];modal.removedMemberIds=[];modal.selectionTouched=false;refreshCollabSelection();return showCollabModal();}
+  if(e.target.dataset.collabMember){const id=e.target.dataset.collabMember;changeCollabMember(id,e.target.checked);showCollabModal();modalRoot.querySelector(`[data-collab-member="${id}"]`)?.focus({preventScroll:true});return;}
+  if(e.target.dataset.collabProject){const id=e.target.dataset.collabProject;modal.selectedProjectIds=e.target.checked?[...new Set([...modal.selectedProjectIds,id])]:modal.selectedProjectIds.filter(x=>x!==id);refreshCollabSelection(true);return showCollabModal();}
+  if(e.target.dataset.groupRole){const m=modal.members.find(x=>x.id===e.target.dataset.groupRole);if(m&&m.id!=='support-1')m.role=e.target.value;}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!modalRoot.hidden){if(!confirmRoot.hidden){closeConfirmation();document.getElementById('account')?.focus();}else dismissModal();}
+  if(e.key==='Tab'&&!modalRoot.hidden){const els=[...modalRoot.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')].filter(el=>el.offsetParent!==null);const first=els[0],last=els.at(-1);if(!first)return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
+  if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)&&e.target.getAttribute('role')==='tab'){
+    e.preventDefault();const buttons=[...main.querySelectorAll('[role=tab]')],i=buttons.indexOf(e.target),next=e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:-1)+buttons.length)%buttons.length;buttons[next].click();main.querySelectorAll('[role=tab]')[next].focus();
+  }
+});
+chooseRoleLanding();
+render();
+
+  </script>
+</body>
+</html>
