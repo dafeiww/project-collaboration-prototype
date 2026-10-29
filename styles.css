@@ -231,3 +231,7 @@
 /* 中文：注册手机号或已绑定邮箱；英文：邮箱。均与用户名成对核对。 */
 .member-account-modal #contactField{margin-bottom:6px}
 .member-contact-hint{margin:0 0 18px;color:#909399;font-size:11px;line-height:1.7}
+.member-role-fieldset{min-width:0;margin:0;padding:0;border:0}
+.member-role-fieldset>legend{margin-bottom:10px;padding:0;color:#606266;font-size:12px;font-weight:600}
+.member-role-hint{margin:12px 0 0;color:#909399;font-size:11px;line-height:1.7}
+.directory-table .directory-role-column{width:116px;white-space:nowrap;text-align:left}
