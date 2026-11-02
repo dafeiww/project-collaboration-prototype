@@ -100,7 +100,7 @@ body.analysis-result-mode > .app-shell { display: none; }
 .ar-submitter-person { display:flex; align-items:center; flex-wrap:wrap; gap:5px; min-width:0; }
 .ar-submitter-role { flex:none; padding:1px 5px; border-radius:3px; font-size:10px; line-height:16px; background:#f0f2f5; color:#7a8696; }
 .ar-submitter-role.owner { background:#eaf2ff; color:#5785c5; }
-.ar-submitter-role.support { background:#fff3e4; color:#b58a48; }
+.ar-submitter-role.support,.ar-submitter-role.admin { background:#fff3e4; color:#b58a48; }
 .ar-record-meta time { white-space:nowrap; margin-left:auto; }
 .ar-record-meta .ar-icon { width:12px; height:12px; }
 .ar-record-author { color:#778493; }
