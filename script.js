@@ -383,6 +383,7 @@ function projectCell(p, i = 0) { return `<div class="project-title-cell"><span c
 function renderProjects() {
   const support=identity==='support',projectType=page==='visual'?'云图汇':'云分析',mine=listTab==='mine',inScope=p=>support||p.type===projectType;
   const scopedProjects=(mine?personalProjects():sharedProjects()).filter(inScope);
+  const collaborationDemo=mine&&(scopedProjects.find(p=>p.id==='analysis'&&p.collab)||scopedProjects.find(p=>p.collab));
   const counts={mine:personalProjects().filter(inScope).length,shared:sharedProjects().filter(inScope).length};
   const tabs=[['mine',support?'协作项目':'派森诺项目'],['shared','共享项目']],list=filteredProjects();
   const showSelection=mine&&isManagementView(),selectedCount=selectedProjectIds.filter(id=>list.some(p=>p.id===id&&canConfigureCollaboration(p))).length;
@@ -404,7 +405,7 @@ function renderProjects() {
   return `<div class="page" data-screen-label="项目列表">${heading(support?'项目协作':projectType,description,isManagementView()?`<button class="btn ghost" data-nav="team">${icon('people')}${support?'协作人员管理':'成员与课题组'}</button>`:'')}
     <section class="surface"><div class="surface-top"><div class="list-tabs" role="tablist" aria-label="项目类型">${tabs.map(([key,label])=>`<button role="tab" aria-selected="${listTab===key}" class="${listTab===key?'active':''}" data-list-tab="${key}">${label}<span class="tab-count">${counts[key]}</span></button>`).join('')}</div><span class="surface-caption">${mine?'拥有者 / 协作者 / 访问者':'仅分享原始分析结果'}</span></div>
     <div class="list-toolbar">${searchField('projectSearch','搜索开题单号、项目名称或编号')}<div class="toolbar-right"><label class="filter-label"><span>项目类别</span><select id="categoryFilter" class="filter-select" aria-label="筛选项目类别"><option value="">全部类别</option>${[...new Set(scopedProjects.map(p=>p.category))].map(c=>`<option ${categoryFilter===c?'selected':''} value="${safe(c)}">${safe(c)}</option>`).join('')}</select></label>${bulk?`<button class="btn primary toolbar-collab-action" data-collab-selected>${icon('link')}${selectedCount?`协作已选项目（${selectedCount}）`:'发起项目协作'}</button>`:`<span class="small-count">共 ${list.length} 个项目</span>`}</div></div>
-    <div class="project-reference-note">${icon('info')}<span>${mine?'拥有者可管理项目；协作者按授权参与；访问者仅查看。点击开题单号或项目名称查看详情。':'此列表保留项目分享功能，仅查看原始分析结果，不显示协作角色。'}</span></div>
+    <div class="project-reference-note">${icon('info')}<span>${mine?'拥有者可管理项目；协作者按授权参与；访问者仅查看。点击开题单号或项目名称查看详情。':'此列表保留项目分享功能，仅查看原始分析结果，不显示协作角色。'}</span>${collaborationDemo?`<button class="btn quiet small text-primary" data-collaboration-demo="${safe(collaborationDemo.id)}">查看多人分析演示 →</button>`:''}</div>
     ${mine&&selectedCount?`<div class="selection-note">已选择 ${selectedCount} 个项目<button data-clear-projects>清空选择</button></div>`:''}
     <div class="table-shell project-table reference-project-table ${mine?'':'readonly-project-table'}"><div class="table-scroll"><table><thead>${head}</thead><tbody>${rows||`<tr><td colspan="${cols}" class="empty-cell">${emptyState(mine?'暂无匹配的拥有或受邀项目':'暂无共享项目',mine?'只显示当前账号拥有或已受邀参与的项目，请尝试其他关键词。':'分享功能继续保留，可由项目管理者邀请用户查看原始结果。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length)}</section>${pageFoot(mine?'未协作可“去协作”，已协作可“编辑协作”；项目分享独立管理。':'共享项目只提供原始结果查看；项目协作与分享分别管理。')}</div>`;
 }
@@ -459,6 +460,15 @@ function renderProjectFiles(p) {
 function renderOverview() { return `<div class="page" data-screen-label="项目概况">${heading(`欢迎回来，${safe(person(currentUserId()).name)}`,'科研的每一步探索，都值得被妥善连接。',`<button class="btn primary" data-nav="projects">${icon('folder')}查看全部项目</button>`)}${stats()}<div class="summary-panels"><section class="surface summary-panel"><h2>项目类别分布</h2>${[...new Set(visibleProjects().map(p=>p.type))].map((t,i)=>{const count=visibleProjects().filter(p=>p.type===t).length;return `<div style="margin-bottom:23px"><div class="progress-row"><span>${safe(t)}</span><span>${count} 个项目</span></div><div class="progress-track ${i?'blue':''}"><i style="width:${count/visibleProjects().length*100}%"></i></div></div>`;}).join('')}<div class="overview-list"><div class="overview-item">${icon('shield')}所有示例项目分析已完成<small>可开始协作</small></div></div></section><section class="surface summary-panel"><h2>我的课题组</h2><div class="overview-list">${groups.map((g,i)=>`<button class="btn ghost" data-open-collab="${g.id}" style="justify-content:flex-start">${avatar(g.name,i)}${safe(g.name)}<span style="margin-left:auto" class="small-count">${g.members.length} 人</span></button>`).join('')}</div><button class="btn quiet text-primary" data-nav="groups" style="margin-top:18px">查看全部课题组 →</button></section></div></div>`; }
 function renderData() { return `<div class="page" data-screen-label="项目数据">${heading('项目数据','从数据到洞察，所有分析项目都在这里。')}${stats()}<div class="data-grid">${visibleProjects().map((p,i)=>`<article class="surface data-card">${icon(p.type==='云图汇'?'chart':'folder')}<h3>${safe(p.name.replace(/^测试示例-/,''))}</h3><p>${safe(p.code)}<br>${safe(p.category)} · 分析已完成</p><button class="btn" data-open-data="${p.id}">查看项目概况 →</button></article>`).join('')}</div>${pageFoot('本原型用于演示项目与成员管理，不包含真实分析文件。')}</div>`; }
 function render() {
+  if(page==='analysis-result'){
+    const p=project();
+    if(!visibleProjects().some(item=>item.id===p.id)){page='projects';}
+    else {
+      AnalysisResult.mount({project:p,viewer:{...person(currentUserId()),id:currentUserId(),projectRole:projectAccessRole(p)},participants:p.members.map(member=>({...person(member.id),id:member.id,projectRole:member.role})),canSubmit:detailOrigin.listTab!=='shared'&&['owner','admin','member'].includes(projectAccessRole(p)),onViewerChange:switchAnalysisViewer,onBack:backFromAnalysis});
+      return;
+    }
+  }
+  AnalysisResult.unmount();
   renderRolePreview();
   if(listTab==='collab')listTab='mine';
   if(page==='detail'&&((detailOrigin.listTab==='mine'&&!projectAccessRole(project()))||(detailOrigin.listTab==='shared'&&!sharedProjects().some(p=>p.id===activeProjectId)))){page=detailOrigin.page;listTab='mine';tab='data';search='';}
@@ -744,8 +754,25 @@ function removeProjectFiles() {
   p.files=p.files.filter(f=>!removed.has(f.id));selectedFileIds=[];saveAll();closeModal();render();notify('示例文件夹已删除');
 }
 function showResultPreview() {
-  modal={type:'result-preview'};
-  modalFrame('分析结果预览','原始分析结果 · 交互演示',`${shareProjectCard(project())}<div class="result-preview-panel"><span class="reference-detail-status">分析已完成</span><h3>原始分析结果已就绪</h3><p>正式平台可在这里查看分析报告。本原型使用示例数据，不包含真实分析文件。</p></div>`,'<button class="btn" data-close>关闭</button><button class="btn primary" data-result-to-data>查看项目数据</button>');
+  if(!visibleProjects().some(p=>p.id===activeProjectId))return notify('当前身份没有该项目的查看权限');
+  closeModal();
+  history.pushState({analysisResult:true,projectId:activeProjectId,detailOrigin:{...detailOrigin}},'',location.href);
+  navigate('analysis-result');
+}
+function switchAnalysisViewer(userId) {
+  if(!project().members.some(member=>member.id===userId))return;
+  identity=userId==='owner-1'?'owner':userId==='support-1'?'support':'member';
+  if(identity==='member')recipientUserId=userId;
+  detailOrigin={...detailOrigin,listTab:'mine'};
+  const url=new URL(location.href);
+  url.searchParams.set('role',identity);
+  if(identity==='member')url.searchParams.set('user',userId);else url.searchParams.delete('user');
+  history.replaceState({...history.state,detailOrigin:{...detailOrigin}},'',url);
+  render();
+}
+function backFromAnalysis() {
+  if(history.state?.analysisDemoEntry){history.replaceState(null,'');return navigate('detail');}
+  if(history.state?.analysisResult)history.back();else navigate('detail');
 }
 function showCloudDownload() {
   modal={type:'cloud-download'};
@@ -974,6 +1001,7 @@ main.addEventListener('click', e => {
   if(a.hasAttribute('data-back-project-list')) return navigate(detailOrigin.page,{projectTab:detailOrigin.listTab});
   if(a.dataset.nav) return navigate(a.dataset.nav);
   if(a.dataset.openProject||a.dataset.openData) return openProjectDetail(a.dataset.openProject||a.dataset.openData,a.dataset.collabRecord||null);
+  if(a.dataset.collaborationDemo){activeProjectId=a.dataset.collaborationDemo;detailOrigin={page,listTab};return showResultPreview();}
   if(a.hasAttribute('data-show-result'))return showResultPreview();
   if(a.hasAttribute('data-cloud-download'))return showCloudDownload();
   if(a.hasAttribute('data-create-folder'))return openCreateFolder();
@@ -1099,4 +1127,26 @@ document.addEventListener('keydown',e=>{
   }
 });
 chooseRoleLanding();
+if(!history.state?.analysisResult&&document.body.hasAttribute('data-start-collaboration-analysis')){
+  const demoProject=visibleProjects().find(p=>p.id==='analysis'&&p.collab)||visibleProjects().find(p=>p.collab);
+  if(demoProject){
+    activeProjectId=demoProject.id;
+    detailOrigin={page:demoProject.type==='云图汇'?'visual':'projects',listTab:projectAccessRole(demoProject)?'mine':'shared'};
+    history.replaceState({analysisResult:true,analysisDemoEntry:true,projectId:demoProject.id,detailOrigin:{...detailOrigin}},'');
+  }
+}
+if(history.state?.analysisResult&&visibleProjects().some(p=>p.id===history.state.projectId)){
+  activeProjectId=history.state.projectId;
+  if(history.state.detailOrigin)detailOrigin={...history.state.detailOrigin};
+  page='analysis-result';
+}
 render();
+window.addEventListener('popstate',()=>{
+  if(history.state?.analysisResult){
+    const target=projects.find(p=>p.id===history.state.projectId);
+    if(target&&visibleProjects().some(p=>p.id===target.id)){activeProjectId=target.id;if(history.state.detailOrigin)detailOrigin={...history.state.detailOrigin};page='analysis-result';render();}
+  }else if(page==='analysis-result'){
+    navigate('detail');
+    main.querySelector('[data-show-result]')?.focus();
+  }
+});

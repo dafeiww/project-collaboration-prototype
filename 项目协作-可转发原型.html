@@ -294,6 +294,156 @@
 .technical-support-navigation .support-placeholder:disabled{cursor:default;opacity:1;color:#b8c3cf;background:transparent;box-shadow:none}
 
   </style>
+  <style>
+body.analysis-result-mode > .app-shell { display: none; }
+#analysisResultRoot[hidden] { display: none; }
+.ar-page { --ar-blue:#1989fa; --ar-ink:#303840; --ar-muted:#87909c; --ar-line:#e9edf2; min-height:100vh; background:#eceef2; color:var(--ar-ink); font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; }
+.ar-page * { box-sizing:border-box; }
+.ar-page button,.ar-page input,.ar-page select { font:inherit; }
+.ar-page button { cursor:pointer; }
+.ar-page button:disabled { cursor:not-allowed; opacity:.5; }
+.ar-page button:focus-visible,.ar-page input:focus-visible,.ar-page select:focus-visible { outline:3px solid #9ccfff; outline-offset:2px; }
+.ar-page .ar-icon { width:19px; height:19px; flex:none; vertical-align:middle; }
+.ar-top { height:68px; display:flex; align-items:center; gap:52px; padding:0 27px; background:#424d5b; color:white; }
+.ar-brand { width:195px; display:flex; align-items:center; gap:10px; flex:none; }
+.ar-brand-mark { width:43px; height:37px; }
+.ar-brand strong { display:block; font-size:20px; letter-spacing:1px; line-height:1.2; font-weight:600; }
+.ar-brand small { display:block; margin-top:4px; font-size:9px; letter-spacing:4px; }
+.ar-top-nav { display:flex; align-items:center; gap:44px; font-size:16px; }
+.ar-top-nav span { white-space:nowrap; }
+.ar-top-actions { display:flex; align-items:center; gap:21px; margin-left:auto; }
+.ar-top-back { display:flex; align-items:center; gap:7px; border:1px solid #99a2ad; background:transparent; color:white; padding:7px 12px; border-radius:3px; }
+.ar-top-user { display:flex; align-items:center; gap:9px; white-space:nowrap; }
+.ar-avatar { width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; flex:none; border-radius:50%; background:#e8f2ff; color:#3789dc; font-size:13px; }
+.ar-layout { display:grid; grid-template-columns:226px minmax(0,1fr); min-height:calc(100vh - 68px); }
+.ar-sidebar { background:#424d5b; color:#e8edf3; padding-top:6px; }
+.ar-nav { width:100%; display:flex; align-items:center; gap:12px; padding:18px 23px; background:transparent; border:0; color:inherit; text-align:left; font-size:15px!important; }
+.ar-nav.active { background:var(--ar-blue); color:white; }
+.ar-page .ar-nav:disabled { opacity:1; cursor:default; }
+.ar-nav:hover:not(.active) { background:#4d5969; }
+.ar-nav .ar-icon { width:21px; height:21px; }
+.ar-nav .ar-chevron { width:14px; margin-left:auto; }
+.ar-side-foot { display:block; padding:25px 23px; color:#acb7c5; font-size:12px; }
+.ar-main { min-width:0; position:relative; padding:21px 24px 30px; }
+.ar-toolbar { min-height:58px; padding:10px 17px; background:white; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.ar-toolbar-left,.ar-toolbar-right { display:flex; align-items:center; gap:15px; min-width:0; }
+.ar-breadcrumb { color:#8a9098; white-space:nowrap; }
+.ar-guide { display:flex; align-items:center; gap:6px; padding:7px 11px; border:1px solid #e2e6eb; background:white; border-radius:3px; color:#646d78; white-space:nowrap; }
+.ar-statuses { display:flex; align-items:center; gap:4px; }
+.ar-status { position:relative; display:flex; align-items:center; gap:7px; padding:7px 10px; background:transparent; border:0; border-radius:4px; color:#66717e; }
+.ar-status .ar-icon { width:16px; height:16px; }
+.ar-status.active { background:#eff7ff; color:#1879df; }
+.ar-status.running .ar-icon { color:#58a5ff; }
+.ar-status.success .ar-icon { color:#38bc60; }
+.ar-status.failed .ar-icon { color:#ff625e; }
+.ar-status.queued .ar-icon { color:#afb8c1; }
+.ar-button { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:35px; padding:7px 14px; border:1px solid #dce2ea; border-radius:4px; background:white; color:#5a6571; white-space:nowrap; }
+.ar-button.primary { border-color:var(--ar-blue); background:var(--ar-blue); color:white; }
+.ar-button.quiet { border-color:transparent; background:transparent; }
+.ar-button.danger { border-color:#ef6262; background:#ef6262; color:white; }
+.ar-button .ar-icon { width:16px; height:16px; }
+.ar-content { min-height:calc(100vh - 179px); margin-top:20px; padding:29px 30px; background:white; }
+.ar-content-tabs { display:flex; gap:30px; border-bottom:1px solid var(--ar-line); margin-bottom:20px; }
+.ar-content-tab { padding:10px 0 13px; color:#424950; border:0; background:none; border-bottom:2px solid transparent; }
+.ar-content-tab.active { color:var(--ar-blue); border-bottom-color:var(--ar-blue); }
+.ar-info-table { width:min(100%,1050px); border-collapse:collapse; table-layout:fixed; border-radius:7px; overflow:hidden; }
+.ar-info-table th,.ar-info-table td { padding:19px 18px; text-align:left; font-weight:400; border:0; overflow-wrap:anywhere; }
+.ar-info-table th { width:190px; border-right:1px solid #e8e8e8; }
+.ar-info-table tr:nth-child(odd) { background:#f0f0f0; }
+.ar-project-context { display:flex; align-items:center; gap:8px; margin-top:23px; color:#a0a7b0; font-size:12px; }
+.ar-project-context .ar-icon { width:14px; height:14px; }
+.ar-record-panel { position:absolute; right:119px; top:90px; width:437px; z-index:10; display:flex; flex-direction:column; max-height:calc(100vh - 185px); background:white; border:1px solid #edf0f3; border-radius:8px; box-shadow:0 7px 30px #1d29352b,0 2px 6px #1d293511; }
+.ar-record-panel[hidden] { display:none; }
+.ar-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:17px 19px 11px; }
+.ar-panel-title { display:flex; align-items:center; gap:8px; min-width:0; font-size:15px; font-weight:600; }
+.ar-panel-count { font-size:11px; line-height:20px; padding:0 7px; color:#39a560; background:#eff9f2; border-radius:3px; font-weight:400; }
+.ar-icon-button { width:27px; height:27px; padding:4px; display:inline-flex; align-items:center; justify-content:center; background:transparent; color:#8c96a3; border:0; border-radius:4px; flex:none; }
+.ar-icon-button:hover { background:#edf5ff; color:var(--ar-blue); }
+.ar-icon-button .ar-icon { width:16px; height:16px; }
+.ar-panel-tools { padding:0 19px 13px; border-bottom:1px solid var(--ar-line); }
+.ar-search { display:flex; align-items:center; gap:7px; padding:7px 10px; border:1px solid #e2e6ec; border-radius:4px; color:#a5adb7; }
+.ar-search .ar-icon { width:16px; height:16px; }
+.ar-search input { width:100%; min-width:0; padding:0; border:0; outline:none; background:transparent; color:var(--ar-ink); font-size:12px; }
+.ar-search input::placeholder { color:#a2aab4; }
+.ar-filter-row { margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12px; }
+.ar-record-scopes { display:flex; gap:5px; margin-top:12px; padding:3px; border-radius:5px; background:#f1f4f8; }
+.ar-record-scope { flex:1; min-width:0; padding:7px 5px; border:0; border-radius:4px; color:#7d8998; background:transparent; font-size:12px!important; white-space:nowrap; }
+.ar-record-scope.active { color:#1989fa; background:white; box-shadow:0 1px 4px #22384d14; }
+.ar-record-scope b { margin-left:4px; font-size:11px; font-weight:500; }
+.ar-filter-row>span { color:#8b96a3; }
+.ar-submitter-filter { max-width:228px; min-width:0; flex:1; padding:5px 7px; border:1px solid #e2e6ec; border-radius:4px; background:white; color:#647184; font-size:11px!important; }
+.ar-filter-summary { display:flex; justify-content:space-between; margin-top:9px; color:#a2aab4; font-size:11px; }
+.ar-list-count { color:#9ba3ae; }
+.ar-panel-list { overflow:auto; min-height:0; padding:9px 17px 14px; scrollbar-width:thin; scrollbar-color:#d5dbe3 transparent; }
+.ar-category { margin-top:6px; }
+.ar-category-title { display:flex; align-items:center; justify-content:space-between; padding:11px 12px; background:#f3f4f6; color:#414b57; font-size:13px; font-weight:500; }
+.ar-method-toggle { display:flex; align-items:center; width:100%; gap:7px; padding:14px 11px 9px; background:transparent; border:0; text-align:left; font-size:13px; color:#4f5964; }
+.ar-method-toggle .ar-method-count { color:#a2aab4; font-size:11px; }
+.ar-method-toggle .ar-icon { width:13px; height:13px; margin-left:auto; color:#84909f; }
+.ar-record-row { padding:11px 10px; margin:2px 0; border-radius:4px; }
+.ar-record-row:hover { background:#f6f9fd; }
+.ar-record-row.mine { background:#f3f8ff; }
+.ar-record-row.mine:hover { background:#eaf3ff; }
+.ar-record-line { display:flex; align-items:center; gap:6px; }
+.ar-record-name { flex:0 1 auto; min-width:0; padding:0; color:#35404e; background:transparent; border:0; font-size:13px!important; line-height:20px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+.ar-record-name:hover { color:var(--ar-blue); }
+.ar-mine-tag { flex:none; color:#1989fa; background:#e4f0ff; border:1px solid #cde3ff; border-radius:3px; padding:0 5px; font-size:10px; line-height:17px; }
+.ar-record-actions { display:flex; gap:1px; margin-left:auto; flex:none; }
+.ar-record-actions .ar-icon-button { width:23px; height:23px; }
+.ar-record-actions .ar-icon { width:13px; height:13px; }
+.ar-record-meta { margin-top:7px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:5px 8px; color:#919ba7; font-size:11px; }
+.ar-submitter-person { display:flex; align-items:center; flex-wrap:wrap; gap:5px; min-width:0; }
+.ar-submitter-role { flex:none; padding:1px 5px; border-radius:3px; font-size:10px; line-height:16px; background:#f0f2f5; color:#7a8696; }
+.ar-submitter-role.owner { background:#eaf2ff; color:#5785c5; }
+.ar-submitter-role.support { background:#fff3e4; color:#b58a48; }
+.ar-record-meta time { white-space:nowrap; margin-left:auto; }
+.ar-record-meta .ar-icon { width:12px; height:12px; }
+.ar-record-author { color:#778493; }
+.ar-meta-dot { color:#c2c9d2; }
+.ar-panel-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex:none; padding:10px 19px; border-top:1px solid var(--ar-line); color:#a2aab4; font-size:11px; }
+.ar-panel-footer span { display:flex; align-items:center; gap:5px; }
+.ar-panel-footer .ar-icon { width:12px; height:12px; }
+.ar-viewer-preview { display:flex; align-items:center; gap:6px; min-width:0; }
+.ar-viewer-preview select { min-width:0; max-width:120px; padding:3px 5px; border:1px solid #e2e6ec; border-radius:3px; color:#607184; background:white; font-size:11px; }
+.ar-empty { padding:40px 15px; text-align:center; color:#929ca8; font-size:12px; }
+.ar-empty .ar-icon { display:block; width:30px; height:30px; margin:0 auto 12px; color:#b4c7dd; }
+.ar-empty button { margin-top:12px; color:var(--ar-blue); }
+.ar-empty strong { display:block; color:#6d7887; font-size:13px; margin-bottom:5px; font-weight:500; }
+.ar-analysis-view h2 { font-size:19px; font-weight:500; margin:4px 0 6px; }
+.ar-analysis-view > p { color:#929ba6; font-size:12px; margin:0 0 25px; }
+.ar-config-form { max-width:650px; }
+.ar-field { display:block; margin-bottom:19px; }
+.ar-field-label { display:flex; gap:7px; align-items:center; margin-bottom:9px; font-size:13px; }
+.ar-field-label small { color:#9ca5b0; font-size:11px; }
+.ar-input { display:block; width:100%; min-height:38px; padding:8px 11px; background:white; color:#4c5866; border:1px solid #dce2eb; border-radius:4px; }
+.ar-field-hint { display:block; margin-top:7px; color:#96a0ac; font-size:11px; }
+.ar-form-actions { display:flex; gap:10px; margin-top:26px; }
+.ar-sample-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ar-sample-table th,.ar-sample-table td { padding:15px; border-bottom:1px solid var(--ar-line); text-align:left; font-weight:400; }
+.ar-sample-table th { background:#f5f7fa; color:#7c8795; }
+.ar-workflow { display:flex; align-items:center; flex-wrap:wrap; gap:18px; padding:35px 12px; }
+.ar-workflow-step { padding:18px 23px; background:#f4f8fd; color:#497099; border:1px solid #e4edf7; border-radius:5px; }
+.ar-dialog { width:min(520px,calc(100vw - 32px)); padding:0; color:var(--ar-ink); background:white; border:0; border-radius:8px; box-shadow:0 16px 60px #10223838; }
+.ar-dialog::backdrop { background:#17283c4a; }
+.ar-dialog-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:20px 23px; border-bottom:1px solid var(--ar-line); }
+.ar-dialog-head h2 { font-size:17px; font-weight:500; margin:0; }
+.ar-dialog-body { padding:23px; }
+.ar-dialog-foot { display:flex; align-items:center; justify-content:flex-end; gap:10px; padding:15px 23px; border-top:1px solid var(--ar-line); }
+.ar-detail-name { margin:0 0 19px; font-size:18px; font-weight:500; overflow-wrap:anywhere; }
+.ar-detail-info { display:grid; grid-template-columns:88px minmax(0,1fr); gap:15px 10px; font-size:13px; }
+.ar-detail-info dt { color:#9099a5; }
+.ar-detail-info dd { margin:0; overflow-wrap:anywhere; }
+.ar-state-label { display:inline-flex; align-items:center; gap:5px; color:#35a963; }
+.ar-state-label.failed { color:#ef6262; }
+.ar-state-label.running,.ar-state-label.queued { color:#1989fa; }
+.ar-toast { position:fixed; z-index:100; bottom:34px; left:50%; transform:translateX(-50%); padding:11px 20px; border-radius:5px; color:white; background:#344353ed; box-shadow:0 3px 15px #1e304023; font-size:13px; }
+.ar-toast[hidden] { display:none; }
+@media(min-width:1750px) { .ar-layout{grid-template-columns:266px minmax(0,1fr)} .ar-nav{padding:20px 25px;font-size:16px!important} .ar-record-panel{width:460px;right:115px;top:91px} .ar-info-table{width:min(100%,1120px)} .ar-content{padding:32px 36px}.ar-info-table th,.ar-info-table td{padding:20px}.ar-info-table th{width:220px} }
+@media(max-width:1280px) { .ar-layout{grid-template-columns:192px minmax(0,1fr)} .ar-nav{padding:17px 17px;font-size:13px!important;gap:9px} .ar-top{gap:27px}.ar-top-nav{gap:25px}.ar-main{padding:18px}.ar-toolbar{padding:10px 12px}.ar-toolbar-left{gap:10px}.ar-guide{font-size:12px;padding:6px}.ar-breadcrumb{display:none}.ar-toolbar-right{gap:8px}.ar-status{padding:7px 8px}.ar-record-panel{right:105px;width:414px;top:87px}.ar-content{padding:22px}.ar-top-actions{gap:13px} }
+@media(max-width:900px) { .ar-top-nav{display:none}.ar-top{height:60px;padding:0 17px}.ar-layout{grid-template-columns:62px minmax(0,1fr);min-height:calc(100vh - 60px)}.ar-nav{justify-content:center;padding:17px 0}.ar-nav-label,.ar-nav .ar-chevron,.ar-side-foot{display:none}.ar-main{padding:13px}.ar-guide{display:none}.ar-toolbar-right{width:100%;justify-content:space-between}.ar-toolbar-left{display:none}.ar-record-panel{right:22px;top:81px;width:420px;max-height:calc(100vh - 163px)}.ar-info-table th{width:135px}.ar-top-user span:not(.ar-avatar){display:none}.ar-content{padding:18px}.ar-top-actions{gap:10px}.ar-button{padding:7px 10px}.ar-status{padding:6px}.ar-top-back{font-size:12px} }
+@media(max-width:520px) { .ar-top{padding:0 12px}.ar-brand{width:auto;gap:7px}.ar-brand strong{font-size:15px}.ar-brand small{font-size:7px;letter-spacing:2px}.ar-brand-mark{width:30px}.ar-top-actions{gap:9px}.ar-top-back{padding:6px 8px}.ar-top-user{display:none}.ar-layout{grid-template-columns:48px minmax(0,1fr)}.ar-main{padding:8px}.ar-nav .ar-icon{width:18px;height:18px}.ar-toolbar{padding:8px;min-height:54px}.ar-toolbar-right{gap:5px;flex-wrap:wrap}.ar-statuses{gap:0}.ar-status{gap:3px;padding:5px}.ar-status .ar-icon{width:14px}.ar-toolbar-right>.ar-button{font-size:11px;min-height:29px;padding:4px 6px}.ar-record-panel{position:fixed;right:9px;top:126px;width:calc(100vw - 66px);max-height:calc(100dvh - 142px)}.ar-panel-heading{padding:13px 13px 10px}.ar-panel-tools{padding:0 13px 11px}.ar-panel-list{padding:7px 10px 10px}.ar-panel-footer{padding:9px 13px}.ar-panel-title{font-size:14px}.ar-content{padding:15px 12px;margin-top:11px}.ar-content-tabs{gap:17px}.ar-content-tab{font-size:12px}.ar-info-table th{width:92px}.ar-info-table th,.ar-info-table td{font-size:11px;padding:15px 10px}.ar-record-meta{font-size:10px;gap:5px}.ar-record-name{font-size:12px!important}.ar-record-row{padding:10px 7px}.ar-category-title{padding:10px;font-size:12px}.ar-top-back .ar-icon{width:14px}.ar-dialog-body{padding:20px}.ar-config-form{max-width:100%}.ar-panel-count{font-size:10px}.ar-toast{max-width:calc(100vw - 28px);width:max-content;text-align:center}.ar-project-context{font-size:10px} }
+
+  </style>
 </head>
 <body>
   <div class="app-shell" data-screen-label="项目协作交互原型">
@@ -339,6 +489,257 @@
   <div id="modalRoot" class="modal-root" hidden></div>
   <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+/* 项目结果页：示例分析记录按项目保存，提交人使用原型的真实当前账号 ID。 */
+window.AnalysisResult = (() => {
+  'use strict';
+  const methods = [
+    { id:'cca', category:'约束排序分析', label:'CCA/RDA分析', prefix:'CCA-RDA', count:4, icon:'chart' },
+    { id:'coia', category:'一致性分析', label:'CoIA分析', prefix:'CoIA', count:5, icon:'layers' },
+    { id:'mfa', category:'一致性分析', label:'MFA分析', prefix:'MFA', count:3, icon:'layers' },
+    { id:'o2pls', category:'一致性分析', label:'O2PLS-DA分析', prefix:'O2PLS-DA', count:2, icon:'layers' },
+    { id:'kegg', category:'共有差异与通路分析', label:'KEGG共享富集分析', prefix:'KEGG', count:3, icon:'network' },
+    { id:'diff', category:'共有差异与通路分析', label:'差异结果关联统计', prefix:'差异关联', count:2, icon:'network' },
+    { id:'correlation', category:'相关性分析', label:'相关性分析', prefix:'相关性', count:1, icon:'chart' }
+  ];
+  const icons = {
+    back:'<path d="m14 5-7 7 7 7M7 12h14"/>', close:'<path d="m6 6 12 12M6 18 18 6"/>',
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+    folder:'<path d="M3 7V5h6l3 3h9v12H3V7Z"/><path d="M3 12h18"/>', chart:'<path d="M4 3v17h17M8 15l4-5 4 3 5-7"/>',
+    layers:'<path d="m12 3 10 5-10 5L2 8l10-5ZM2 12l10 5 10-5M2 17l10 5 10-5"/>',
+    document:'<path d="M5 3h10l4 4v14H5V3ZM14 3v5h5M8 12h8M8 16h6"/>', chevron:'<path d="m7 10 5 5 5-5"/>', up:'<path d="m7 14 5-5 5 5"/>',
+    search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>', user:'<circle cx="12" cy="7" r="3"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>', success:'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="m7.5 12 3 3 6-6" stroke="white"/>',
+    failed:'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="m8.5 8.5 7 7m-7 0 7-7" stroke="white"/>',
+    running:'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="M12 6v6l4 2" stroke="white"/>',
+    queued:'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="M12 7v5h4" stroke="white"/>',
+    trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',
+    edit:'<path d="m14 5 5 5M4 20l4-1L21 6l-4-4L4 15l0 5Z"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+    info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7v1"/>', network:'<circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><path d="m10.5 7.5-4 9m7-9 4 9M8 19h8"/>',
+    palette:'<path d="M21 12a9 9 0 1 0-9 9h2a2 2 0 0 0 1-4 2 2 0 0 1 1-4h3a2 2 0 0 0 2-1Z"/><circle cx="7" cy="10" r=".6"/><circle cx="10" cy="6" r=".6"/><circle cx="15" cy="7" r=".6"/>',
+    report:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h4M8 16h7"/>', check:'<path d="m5 12 4 4L19 6"/>'
+  };
+  const svg = name => `<svg class="ar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.chart}</svg>`;
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const statusLabels = {queued:'排队中',running:'运行中',success:'成功',failed:'失败'};
+  const identityLabels = {owner:'项目管理者',support:'技术支持',admin:'协作管理员',member:'协作成员',visitor:'访问者',historical:'历史成员'};
+  const identityOrder = {owner:0,support:1,member:2,admin:3,visitor:4,historical:5};
+  let root, context, records=[], counters={}, collaborationDemoVersion=0, query='', onlyMine=false, selectedSubmitter='', status='success', section='info', panelOpen=true, collapsed=new Set(['mfa','o2pls','kegg','diff','correlation']), toastTimer, lastFocus;
+  const storageKey = () => `personalbio-analysis-records-v1:${context.project.id}`;
+  const currentUser = () => context.viewer;
+  const mine = record => record.submitterId === currentUser().id;
+  const matchesSubmitter = record => (!onlyMine||mine(record))&&(!selectedSubmitter||record.submitterId===selectedSubmitter);
+  const identityLabel = record => identityLabels[record.submitterIdentity]||identityLabels.historical;
+  function submitterIdentity(user) {
+    if(!user)return 'historical';
+    if(user.isTechnicalSupport||user.id==='support-1')return 'support';
+    return Object.hasOwn(identityLabels,user.projectRole)?user.projectRole:'historical';
+  }
+  function submitterSnapshot(user) {
+    return {submitterId:user.id,submitterName:user.name,submitterAccount:user.account,submitterIdentity:submitterIdentity(user),submitterIdentitySource:'snapshot'};
+  }
+  const methodFor = id => methods.find(m => m.id === id) || methods[0];
+  const dateParts = value => new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(value));
+  const shortDate = value => dateParts(value).replace(/^\d{4}\//,'').replace(/\//g,'-').replace(/:\d{2}$/,'');
+  function save() { try { localStorage.setItem(storageKey(),JSON.stringify({records,counters,collaborationDemoVersion})); } catch { toast('当前浏览器未能保存记录，请保留页面后继续操作'); } }
+  function nextSequence(methodId, group) {
+    const key=`${methodId}:${group}`;
+    counters[key]=Math.max(counters[key]||0,...records.filter(r=>r.methodId===methodId&&r.group===group).map(r=>Number(r.sequence)||0))+1;
+    return counters[key];
+  }
+  function generatedName(methodId, group, sequence) { return `${methodFor(methodId).prefix}-${group}-${String(sequence).padStart(2,'0')}`; }
+  function exampleAuthors() {
+    return context.participants.filter(user=>['owner','admin','member'].includes(user.projectRole)).sort((a,b)=>identityOrder[submitterIdentity(a)]-identityOrder[submitterIdentity(b)]);
+  }
+  function upgradeCollaborationExamples() {
+    const people=exampleAuthors().slice(0,4);
+    if(collaborationDemoVersion>=1||!context.project.collab||people.length<2)return;
+    // 仅补充旧版演示记录；保留已有名称和作者，也不向空记录集重新加回已删除的示例。
+    if(records.some(r=>r.id.startsWith('seed-'))){
+      people.forEach((author,index)=>{
+        if(records.some(r=>r.methodId==='cca'&&r.status==='success'&&r.submitterId===author.id))return;
+        const group='Treat1',sequence=nextSequence('cca',group);
+        records.push({id:`collab-demo-cca-${author.id}`,methodId:'cca',group,sequence,name:generatedName('cca',group,sequence),...submitterSnapshot(author),createdAt:new Date(Date.UTC(2026,10,2,6,34)-index*17*60000).toISOString(),status:'success'});
+      });
+    }
+    collaborationDemoVersion=1;
+  }
+  function seed() {
+    records=[];counters={};collaborationDemoVersion=context.project.collab?1:0;
+    const participants=exampleAuthors();
+    const people=participants.length?participants:[currentUser()];
+    let index=0;
+    methods.forEach(m=>{
+      for(let i=0;i<m.count;i++){
+        const author=people[index%people.length],group=i===2?'Treat2':'Treat1',sequence=nextSequence(m.id,group);
+        records.push({id:`seed-${m.id}-${i+1}`,methodId:m.id,group,sequence,name:generatedName(m.id,group,sequence),...submitterSnapshot(author),createdAt:new Date(Date.UTC(2026,10,2,6,35)-index*17*60000).toISOString(),status:'success'});
+        index++;
+      }
+    });
+    const author=people[Math.min(1,people.length-1)],sequence=nextSequence('cca','Treat2');
+    records.push({id:'seed-failed-1',methodId:'cca',group:'Treat2',sequence,name:generatedName('cca','Treat2',sequence),...submitterSnapshot(author),createdAt:'2026-11-02T02:15:00.000Z',status:'failed'});
+    save();
+  }
+  function load() {
+    try {
+      const saved=JSON.parse(localStorage.getItem(storageKey()));
+      if(!saved||!Array.isArray(saved.records)||!saved.records.every(r=>r.id&&r.submitterId&&r.createdAt&&methodFor(r.methodId).id===r.methodId))throw new Error('no saved records');
+      records=saved.records.map(r=>{
+        const record=r.status==='running'?{...r,status:'success'}:{...r};
+        if(!Object.hasOwn(identityLabels,record.submitterIdentity)){
+          record.submitterIdentity=submitterIdentity(context.participants.find(user=>user.id===r.submitterId));
+          record.submitterIdentitySource='current';
+        }
+        return record;
+      });
+      counters=saved.counters||{};collaborationDemoVersion=Number(saved.collaborationDemoVersion)||0;upgradeCollaborationExamples();save();
+    }
+    catch { seed(); }
+  }
+  function visibleRecords() {
+    const q=query.trim().toLowerCase();
+    return records.filter(r=>r.status===status&&matchesSubmitter(r)&&(!q||`${r.name} ${r.submitterName} ${r.submitterAccount} ${identityLabel(r)} ${methodFor(r.methodId).label}`.toLowerCase().includes(q))).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  }
+  function renderCounts() {
+    root.querySelectorAll('[data-ar-status]').forEach(button=>{
+      const s=button.dataset.arStatus,count=records.filter(r=>r.status===s).length;
+      button.querySelector('b').textContent=count;button.classList.toggle('active',status===s&&panelOpen);button.setAttribute('aria-label',`${statusLabels[s]}分析记录 ${count} 条`);button.setAttribute('aria-expanded',String(status===s&&panelOpen));
+    });
+  }
+  function recordRow(record) {
+    const own=mine(record),editable=own&&context.canSubmit;
+    return `<div class="ar-record-row ${own?'mine':''}" data-ar-record="${esc(record.id)}" data-ar-submitter="${esc(record.submitterId)}"><div class="ar-record-line"><button class="ar-record-name" data-ar-open="${esc(record.id)}" title="${esc(record.name)}">${esc(record.name)}</button>${own?'<span class="ar-mine-tag">我</span>':''}<div class="ar-record-actions">${editable?`<button class="ar-icon-button" data-ar-rename="${esc(record.id)}" aria-label="重命名 ${esc(record.name)}" title="重命名">${svg('edit')}</button><button class="ar-icon-button" data-ar-delete="${esc(record.id)}" aria-label="删除 ${esc(record.name)}" title="删除">${svg('trash')}</button>`:''}</div></div><div class="ar-record-meta"><span class="ar-submitter-person">${svg('user')}<span class="ar-record-author" title="${esc(record.submitterName)} · 用户名：${esc(record.submitterAccount)}">提交人：${esc(record.submitterName)}</span><span class="ar-submitter-role ${esc(record.submitterIdentity)}" title="${record.submitterIdentitySource==='current'?'当前项目身份；此前记录未保存提交时身份':'提交时的项目身份'}">${identityLabel(record)}</span></span><time datetime="${esc(record.createdAt)}" title="提交时间：${esc(dateParts(record.createdAt))}">${esc(shortDate(record.createdAt))}</time></div></div>`;
+  }
+  function renderSubmitterFilter() {
+    const authors=[...new Map(records.map(r=>[r.submitterId,r])).values()].sort((a,b)=>(identityOrder[a.submitterIdentity]??5)-(identityOrder[b.submitterIdentity]??5)||a.submitterName.localeCompare(b.submitterName,'zh-CN'));
+    const duplicateNames=new Set(authors.filter((a,i)=>authors.some((b,j)=>i!==j&&a.submitterName===b.submitterName)).map(a=>a.submitterName));
+    const select=root.querySelector('#arSubmitterFilter');
+    select.innerHTML='<option value="">全部提交人</option>'+authors.map(a=>{
+      const count=records.filter(r=>r.status===status&&r.submitterId===a.submitterId).length;
+      const name=duplicateNames.has(a.submitterName)?`${a.submitterName}（${a.submitterAccount}）`:a.submitterName;
+      return `<option value="${esc(a.submitterId)}">${esc(name)} · ${identityLabel(a)}（${count}）</option>`;
+    }).join('');
+    select.value=selectedSubmitter;
+  }
+  function renderRecords() {
+    renderCounts();const list=visibleRecords(),panel=root.querySelector('#arRecordPanel');panel.hidden=!panelOpen;
+    root.querySelector('#arRecordTitle').textContent=`${context.project.collab?'协作分析记录':'分析记录'}（${statusLabels[status]}）`;
+    root.querySelector('#arStatusCount').textContent=records.filter(r=>r.status===status).length;
+    root.querySelector('#arRecordCount').textContent=`共 ${list.length} 条 · ${new Set(list.map(r=>r.submitterId)).size} 人提交`;
+    root.querySelector('#arAllCount').textContent=records.filter(r=>r.status===status).length;
+    root.querySelector('#arMineCount').textContent=records.filter(r=>r.status===status&&mine(r)).length;
+    root.querySelectorAll('[data-ar-scope]').forEach(button=>{
+      const active=button.dataset.arScope==='mine'?onlyMine:!onlyMine&&!selectedSubmitter;
+      button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));
+    });
+    renderSubmitterFilter();
+    const categories=[...new Set(methods.map(m=>m.category))];
+    root.querySelector('#arRecordList').innerHTML=list.length?categories.map(category=>{
+      const categoryMethods=methods.filter(m=>m.category===category&&list.some(r=>r.methodId===m.id));
+      if(!categoryMethods.length)return '';
+      return `<section class="ar-category"><div class="ar-category-title">${category}<span>${list.filter(r=>categoryMethods.some(m=>m.id===r.methodId)).length}</span></div>${categoryMethods.map(m=>{const items=list.filter(r=>r.methodId===m.id),closed=collapsed.has(m.id)&&!query;return `<div class="ar-method"><button class="ar-method-toggle" data-ar-method="${m.id}" aria-expanded="${!closed}">${m.label}<span class="ar-method-count">${items.length} 条 · ${new Set(items.map(r=>r.submitterId)).size} 人</span>${svg(closed?'chevron':'up')}</button>${closed?'':items.map(recordRow).join('')}</div>`;}).join('')}</section>`;
+    }).join(''):`<div class="ar-empty">${svg('search')}<strong>${query?'没有找到匹配的记录':onlyMine?'暂无你提交的记录':selectedSubmitter?'该用户暂无此状态的记录':`暂无${statusLabels[status]}记录`}</strong><span>${query?'试试其他名称、姓名、身份或用户名':onlyMine||selectedSubmitter?'取消筛选可查看其他人的分析记录':'提交分析后，可在这里查看进度'}</span>${onlyMine||selectedSubmitter||query?'<br><button class="ar-button quiet" data-ar-clear>清除筛选</button>':''}</div>`;
+  }
+  function projectInfo() {
+    const p=context.project;
+    return `<div class="ar-content-tabs" role="tablist"><button class="ar-content-tab active" data-ar-tab="info" role="tab" aria-selected="true">项目信息</button><button class="ar-content-tab" data-ar-tab="samples" role="tab" aria-selected="false">样本信息</button><button class="ar-content-tab" data-ar-tab="workflow" role="tab" aria-selected="false">分析流程</button></div><div id="arOverviewBody">${infoTable()}</div>`;
+  }
+  function infoTable() {
+    const p=context.project,rows=[['项目编号',p.code],['合同号',p.contract],['开题单号',p.ticket],['项目名称',p.name],['项目类别',p.category],['项目类型','标准分析'],['完成日期',p.created]];
+    return `<table class="ar-info-table"><tbody>${rows.map(([label,value])=>`<tr><th scope="row">${label}</th><td>${esc(value)}</td></tr>`).join('')}</tbody></table><div class="ar-project-context">${svg('info')}示例项目 · 当前账号：${esc(currentUser().name)}（${esc(currentUser().account)}）</div>`;
+  }
+  function renderSection() {
+    root.querySelectorAll('[data-ar-nav]').forEach(button=>button.classList.toggle('active',button.dataset.arNav===section));
+    const content=root.querySelector('#arContent');
+    if(section==='info'){content.innerHTML=projectInfo();return;}
+    const method=methodFor(section);
+    content.innerHTML=`<section class="ar-analysis-view"><h2>${method.label}</h2><p>选择分组方案并提交分析，记录会显示提交人和提交时间。</p><form id="arAnalysisForm" class="ar-config-form"><label class="ar-field"><span class="ar-field-label">分析方法</span><select class="ar-input" id="arMethodInput" name="methodId">${methods.map(m=>`<option value="${m.id}" ${m.id===method.id?'selected':''}>${m.label}</option>`).join('')}</select></label><label class="ar-field"><span class="ar-field-label">分组方案</span><select class="ar-input" id="arGroupInput" name="group"><option value="Treat1">Treat1</option><option value="Treat2">Treat2</option><option value="Control">Control</option></select></label><label class="ar-field"><span class="ar-field-label">分析名称 <small>选填</small></span><input class="ar-input" id="arNameInput" name="name" maxlength="80" autocomplete="off" placeholder="${esc(generatedName(method.id,'Treat1',(counters[`${method.id}:Treat1`]||0)+1))}"><span class="ar-field-hint" id="arAutoName">留空自动命名：${esc(generatedName(method.id,'Treat1',(counters[`${method.id}:Treat1`]||0)+1))}</span></label><label class="ar-field"><span class="ar-field-label">提交人</span><input class="ar-input" value="${esc(currentUser().name)}（${esc(currentUser().account)}）" readonly></label><div class="ar-form-actions"><button type="submit" class="ar-button primary" ${context.canSubmit?'':'disabled'}>${svg('plus')}提交分析</button><button type="button" class="ar-button" data-ar-show-records>查看分析记录</button></div>${context.canSubmit?'':'<span class="ar-field-hint">当前账号可查看此项目的分析结果。</span>'}</form></section>`;
+  }
+  function toast(message) { const el=root.querySelector('#arToast');el.textContent=message;el.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{el.hidden=true;},2600); }
+  function closeDialog() { const dialog=root.querySelector('#arDialog');if(dialog.open)dialog.close();if(lastFocus?.isConnected)lastFocus.focus(); }
+  function dialog(title,body,footer) {
+    const el=root.querySelector('#arDialog');lastFocus=document.activeElement;
+    el.innerHTML=`<header class="ar-dialog-head"><h2>${title}</h2><button type="button" class="ar-icon-button" data-ar-dialog-close aria-label="关闭">${svg('close')}</button></header><div class="ar-dialog-body">${body}</div><footer class="ar-dialog-foot">${footer}</footer>`;
+    if(!el.open)el.showModal();
+  }
+  function showRecord(id) {
+    const r=records.find(r=>r.id===id);if(!r)return;
+    dialog('分析记录详情',`<h3 class="ar-detail-name">${esc(r.name)} ${mine(r)?'<span class="ar-mine-tag">我</span>':''}</h3><dl class="ar-detail-info"><dt>分析方法</dt><dd>${methodFor(r.methodId).label}</dd><dt>分组方案</dt><dd>${esc(r.group)}</dd><dt>提交人</dt><dd>${esc(r.submitterName)}（${esc(r.submitterAccount)}）</dd><dt>${r.submitterIdentitySource==='current'?'当前项目身份':'提交时身份'}</dt><dd>${identityLabel(r)}</dd><dt>提交时间</dt><dd>${esc(dateParts(r.createdAt))}</dd><dt>运行状态</dt><dd><span class="ar-state-label ${r.status}">${svg(r.status)}${statusLabels[r.status]}</span></dd><dt>记录编号</dt><dd>${esc(r.id)}</dd></dl>`,`<button class="ar-button" data-ar-dialog-close>关闭</button>${mine(r)&&context.canSubmit?`<button class="ar-button primary" data-ar-rename="${esc(r.id)}">修改名称</button>`:''}`);
+  }
+  function renameRecord(id) {
+    const r=records.find(r=>r.id===id);if(!r||!mine(r)||!context.canSubmit)return;
+    dialog('修改分析名称',`<form id="arRenameForm" data-record-id="${esc(id)}"><label class="ar-field"><span class="ar-field-label">分析名称</span><input class="ar-input" name="name" id="arRenameInput" value="${esc(r.name)}" maxlength="80" required><span class="ar-field-hint">修改名称后，提交人和提交时间保持不变。</span></label></form>`,'<button class="ar-button" data-ar-dialog-close>取消</button><button type="submit" form="arRenameForm" class="ar-button primary">保存名称</button>');
+    root.querySelector('#arRenameInput').focus();root.querySelector('#arRenameInput').select();
+  }
+  function deleteRecord(id) {
+    const r=records.find(r=>r.id===id);if(!r||!mine(r)||!context.canSubmit)return;
+    dialog('删除分析记录',`<p>确认删除“${esc(r.name)}”？</p><p class="ar-field-hint">仅删除这条示例记录，其他人的记录保持不变。</p>`,`<button class="ar-button" data-ar-dialog-close>取消</button><button class="ar-button danger" data-ar-confirm-delete="${esc(id)}">确认删除</button>`);
+  }
+  function updateAutoName() {
+    const methodId=root.querySelector('#arMethodInput').value,group=root.querySelector('#arGroupInput').value;
+    const name=generatedName(methodId,group,(counters[`${methodId}:${group}`]||0)+1);
+    root.querySelector('#arNameInput').placeholder=name;root.querySelector('#arAutoName').textContent=`留空自动命名：${name}`;
+  }
+  function submitAnalysis(form) {
+    if(!context.canSubmit)return;
+    const data=new FormData(form),methodId=data.get('methodId'),group=data.get('group'),sequence=nextSequence(methodId,group),author=currentUser();
+    const r={id:`AN-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,methodId,group,sequence,name:String(data.get('name')||'').trim()||generatedName(methodId,group,sequence),...submitterSnapshot(author),createdAt:new Date().toISOString(),status:'running'};
+    records.push(r);save();status='running';panelOpen=true;query='';selectedSubmitter='';root.querySelector('#arRecordSearch').value='';collapsed.delete(methodId);renderRecords();form.reset();updateAutoName();toast('分析已提交，可在运行中查看');
+    const projectId=context.project.id;
+    setTimeout(()=>{if(context?.project.id!==projectId)return;const record=records.find(item=>item.id===r.id);if(!record)return;record.status='success';save();if(status==='running'){status='success';collapsed.delete(methodId);}renderRecords();toast('示例分析已完成');},1800);
+  }
+  function showReport() {
+    const list=records.filter(r=>r.status==='success'&&matchesSubmitter(r));
+    dialog('分析记录汇总',`<p>当前项目共有 ${list.length} 条${onlyMine?'由你提交的':''}成功记录。</p><p class="ar-field-hint">导出内容包含分析名称、提交人、提交时间及分组方案。</p>`,'<button class="ar-button" data-ar-dialog-close>关闭</button><button class="ar-button primary" data-ar-export>导出记录</button>');
+  }
+  function exportRecords() {
+    const list=records.filter(r=>r.status==='success'&&matchesSubmitter(r)),cell=value=>'"'+String(value).replace(/"/g,'""')+'"';
+    const csv='\ufeff'+[['分析名称','分析方法','分组方案','提交人','项目身份','用户名','提交时间'],...list.map(r=>[r.name,methodFor(r.methodId).label,r.group,r.submitterName,identityLabel(r),r.submitterAccount,dateParts(r.createdAt)])].map(row=>row.map(cell).join(',')).join('\r\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=`${context.project.code}-分析记录.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);closeDialog();toast('分析记录已导出');
+  }
+  function bind() {
+    root.addEventListener('click',event=>{
+      const button=event.target.closest('button');if(!button||button.disabled)return;
+      if(button.hasAttribute('data-ar-back'))return context.onBack();
+      if(button.hasAttribute('data-ar-dialog-close'))return closeDialog();
+      if(button.hasAttribute('data-ar-status')){const selected=button.dataset.arStatus;panelOpen=status!==selected||!panelOpen;status=selected;return renderRecords();}
+      if(button.hasAttribute('data-ar-panel-close')){panelOpen=false;return renderRecords();}
+      if(button.hasAttribute('data-ar-show-records')){panelOpen=true;return renderRecords();}
+      if(button.dataset.arMethod){const id=button.dataset.arMethod;collapsed.has(id)?collapsed.delete(id):collapsed.add(id);return renderRecords();}
+      if(button.hasAttribute('data-ar-clear')){query='';onlyMine=false;selectedSubmitter='';root.querySelector('#arRecordSearch').value='';return renderRecords();}
+      if(button.dataset.arScope){onlyMine=button.dataset.arScope==='mine';selectedSubmitter='';collapsed.clear();return renderRecords();}
+      if(button.dataset.arOpen)return showRecord(button.dataset.arOpen);
+      if(button.dataset.arRename)return renameRecord(button.dataset.arRename);
+      if(button.dataset.arDelete)return deleteRecord(button.dataset.arDelete);
+      if(button.dataset.arConfirmDelete){const id=button.dataset.arConfirmDelete,r=records.find(r=>r.id===id);if(!r||!mine(r)||!context.canSubmit)return;records=records.filter(r=>r.id!==id);save();closeDialog();renderRecords();return toast('分析记录已删除');}
+      if(button.hasAttribute('data-ar-report'))return showReport();
+      if(button.hasAttribute('data-ar-export'))return exportRecords();
+      if(button.dataset.arNav){section=button.dataset.arNav;panelOpen=section==='info';renderSection();return renderRecords();}
+      if(button.hasAttribute('data-ar-new')){section='cca';panelOpen=false;renderSection();renderRecords();return root.querySelector('#arNameInput').focus();}
+      if(button.dataset.arTab){const value=button.dataset.arTab;root.querySelectorAll('[data-ar-tab]').forEach(tab=>{tab.classList.toggle('active',tab===button);tab.setAttribute('aria-selected',String(tab===button));});root.querySelector('#arOverviewBody').innerHTML=value==='info'?infoTable():value==='samples'?`<table class="ar-sample-table"><thead><tr><th>示例样本</th><th>分组</th><th>状态</th></tr></thead><tbody>${['Treat1','Treat2','Control'].flatMap(g=>[1,2,3].map(i=>`<tr><td>${g}_${i}</td><td>${g}</td><td>已完成</td></tr>`)).join('')}</tbody></table>`:`<div class="ar-workflow"><span class="ar-workflow-step">数据导入</span>${svg('chevron')}<span class="ar-workflow-step">数据质控</span>${svg('chevron')}<span class="ar-workflow-step">统计分析</span>${svg('chevron')}<span class="ar-workflow-step">结果与报告</span></div>`;}
+    });
+    root.addEventListener('input',event=>{if(event.target.id==='arRecordSearch'){query=event.target.value;renderRecords();}});
+    root.addEventListener('change',event=>{if(event.target.id==='arPreviewViewer')return context.onViewerChange?.(event.target.value);if(event.target.id==='arSubmitterFilter'){selectedSubmitter=event.target.value;onlyMine=false;collapsed.clear();renderRecords();}if(['arMethodInput','arGroupInput'].includes(event.target.id))updateAutoName();});
+    root.addEventListener('submit',event=>{
+      event.preventDefault();if(event.target.id==='arAnalysisForm')return submitAnalysis(event.target);
+      if(event.target.id==='arRenameForm'){const record=records.find(r=>r.id===event.target.dataset.recordId),name=new FormData(event.target).get('name').trim();if(!record||!mine(record)||!context.canSubmit||!name)return;record.name=name;save();closeDialog();renderRecords();toast('分析名称已更新');}
+    });
+    root.addEventListener('keydown',event=>{if(event.key==='Escape'&&!root.querySelector('#arDialog').open){panelOpen=false;renderRecords();}});
+  }
+  function mount(options) {
+    if(!root){root=document.createElement('div');root.id='analysisResultRoot';document.body.append(root);bind();}
+    const changed=!context||context.project.id!==options.project.id||context.viewer.id!==options.viewer.id;
+    context=options;root.hidden=false;document.body.classList.add('analysis-result-mode');
+    if(!changed&&root.querySelector('.ar-page'))return;
+    query='';onlyMine=false;selectedSubmitter='';status='success';section='info';panelOpen=true;collapsed=new Set(['mfa','o2pls','kegg','diff','correlation']);load();
+    root.innerHTML=`<div class="ar-page" data-screen-label="项目分析结果"><header class="ar-top"><div class="ar-brand"><svg class="ar-brand-mark" viewBox="0 0 56 44" fill="none" aria-hidden="true"><path d="M12 36C-2 36 1 19 13 18 17-1 47 0 48 20 62 24 54 39 43 38H12Z" fill="white"/><path d="m13 28 20-17m-16 23 20-17m-15 21 20-17M12 20l27 10M13 27l23 9" stroke="#424d5b" stroke-width="3"/></svg><div><strong>派森诺基因云</strong><small>GENES CLOUD</small></div></div><nav class="ar-top-nav" aria-label="平台导航"><span>云分析</span><span>云图汇⌄</span><span>云学院</span></nav><div class="ar-top-actions"><button class="ar-top-back" data-ar-back>${svg('back')}返回项目详情</button><div class="ar-top-user"><span>${esc(currentUser().name)}</span><span class="ar-avatar">${esc(currentUser().name.slice(0,1))}</span></div></div></header><div class="ar-layout"><aside class="ar-sidebar" aria-label="分析功能导航"><button class="ar-nav active" data-ar-nav="info">${svg('grid')}<span class="ar-nav-label">项目概况</span></button><button class="ar-nav" disabled>${svg('folder')}<span class="ar-nav-label">数据系统管理</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" data-ar-nav="diff">${svg('folder')}<span class="ar-nav-label">差异数据</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" disabled>${svg('document')}<span class="ar-nav-label">一键分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" disabled>${svg('palette')}<span class="ar-nav-label">图形配色管理</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" data-ar-nav="kegg">${svg('network')}<span class="ar-nav-label">共有差异与通路分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" data-ar-nav="correlation">${svg('chart')}<span class="ar-nav-label">相关性分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" data-ar-nav="coia">${svg('layers')}<span class="ar-nav-label">一致性分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" data-ar-nav="cca">${svg('chart')}<span class="ar-nav-label">约束排序分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" disabled>${svg('chart')}<span class="ar-nav-label">机器学习分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" disabled>${svg('network')}<span class="ar-nav-label">WGCNA分析</span><span class="ar-chevron">${svg('chevron')}</span></button><button class="ar-nav" disabled>${svg('network')}<span class="ar-nav-label">MIMOSA2分析</span><span class="ar-chevron">${svg('chevron')}</span></button><span class="ar-side-foot">科研协作 · 结果共享</span></aside><main class="ar-main"><div class="ar-toolbar"><div class="ar-toolbar-left"><span class="ar-breadcrumb">项目概况</span><span class="ar-guide">${svg('document')}方法介绍和绘图指南${svg('chevron')}</span></div><div class="ar-toolbar-right"><div class="ar-statuses">${['queued','running','success','failed'].map(s=>`<button class="ar-status ${s}" data-ar-status="${s}" title="${statusLabels[s]}分析记录" aria-controls="arRecordPanel">${svg(s)}<b>0</b></button>`).join('')}</div><button class="ar-button" data-ar-new ${context.canSubmit?'':'disabled'}>${svg('plus')}新建分析</button><button class="ar-button primary" data-ar-report>生成报告</button></div></div><section class="ar-content" id="arContent"></section><aside class="ar-record-panel" id="arRecordPanel" aria-label="分析记录"><div class="ar-panel-heading"><div class="ar-panel-title"><span id="arRecordTitle">分析记录（成功）</span><span class="ar-panel-count" id="arStatusCount">20</span></div><button class="ar-icon-button" data-ar-panel-close aria-label="关闭分析记录">${svg('close')}</button></div><div class="ar-panel-tools"><label class="ar-search">${svg('search')}<input id="arRecordSearch" type="search" placeholder="搜索分析名称、提交人或用户名" aria-label="搜索分析记录"></label><div class="ar-record-scopes" role="group" aria-label="记录范围"><button type="button" class="ar-record-scope active" data-ar-scope="all" aria-pressed="true">全部人的记录 <b id="arAllCount">0</b></button><button type="button" class="ar-record-scope" data-ar-scope="mine" aria-pressed="false">我提交的 <b id="arMineCount">0</b></button></div><div class="ar-filter-row"><span>提交人</span><select class="ar-submitter-filter" id="arSubmitterFilter" aria-label="按提交人筛选"><option value="">全部提交人</option></select></div><div class="ar-filter-summary"><span class="ar-list-count" id="arRecordCount">共20条</span><span>姓名 · 项目身份 · 时间</span></div></div><div class="ar-panel-list" id="arRecordList"></div><footer class="ar-panel-footer"><span>${svg('clock')}按提交时间倒序</span><label class="ar-viewer-preview"><span>体验账号</span><select id="arPreviewViewer" aria-label="切换体验账号">${[...new Map([...context.participants,currentUser()].map(user=>[user.id,user])).values()].map(user=>`<option value="${esc(user.id)}" ${user.id===currentUser().id?'selected':''}>${esc(user.name)}</option>`).join('')}</select></label></footer></aside></main></div><dialog class="ar-dialog" id="arDialog" aria-label="分析记录操作"></dialog><div class="ar-toast" id="arToast" role="status" aria-live="polite" hidden></div></div>`;
+    renderSection();renderRecords();
+  }
+  function unmount() { if(!root)return;const dialog=root.querySelector('#arDialog');if(dialog?.open)dialog.close();root.hidden=true;document.body.classList.remove('analysis-result-mode');context=null;clearTimeout(toastTimer); }
+  return {mount,unmount};
+})();
+
+  </script>
   <script>
 /* 本文件只运行交互演示；真实账号核验、授权与数据存储必须由服务端实现。 */
 const icons = {
@@ -725,6 +1126,7 @@ function projectCell(p, i = 0) { return `<div class="project-title-cell"><span c
 function renderProjects() {
   const support=identity==='support',projectType=page==='visual'?'云图汇':'云分析',mine=listTab==='mine',inScope=p=>support||p.type===projectType;
   const scopedProjects=(mine?personalProjects():sharedProjects()).filter(inScope);
+  const collaborationDemo=mine&&(scopedProjects.find(p=>p.id==='analysis'&&p.collab)||scopedProjects.find(p=>p.collab));
   const counts={mine:personalProjects().filter(inScope).length,shared:sharedProjects().filter(inScope).length};
   const tabs=[['mine',support?'协作项目':'派森诺项目'],['shared','共享项目']],list=filteredProjects();
   const showSelection=mine&&isManagementView(),selectedCount=selectedProjectIds.filter(id=>list.some(p=>p.id===id&&canConfigureCollaboration(p))).length;
@@ -746,7 +1148,7 @@ function renderProjects() {
   return `<div class="page" data-screen-label="项目列表">${heading(support?'项目协作':projectType,description,isManagementView()?`<button class="btn ghost" data-nav="team">${icon('people')}${support?'协作人员管理':'成员与课题组'}</button>`:'')}
     <section class="surface"><div class="surface-top"><div class="list-tabs" role="tablist" aria-label="项目类型">${tabs.map(([key,label])=>`<button role="tab" aria-selected="${listTab===key}" class="${listTab===key?'active':''}" data-list-tab="${key}">${label}<span class="tab-count">${counts[key]}</span></button>`).join('')}</div><span class="surface-caption">${mine?'拥有者 / 协作者 / 访问者':'仅分享原始分析结果'}</span></div>
     <div class="list-toolbar">${searchField('projectSearch','搜索开题单号、项目名称或编号')}<div class="toolbar-right"><label class="filter-label"><span>项目类别</span><select id="categoryFilter" class="filter-select" aria-label="筛选项目类别"><option value="">全部类别</option>${[...new Set(scopedProjects.map(p=>p.category))].map(c=>`<option ${categoryFilter===c?'selected':''} value="${safe(c)}">${safe(c)}</option>`).join('')}</select></label>${bulk?`<button class="btn primary toolbar-collab-action" data-collab-selected>${icon('link')}${selectedCount?`协作已选项目（${selectedCount}）`:'发起项目协作'}</button>`:`<span class="small-count">共 ${list.length} 个项目</span>`}</div></div>
-    <div class="project-reference-note">${icon('info')}<span>${mine?'拥有者可管理项目；协作者按授权参与；访问者仅查看。点击开题单号或项目名称查看详情。':'此列表保留项目分享功能，仅查看原始分析结果，不显示协作角色。'}</span></div>
+    <div class="project-reference-note">${icon('info')}<span>${mine?'拥有者可管理项目；协作者按授权参与；访问者仅查看。点击开题单号或项目名称查看详情。':'此列表保留项目分享功能，仅查看原始分析结果，不显示协作角色。'}</span>${collaborationDemo?`<button class="btn quiet small text-primary" data-collaboration-demo="${safe(collaborationDemo.id)}">查看多人分析演示 →</button>`:''}</div>
     ${mine&&selectedCount?`<div class="selection-note">已选择 ${selectedCount} 个项目<button data-clear-projects>清空选择</button></div>`:''}
     <div class="table-shell project-table reference-project-table ${mine?'':'readonly-project-table'}"><div class="table-scroll"><table><thead>${head}</thead><tbody>${rows||`<tr><td colspan="${cols}" class="empty-cell">${emptyState(mine?'暂无匹配的拥有或受邀项目':'暂无共享项目',mine?'只显示当前账号拥有或已受邀参与的项目，请尝试其他关键词。':'分享功能继续保留，可由项目管理者邀请用户查看原始结果。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length)}</section>${pageFoot(mine?'未协作可“去协作”，已协作可“编辑协作”；项目分享独立管理。':'共享项目只提供原始结果查看；项目协作与分享分别管理。')}</div>`;
 }
@@ -801,6 +1203,15 @@ function renderProjectFiles(p) {
 function renderOverview() { return `<div class="page" data-screen-label="项目概况">${heading(`欢迎回来，${safe(person(currentUserId()).name)}`,'科研的每一步探索，都值得被妥善连接。',`<button class="btn primary" data-nav="projects">${icon('folder')}查看全部项目</button>`)}${stats()}<div class="summary-panels"><section class="surface summary-panel"><h2>项目类别分布</h2>${[...new Set(visibleProjects().map(p=>p.type))].map((t,i)=>{const count=visibleProjects().filter(p=>p.type===t).length;return `<div style="margin-bottom:23px"><div class="progress-row"><span>${safe(t)}</span><span>${count} 个项目</span></div><div class="progress-track ${i?'blue':''}"><i style="width:${count/visibleProjects().length*100}%"></i></div></div>`;}).join('')}<div class="overview-list"><div class="overview-item">${icon('shield')}所有示例项目分析已完成<small>可开始协作</small></div></div></section><section class="surface summary-panel"><h2>我的课题组</h2><div class="overview-list">${groups.map((g,i)=>`<button class="btn ghost" data-open-collab="${g.id}" style="justify-content:flex-start">${avatar(g.name,i)}${safe(g.name)}<span style="margin-left:auto" class="small-count">${g.members.length} 人</span></button>`).join('')}</div><button class="btn quiet text-primary" data-nav="groups" style="margin-top:18px">查看全部课题组 →</button></section></div></div>`; }
 function renderData() { return `<div class="page" data-screen-label="项目数据">${heading('项目数据','从数据到洞察，所有分析项目都在这里。')}${stats()}<div class="data-grid">${visibleProjects().map((p,i)=>`<article class="surface data-card">${icon(p.type==='云图汇'?'chart':'folder')}<h3>${safe(p.name.replace(/^测试示例-/,''))}</h3><p>${safe(p.code)}<br>${safe(p.category)} · 分析已完成</p><button class="btn" data-open-data="${p.id}">查看项目概况 →</button></article>`).join('')}</div>${pageFoot('本原型用于演示项目与成员管理，不包含真实分析文件。')}</div>`; }
 function render() {
+  if(page==='analysis-result'){
+    const p=project();
+    if(!visibleProjects().some(item=>item.id===p.id)){page='projects';}
+    else {
+      AnalysisResult.mount({project:p,viewer:{...person(currentUserId()),id:currentUserId(),projectRole:projectAccessRole(p)},participants:p.members.map(member=>({...person(member.id),id:member.id,projectRole:member.role})),canSubmit:detailOrigin.listTab!=='shared'&&['owner','admin','member'].includes(projectAccessRole(p)),onViewerChange:switchAnalysisViewer,onBack:backFromAnalysis});
+      return;
+    }
+  }
+  AnalysisResult.unmount();
   renderRolePreview();
   if(listTab==='collab')listTab='mine';
   if(page==='detail'&&((detailOrigin.listTab==='mine'&&!projectAccessRole(project()))||(detailOrigin.listTab==='shared'&&!sharedProjects().some(p=>p.id===activeProjectId)))){page=detailOrigin.page;listTab='mine';tab='data';search='';}
@@ -1086,8 +1497,25 @@ function removeProjectFiles() {
   p.files=p.files.filter(f=>!removed.has(f.id));selectedFileIds=[];saveAll();closeModal();render();notify('示例文件夹已删除');
 }
 function showResultPreview() {
-  modal={type:'result-preview'};
-  modalFrame('分析结果预览','原始分析结果 · 交互演示',`${shareProjectCard(project())}<div class="result-preview-panel"><span class="reference-detail-status">分析已完成</span><h3>原始分析结果已就绪</h3><p>正式平台可在这里查看分析报告。本原型使用示例数据，不包含真实分析文件。</p></div>`,'<button class="btn" data-close>关闭</button><button class="btn primary" data-result-to-data>查看项目数据</button>');
+  if(!visibleProjects().some(p=>p.id===activeProjectId))return notify('当前身份没有该项目的查看权限');
+  closeModal();
+  history.pushState({analysisResult:true,projectId:activeProjectId,detailOrigin:{...detailOrigin}},'',location.href);
+  navigate('analysis-result');
+}
+function switchAnalysisViewer(userId) {
+  if(!project().members.some(member=>member.id===userId))return;
+  identity=userId==='owner-1'?'owner':userId==='support-1'?'support':'member';
+  if(identity==='member')recipientUserId=userId;
+  detailOrigin={...detailOrigin,listTab:'mine'};
+  const url=new URL(location.href);
+  url.searchParams.set('role',identity);
+  if(identity==='member')url.searchParams.set('user',userId);else url.searchParams.delete('user');
+  history.replaceState({...history.state,detailOrigin:{...detailOrigin}},'',url);
+  render();
+}
+function backFromAnalysis() {
+  if(history.state?.analysisDemoEntry){history.replaceState(null,'');return navigate('detail');}
+  if(history.state?.analysisResult)history.back();else navigate('detail');
 }
 function showCloudDownload() {
   modal={type:'cloud-download'};
@@ -1316,6 +1744,7 @@ main.addEventListener('click', e => {
   if(a.hasAttribute('data-back-project-list')) return navigate(detailOrigin.page,{projectTab:detailOrigin.listTab});
   if(a.dataset.nav) return navigate(a.dataset.nav);
   if(a.dataset.openProject||a.dataset.openData) return openProjectDetail(a.dataset.openProject||a.dataset.openData,a.dataset.collabRecord||null);
+  if(a.dataset.collaborationDemo){activeProjectId=a.dataset.collaborationDemo;detailOrigin={page,listTab};return showResultPreview();}
   if(a.hasAttribute('data-show-result'))return showResultPreview();
   if(a.hasAttribute('data-cloud-download'))return showCloudDownload();
   if(a.hasAttribute('data-create-folder'))return openCreateFolder();
@@ -1441,7 +1870,29 @@ document.addEventListener('keydown',e=>{
   }
 });
 chooseRoleLanding();
+if(!history.state?.analysisResult&&document.body.hasAttribute('data-start-collaboration-analysis')){
+  const demoProject=visibleProjects().find(p=>p.id==='analysis'&&p.collab)||visibleProjects().find(p=>p.collab);
+  if(demoProject){
+    activeProjectId=demoProject.id;
+    detailOrigin={page:demoProject.type==='云图汇'?'visual':'projects',listTab:projectAccessRole(demoProject)?'mine':'shared'};
+    history.replaceState({analysisResult:true,analysisDemoEntry:true,projectId:demoProject.id,detailOrigin:{...detailOrigin}},'');
+  }
+}
+if(history.state?.analysisResult&&visibleProjects().some(p=>p.id===history.state.projectId)){
+  activeProjectId=history.state.projectId;
+  if(history.state.detailOrigin)detailOrigin={...history.state.detailOrigin};
+  page='analysis-result';
+}
 render();
+window.addEventListener('popstate',()=>{
+  if(history.state?.analysisResult){
+    const target=projects.find(p=>p.id===history.state.projectId);
+    if(target&&visibleProjects().some(p=>p.id===target.id)){activeProjectId=target.id;if(history.state.detailOrigin)detailOrigin={...history.state.detailOrigin};page='analysis-result';render();}
+  }else if(page==='analysis-result'){
+    navigate('detail');
+    main.querySelector('[data-show-result]')?.focus();
+  }
+});
 
   </script>
 </body>
