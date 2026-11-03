@@ -36,7 +36,9 @@ window.AnalysisResult = (() => {
   const storageKey = () => `personalbio-analysis-records-v1:${context.project.id}`;
   const currentUser = () => context.viewer;
   const mine = record => record.submitterId === currentUser().id;
-  const canDeleteAny = () => context.canSubmit&&(currentUser().projectRole==='owner'||submitterIdentity(currentUser())==='support');
+  // 删除授权使用项目页传入的真实管理权限，不以展示身份（如“技术支持”）推断。
+  // 普通协作者即使在课题组内为管理员，也不能因此删除他人的分析记录。
+  const canDeleteAny = () => context.canSubmit&&context.canManageRecords===true;
   const canDeleteRecord = record => !!record&&context.canSubmit&&(mine(record)||canDeleteAny());
   const matchesSubmitter = record => (!onlyMine||mine(record))&&(!selectedSubmitter||record.submitterId===selectedSubmitter);
   const identityLabel = record => identityLabels[record.submitterIdentity]||identityLabels.historical;

@@ -180,6 +180,28 @@
 .collab-context-project strong{display:block;font-size:12px;font-weight:500;color:#303133;line-height:1.5;overflow-wrap:anywhere}
 .collab-context-project small{display:block;font-size:11px;color:#909399;line-height:1.6;margin-top:2px;overflow-wrap:anywhere}
 .collab-context-empty{font-size:11px;color:#909399}
+/* 批量课题组选择与按组成员预览；操作紧凑，姓名与课题组名称可换行。 */
+.collab-group-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 0;border-bottom:1px solid #e4e7ed;font-size:11px;color:#909399}
+.collab-group-tools label{display:flex;align-items:center;gap:7px;color:#606266;cursor:pointer}
+.collab-group-tools input{width:14px;height:14px;accent-color:#1989fa}
+.collab-group-tools>button{margin-left:auto;padding:3px 0;font-size:11px;color:#1989fa;background:transparent}
+.collab-group-tools>button:disabled{color:#c0c4cc;cursor:not-allowed}
+.collab-scope-panel{margin-bottom:16px;padding:12px 14px;border:1px solid #d9ecff;border-radius:8px;background:#f6faff}
+.collab-scope-tabs{display:flex;gap:7px;flex-wrap:wrap}
+.collab-scope-button{min-height:30px;max-width:100%;padding:5px 9px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;color:#606266;font-size:11px;text-align:left;overflow-wrap:anywhere}
+.collab-scope-button.active{color:#1989fa;border-color:#91caff;background:#ecf5ff}
+.collab-scope-button>span{margin-left:6px;font-size:9px;color:#909399}
+.collab-scope-panel>p{margin:8px 0 0;font-size:11px;line-height:1.7;color:#909399}
+.collab-scope-reset{padding:0;margin-left:8px;background:transparent;color:#1989fa;font-size:11px}
+.collab-member-section{min-width:0;padding:0;border:1px solid #e4e7ed;border-radius:7px;background:#fff;overflow:hidden}
+.collab-member-section>summary{display:flex;align-items:center;gap:8px;padding:10px;cursor:pointer;list-style:none;background:#f3f6fa}
+.collab-member-section>summary::-webkit-details-marker{display:none}
+.collab-member-section>summary:before{content:'›';font-size:17px;line-height:14px;color:#909399;transition:transform .15s}
+.collab-member-section[open]>summary:before{transform:rotate(90deg)}
+.collab-member-section>summary strong{font-size:12px;font-weight:600;color:#606266;overflow-wrap:anywhere;min-width:0}
+.collab-member-section>summary>span{margin-left:auto;white-space:nowrap;font-size:10px;color:#909399}
+.collab-section-roster{display:grid;gap:7px;padding:8px}
+.collaboration-modal .collab-section-roster .collab-member-item{padding:8px;gap:6px}
 .group-create-modal{width:min(720px,100%)}
 .group-create-modal .field{margin-bottom:18px}
 .group-create-modal .field-label{font-size:12px;color:#606266}
