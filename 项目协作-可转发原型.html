@@ -992,6 +992,7 @@ for(const p of projects){
   rebuildProjectMembers(p);
 }
 let projectMenuOpen=true;
+let collaborationGroupPresetId=null;
 let page = 'projects', teamTab='members', activeProjectId = 'analysis', tab = 'data', listTab = 'mine', identity = 'owner', search = '', categoryFilter = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
 identity=previewRoleAliases[previewParams.get('role')]||'owner';
 if(previewAccounts().some(u=>u.id===previewParams.get('user')&&!['owner-1','support-1'].includes(u.id)))recipientUserId=previewParams.get('user');
@@ -1064,7 +1065,7 @@ function switchPreviewRole(next,userId=null) {
   if(!Object.hasOwn(previewRoleNames,next))return;
   closeModal();identity=next;
   if(userId&&previewAccounts().some(u=>u.id===userId&&!['owner-1','support-1'].includes(u.id)))recipientUserId=userId;
-  search='';categoryFilter='';selectedProjectIds=[];filePath=[];selectedFileIds=[];tab='data';
+  search='';categoryFilter='';selectedProjectIds=[];collaborationGroupPresetId=null;filePath=[];selectedFileIds=[];tab='data';
   chooseRoleLanding();
   try{const url=new URL(location.href);url.searchParams.set('role',identity);if(identity==='member')url.searchParams.set('user',recipientUserId);else url.searchParams.delete('user');history.replaceState(null,'',url);}catch{}
   render();notify(`已切换为${previewRoleNames[identity]}：${person(currentUserId()).name}`);
@@ -1395,11 +1396,12 @@ function confirmDirectoryRemove() {
   if(!isDemoMemberInstance(u)&&!platformAccounts.some(account=>account.id===u.id))platformAccounts.push({...u});
   directory=directory.filter(d=>d.id!==u.id);saveAll();closeModal();render();notify('成员已从成员库移除，云平台账号仍保留');
 }
-function openCollab(groupId=groups[0]?.id, projectIds=[], chooseProjects=false, recordId=null, editProject=false) {
+function openCollab(groupId=groups[0]?.id, projectIds=[], recordId=null, editProject=false) {
+  if(!projectIds.length)return notify('请先在项目列表勾选需要协作的项目');
   if(!canManage()||projectIds.some(id=>!canManageProject(projects.find(p=>p.id===id))))return notify('当前账号无权修改该项目');
   if(projectIds.some(id=>!canConfigureCollaboration(projects.find(p=>p.id===id))))return notify('重新协作功能暂未开放');
   const selectedGroupIds=editProject?[...new Set(collabRecords.filter(r=>projectIds.includes(r.projectId)).map(r=>r.groupId||groups.find(g=>g.name===r.groupName)?.id).filter(Boolean))]:[groupId].filter(Boolean);
-  modal={type:'collab',selectedGroupIds,selectedMemberIds:[],selectedProjectIds:[...new Set(projectIds)],chooseProjects,recordId,editProject,removedMemberIds:[],selectionTouched:false,roleOverrides:{},extraMembers:[],activeProjectScope:null,projectSettings:{}};refreshCollabSelection();showModal();
+  modal={type:'collab',selectedGroupIds,selectedMemberIds:[],selectedProjectIds:[...new Set(projectIds)],recordId,editProject,removedMemberIds:[],selectionTouched:false,roleOverrides:{},extraMembers:[],activeProjectScope:null,projectSettings:{}};refreshCollabSelection();showModal();
 }
 function openCancelCollab(id) {
   if(!collaborationFeatures.cancel)return notify('取消协作功能暂未开放');
@@ -1675,8 +1677,7 @@ function showCollabModal() {
   const scrollTop=modalRoot.querySelector('.collaboration-modal .modal-body')?.scrollTop||0;
   const collapsed=[...modalRoot.querySelectorAll('[data-collab-member-section]:not([open])')].map(el=>el.dataset.collabMemberSection);
   const download=typeof modal.downloadOverride==='boolean'?modal.downloadOverride:selectedProjects.length>0&&selectedProjects.every(p=>p.visitorDownload);
-  const body=`${modal.chooseProjects?`<section class="picker-block project-picker"><h3>选择协作项目 <span class="picker-note">可单选或多选</span></h3><div class="check-list project-list-picker">${manageableProjects().filter(canConfigureCollaboration).map(p=>`<label class="check-item"><input type="checkbox" data-collab-project="${p.id}" ${modal.selectedProjectIds.includes(p.id)?'checked':''}><span class="check-main"><strong>${safe(p.name.replace(/^测试示例-/,''))}</strong><small>${safe(p.code)}</small></span></label>`).join('')}</div></section>`:''}
-  <section class="collab-context" aria-label="当前协作项目"><div class="collab-context-heading">${icon('folder')}<span>协作项目</span><b>${selectedProjects.length} 个</b></div><div class="collab-context-names">${selectedProjects.length?selectedProjects.map(p=>`<div class="collab-context-project"><strong>${safe(p.name)}</strong><small>${safe(p.code)}</small></div>`).join(''):'<span class="collab-context-empty">请先选择协作项目</span>'}</div></section>
+  const body=`<section class="collab-context" aria-label="当前协作项目"><div class="collab-context-heading">${icon('folder')}<span>已选协作项目</span><b>${selectedProjects.length} 个</b></div><div class="collab-context-names">${selectedProjects.map(p=>`<div class="collab-context-project" data-collab-selected-project="${safe(p.id)}"><strong>${safe(p.name)}</strong><small>${safe(p.code)}</small></div>`).join('')}</div><p class="collab-context-empty">仅展示本次已选项目；如需更换，请返回项目列表重新勾选。</p></section>
   ${selectedProjects.length>1?`<section class="collab-scope-panel" aria-label="按项目设置协作"><div class="collab-scope-tabs" role="group" aria-label="选择设置范围"><button type="button" data-collab-scope="" aria-pressed="${!modal.activeProjectScope}" class="collab-scope-button ${!modal.activeProjectScope?'active':''}">统一设置 · ${selectedProjects.length} 个项目</button>${selectedProjects.map(p=>`<button type="button" data-collab-scope="${safe(p.id)}" aria-pressed="${modal.activeProjectScope===p.id}" class="collab-scope-button ${modal.activeProjectScope===p.id?'active':''}">${safe(p.name)}${modal.projectSettings[p.id]||modal.activeProjectScope===p.id?'<span>单独设置</span>':''}</button>`).join('')}</div><p>${modal.activeProjectScope?'当前只调整此项目，其他项目不受影响。<button type="button" class="collab-scope-reset" data-reset-collab-scope>恢复统一设置</button>':'下面的选择用于所有未单独设置的项目；点击项目名称可单独调整。单独设置优先，不会被统一设置覆盖。'}</p></section>`:''}
   <div class="picker-layout"><section class="picker-block group-picker-panel"><div class="picker-heading"><h3>选择课题组 <span class="picker-note">可多选</span></h3>${modal.recordId?'':'<button class="btn quiet small text-primary" data-new-collab-group>＋ 新建课题组</button>'}</div><div class="collab-group-tools"><label><input type="checkbox" data-select-all-collab-groups ${modal.recordId||!groups.length?'disabled':''}>全选课题组</label><span>${modal.selectedGroupIds.length} / ${groups.length}</span><button type="button" data-clear-collab-groups ${modal.recordId||!modal.selectedGroupIds.length?'disabled':''}>清空</button></div><div class="check-list group-list-picker">${groups.map(g=>`<label class="check-item"><input type="checkbox" data-collab-group="${g.id}" ${modal.selectedGroupIds.includes(g.id)?'checked':''} ${modal.recordId?'disabled':''}><span class="check-main"><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员</small></span></label>`).join('')||'<div class="picker-empty">暂无课题组，点击上方“新建课题组”即可创建</div>'}</div></section>
   <section class="picker-block collab-members-panel"><div class="collab-members-header"><div class="collab-members-title"><h3>协作成员</h3><span id="collabMemberCount">已选 <b>${modal.selectedMemberIds.length}</b> / ${available.length} 位成员（去重）</span></div><div class="collab-member-actions"><button type="button" class="btn collab-select-all" data-select-all-collab-members>${icon("check")}全选</button><button type="button" class="btn collab-clear-all" data-clear-collab-members>清空</button></div></div><p class="inline-member-hint">按课题组展示；同一账号在多组中同步勾选与角色，人数去重统计。仅勾选成员获得权限，保存后生效。</p><div class="check-list inline-collab-members">${memberSections.map(section=>`<details class="collab-member-section" data-collab-member-section="${safe(section.id)}" open><summary><strong>${safe(section.name)}</strong><span>已选 ${section.members.filter(m=>modal.selectedMemberIds.includes(m.id)).length} / ${section.members.filter(m=>m.role!=='owner').length} 人</span></summary><div class="collab-section-roster">${section.members.map((m,i)=>{
@@ -1816,7 +1817,7 @@ function confirmCollab() {
     });
     p.hasCollaborated=true;if(typeof draft.downloadOverride==='boolean')p.visitorDownload=draft.downloadOverride;rebuildProjectMembers(p);
   });
-  saveAll();closeModal();selectedProjectIds=[];render();notify('项目协作已保存');
+  saveAll();closeModal();selectedProjectIds=[];collaborationGroupPresetId=null;render();notify('项目协作已保存');
 }
 
 main.addEventListener('click', e => {
@@ -1844,10 +1845,10 @@ main.addEventListener('click', e => {
   if(a.hasAttribute('data-add')) return openAdd('project');
   if(a.dataset.groupAdd) return openAdd('group',a.dataset.groupAdd);
   if(a.dataset.addSupportGroup){if(!canManage()) return;const g=group(a.dataset.addSupportGroup);if(!g||g.members.some(m=>m.id==='support-1')) return;ensureDirectoryPerson('support-1');g.members.push({id:'support-1',role:'admin'});saveAll();render();return notify('技术支持已加入课题组，角色为管理员');}
-  if(a.dataset.openCollab) return openCollab(a.dataset.openCollab,[],true);
-  if(a.hasAttribute('data-collab-selected')) return openCollab(groups[0]?.id,[...selectedProjectIds],!selectedProjectIds.length);
-  if(a.dataset.collabOne){const p=projects.find(p=>p.id===a.dataset.collabOne);return openCollab(groups[0]?.id,[p.id],false,null,p.collab);}
-  if(a.dataset.manageRecord){const r=collabRecords.find(x=>x.id===a.dataset.manageRecord);if(!r) return;return openCollab(r.groupId||groups.find(g=>g.name===r.groupName)?.id,[r.projectId],false,r.id);}
+  if(a.dataset.openCollab){if(!canManage())return;collaborationGroupPresetId=a.dataset.openCollab;navigate('projects');return notify('请先勾选项目，发起协作时将带入“'+group(collaborationGroupPresetId).name+'”');}
+  if(a.hasAttribute('data-collab-selected')){const ids=filteredProjects().filter(p=>selectedProjectIds.includes(p.id)&&canConfigureCollaboration(p)).map(p=>p.id);return openCollab(collaborationGroupPresetId||groups[0]?.id,ids);}
+  if(a.dataset.collabOne){const p=projects.find(p=>p.id===a.dataset.collabOne);return openCollab(groups[0]?.id,[p.id],null,p.collab);}
+  if(a.dataset.manageRecord){const r=collabRecords.find(x=>x.id===a.dataset.manageRecord);if(!r) return;return openCollab(r.groupId||groups.find(g=>g.name===r.groupName)?.id,[r.projectId],r.id);}
   if(a.dataset.shareProject)return openShare(a.dataset.shareProject);
   if(a.dataset.editMember){if(!canManage())return;const m=projectMemberList().find(x=>x.id===a.dataset.editMember);if(!m||m.role==='owner'||m.id==='support-1')return;modal={type:'edit',id:m.id,role:m.role};return showModal();}
   if(a.dataset.removeMember){if(!canManage())return;const m=projectMemberList().find(x=>x.id===a.dataset.removeMember);if(!m||m.role==='owner')return;modal={type:'remove',id:m.id};return showModal();}
@@ -1944,7 +1945,6 @@ modalRoot.addEventListener('change',e=>{
   if(e.target.hasAttribute('data-select-all-collab-groups'))return setCollabGroups(e.target.checked?groups.map(g=>g.id):[]);
   if(e.target.dataset.collabGroup){const gid=e.target.dataset.collabGroup;return setCollabGroups(e.target.checked?[...modal.selectedGroupIds,gid]:modal.selectedGroupIds.filter(x=>x!==gid));}
   if(e.target.dataset.collabMember){const id=e.target.dataset.collabMember;changeCollabMember(id,e.target.checked);showCollabModal();modalRoot.querySelector(`[data-collab-member="${id}"]`)?.focus({preventScroll:true});return;}
-  if(e.target.dataset.collabProject){const id=e.target.dataset.collabProject;if(!canConfigureCollaboration(projects.find(p=>p.id===id)))return showCollabModal();if(!e.target.checked&&modal.activeProjectScope===id)switchCollabScope(null);modal.selectedProjectIds=e.target.checked?[...new Set([...modal.selectedProjectIds,id])]:modal.selectedProjectIds.filter(x=>x!==id);if(!e.target.checked)delete modal.projectSettings[id];refreshCollabSelection(true);return showCollabModal();}
   if(e.target.dataset.groupRole){const m=modal.members.find(x=>x.id===e.target.dataset.groupRole);if(m&&m.id!=='support-1')m.role=e.target.value;}
 });
 document.addEventListener('keydown',e=>{
