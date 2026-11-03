@@ -1,5 +1,13 @@
 # 派森诺 · 科研协作空间
 
+## 2026年11月3日：精简导航与独立页面
+
+- 所有角色的工作空间侧边栏删除“项目概况”和“项目数据”两个独立页面，连同独立页内容、卡片入口、渲染器一并移除，不只是隐藏导航。
+- 项目列表中的“云图汇”保留为禁用占位，不能鼠标点击或键盘进入；旧入口不会重新打开该列表。技术支持仍仅显示原有四项导航。
+- 三种角色均默认进入云分析／项目协作，不再自动落到云图汇。已删除页面的旧入口回到项目列表。
+- 项目详情内的“项目数据”选项卡、协作列表，以及分析结果页的项目内概况保留，不删除项目、文件、协作授权或分析记录。
+- 四份可转发单文件同步，项目协作、全选课题组、成员角色与分析记录删除权限保持不变。
+
 ## 2026年11月3日：分析记录删除边界复核
 
 - 项目拥有者和获得项目管理授权的技术支持可删除本项目所有人的记录。
@@ -40,9 +48,9 @@
 - 旧版单人演示数据在当前项目已有授权范围内补充多人的独立运行，保留原记录和自定义名称；只补充一次，已删除的示例不会重新出现。
 - 可转发单文件与多人演示文件已同步，无需额外脚本或样式文件。验收记录见 [查看结果与分析记录验收](20261102-分析记录与查看结果验收记录.md)。
 
-[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261103-collaboration-group-selection)
+[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261103-navigation-cleanup)
 
-[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261103-collaboration-group-selection)
+[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261103-navigation-cleanup)
 
 2026年10月29日更新。面向电脑浏览器的交互原型，沿用深灰蓝导航与蓝色操作色，统一项目协作、添加课题组、添加成员等网页弹窗。
 

@@ -303,3 +303,6 @@
 .technical-support-navigation .nav-sub-item.active{background:#198ffa;color:#fff;font-weight:500}
 .technical-support-navigation .project-menu-button .nav-icon .icon{width:21px;height:21px}
 .technical-support-navigation .support-placeholder:disabled{cursor:default;opacity:1;color:#b8c3cf;background:transparent;box-shadow:none}
+
+/* 云图汇仅保留导航占位，鼠标与键盘均不能进入。 */
+.sidebar .nav-item[data-nav="visual"]:disabled{color:#a4afba;cursor:not-allowed;background:transparent;box-shadow:none;opacity:.65}
