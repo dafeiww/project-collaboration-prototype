@@ -180,19 +180,24 @@
 .collab-context-project strong{display:block;font-size:12px;font-weight:500;color:#303133;line-height:1.5;overflow-wrap:anywhere}
 .collab-context-project small{display:block;font-size:11px;color:#909399;line-height:1.6;margin-top:2px;overflow-wrap:anywhere}
 .collab-context-empty{font-size:11px;color:#909399}
+/* 项目仅在顶部展示一次，批量／单独设置复用已有项目卡片。 */
+.collab-context-heading{flex-wrap:wrap}
+.collab-context-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
+.collab-context-actions>button{padding:2px 0;background:transparent;color:#1989fa;font-size:11px;line-height:1.7}
+.collab-context-actions>button[aria-pressed=true]{font-weight:600}
+.collab-context-actions>button:hover{text-decoration:underline}
+.collab-context-project.collab-context-option{padding:8px 10px;border:1px solid transparent;border-radius:6px;background:transparent;text-align:left;cursor:pointer}
+.collab-context-project.collab-context-option:hover{background:#ffffff9c;border-color:#b3d8ff}
+.collab-context-project.collab-context-option:focus-visible{outline:2px solid #1989fa;outline-offset:2px}
+.collab-context-project.collab-context-option.active{background:#fff;border-color:#91caff}
+.collab-context-project-state{display:inline-block;margin-top:5px;font-size:10px;line-height:1.5;color:#1989fa}
+
 /* 批量课题组选择与按组成员预览；操作紧凑，姓名与课题组名称可换行。 */
 .collab-group-tools{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 0;border-bottom:1px solid #e4e7ed;font-size:11px;color:#909399}
 .collab-group-tools label{display:flex;align-items:center;gap:7px;color:#606266;cursor:pointer}
 .collab-group-tools input{width:14px;height:14px;accent-color:#1989fa}
 .collab-group-tools>button{margin-left:auto;padding:3px 0;font-size:11px;color:#1989fa;background:transparent}
 .collab-group-tools>button:disabled{color:#c0c4cc;cursor:not-allowed}
-.collab-scope-panel{margin-bottom:16px;padding:12px 14px;border:1px solid #d9ecff;border-radius:8px;background:#f6faff}
-.collab-scope-tabs{display:flex;gap:7px;flex-wrap:wrap}
-.collab-scope-button{min-height:30px;max-width:100%;padding:5px 9px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;color:#606266;font-size:11px;text-align:left;overflow-wrap:anywhere}
-.collab-scope-button.active{color:#1989fa;border-color:#91caff;background:#ecf5ff}
-.collab-scope-button>span{margin-left:6px;font-size:9px;color:#909399}
-.collab-scope-panel>p{margin:8px 0 0;font-size:11px;line-height:1.7;color:#909399}
-.collab-scope-reset{padding:0;margin-left:8px;background:transparent;color:#1989fa;font-size:11px}
 .collab-member-section{min-width:0;padding:0;border:1px solid #e4e7ed;border-radius:7px;background:#fff;overflow:hidden}
 .collab-member-section>summary{display:flex;align-items:center;gap:8px;padding:10px;cursor:pointer;list-style:none;background:#f3f6fa}
 .collab-member-section>summary::-webkit-details-marker{display:none}

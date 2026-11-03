@@ -1,5 +1,12 @@
 # 派森诺 · 科研协作空间
 
+## 2026年11月3日：移除重复项目设置区域
+
+- 删除协作弹窗中重复展示“统一设置＋各项目名称”的整块中间区域，已选项目仅在顶部出现一次，下面直接展示课题组与成员。
+- 默认统一设置，顶部仅保留小型“统一设置”操作；需要单独调整时，点击顶部已有项目卡片，不再另列一遍项目名称。
+- 当前项目用轻量高亮和“正在设置”标识，独立设置完成的项目显示“已单独设置”；可恢复统一设置。各项目独立授权与保存逻辑不变。
+- 仍然只处理上一步勾选的项目，课题组全选、按组成员展示、成员权限及分析记录删除规则均保留。四份可转发单文件同步。
+
 ## 2026年11月3日：协作弹窗仅展示上一步所选项目
 
 - 批量协作弹窗只带入当前项目列表中已勾选的项目，显示名称、编号、数量；不再显示所有可管理项目供重新选择。
@@ -56,9 +63,9 @@
 - 旧版单人演示数据在当前项目已有授权范围内补充多人的独立运行，保留原记录和自定义名称；只补充一次，已删除的示例不会重新出现。
 - 可转发单文件与多人演示文件已同步，无需额外脚本或样式文件。验收记录见 [查看结果与分析记录验收](20261102-分析记录与查看结果验收记录.md)。
 
-[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261103-selected-projects-only)
+[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261103-compact-collaboration-dialog)
 
-[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261103-selected-projects-only)
+[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261103-compact-collaboration-dialog)
 
 2026年10月29日更新。面向电脑浏览器的交互原型，沿用深灰蓝导航与蓝色操作色，统一项目协作、添加课题组、添加成员等网页弹窗。
 
