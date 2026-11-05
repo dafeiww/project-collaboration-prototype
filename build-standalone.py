@@ -72,7 +72,7 @@ for filename in ["项目协作-多人分析演示.html", "collaboration-analysis
     print(f"已生成：{filename}")
 
 desktop = bundle(transform_css=strip_narrow_media, extra_css=DESKTOP_CSS, desktop_viewport=True)
-for filename in ["项目协作-桌面版.html"]:
+for filename in ["项目协作.html"]:
     (root / filename).write_text(desktop, encoding="utf-8")
     print(f"已生成：{filename}")
 

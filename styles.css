@@ -364,6 +364,8 @@
 
 .space-table th:nth-child(1){width:250px}.space-table th:nth-child(3){width:130px}.space-table th:nth-child(5){width:170px}
 .space-table .group-cell small{overflow-wrap:anywhere}
+.space-table .table-actions,.space-table .group-actions{justify-content:flex-start}
+.space-table th:last-child,.space-table td:last-child{text-align:left}
 @media(max-width:640px){.space-table th:nth-child(1){width:190px}.space-table th:nth-child(5){width:140px}}
 
 .group-table .group-actions{flex-wrap:wrap;gap:5px}
