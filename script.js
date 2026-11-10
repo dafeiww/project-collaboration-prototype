@@ -91,7 +91,7 @@ const accountCopy={
   unmatched:isEnglishVersion?'No account matched. Check the complete email or username.':'未匹配到账户，请核对完整手机号或已绑定邮箱。邮箱须先绑定到该账号。',
   ambiguous:isEnglishVersion?'These details match more than one account. Check them and try again.':'账号信息存在重复关联，无法唯一匹配，请核对后重试。'
 };
-const safetyMessage=isEnglishVersion?'Check that the email and username belong to the same person.':'请核对手机号或已绑定邮箱与用户名是否属于同一成员';
+const safetyMessage='请核对匹配的用户名、邮箱和手机号是否属于同一成员';
 function accountValue(value) { return String(value||'').trim().toLowerCase(); }
 function usableAccountValue(user,key) {
   if(key==='email'&&!isEnglishVersion&&!user.emailBound)return '';
@@ -104,7 +104,7 @@ function accountContact(user,preferred='',masked=false) {
   const value=key==='email'?usableAccountValue(user,'email'):String(user.phone||'');
   return {key,value:masked&&key==='phone'&&value?`${value.slice(0,3)} **** ${value.slice(-4)}`:value,label:isEnglishVersion?'Email':key==='email'?'邮箱（已绑定）':'手机号'};
 }
-function accountSearchText(user) { return [user.name,...visibleAccountKeys.map(key=>usableAccountValue(user,key))].join(' ').toLowerCase(); }
+function accountSearchText(user) { return [user.name,user.remark||'',...visibleAccountKeys.map(key=>usableAccountValue(user,key))].join(' ').toLowerCase(); }
 function resolvePlatformAccount(value,key=null) {
   const query=accountValue(value);
   if(!query)return {user:null,status:'empty'};
@@ -222,7 +222,7 @@ for(const u of [...demoMemberInstances,...directory.filter(isDemoMemberInstance)
   demoInstanceCatalog.set(u.id,{...u,...accountCatalog.get(repeatableDemoAccountId),id:u.id,demoSourceId:repeatableDemoAccountId,defaultRole:defaultMemberRole(u),demoSequence:Number.isInteger(u.demoSequence)&&u.demoSequence>0?u.demoSequence:demoInstanceCatalog.size+1});
 }
 demoMemberInstances=[...demoInstanceCatalog.values()];
-directory=directory.filter(u=>!isSupportPerson(u)).map(u=>({...u,...(isDemoMemberInstance(u)?demoInstanceCatalog.get(u.id):accountCatalog.get(u.id))}));
+directory=directory.filter(u=>!isSupportPerson(u)).map(u=>({...u,...(isDemoMemberInstance(u)?demoInstanceCatalog.get(u.id):accountCatalog.get(u.id)),remark:u.remark||''}));
 platformAccounts=platformAccounts.filter(u=>!isSupportPerson(u));
 // 将旧版经课题组或直接邀请加入的支持人员迁为项目专属关联，保留已有项目访问。
 for(const p of projects){
@@ -234,11 +234,11 @@ for(const p of projects){
   if(Array.isArray(p.shareUserIds))p.shareUserIds=p.shareUserIds.filter(id=>!isSupportPerson(id));
 }
 for(const g of groups)g.members=(g.members||[]).filter(m=>!isSupportPerson(m));
-// 空间归属：旧数据默认归当前项目管理者，另补一个由同事创建并邀请当前账号加入的空间，便于演示受邀视角。
+// 课题组归属：旧数据默认归当前项目管理者，另补一个由同事创建并邀请当前账号加入的课题组，便于演示受邀视角。
 for(const g of groups){if(!g.ownerId)g.ownerId='owner-1';if(!g.invitedAt)g.invitedAt=null;if(!g.createdAt)g.createdAt={'肿瘤早筛课题组':'2026-10-29 09:30:00','微生物多样性课题组':'2026-10-30 14:00:00'}[g.name]||'2026-10-29 09:30:00';g.members=(g.members||[]).filter(m=>m.id!==g.ownerId&&!isSupportPerson(m));}
 groups=groups.filter(g=>(g.members||[]).length);
-if(!groups.some(g=>g.id==='group-joint'))groups.push({id:'group-joint',name:'代谢组学联合空间',ownerId:'chen-1',invitedAt:'2026-11-02 10:20:00',members:[{id:'owner-1',role:'member'},{id:'lin-1',role:'member'},{id:'xia-1',role:'visitor'}]});
-if(!collabRecords.some(r=>r.groupId==='group-joint'))collabRecords.push({id:'record-group-joint-meta-01',projectId:'meta-01',projectName:'肠道微生物16S多样性分析',code:'MT20261019001A',initiatedBy:'chen-1',groupId:'group-joint',groupName:'代谢组学联合空间',members:[{id:'owner-1',role:'member'},{id:'lin-1',role:'member'}],createdAt:'2026-11-02 10:30:00',updatedAt:'2026-11-02 10:30:00',status:'协作中'});
+if(!groups.some(g=>g.id==='group-joint'))groups.push({id:'group-joint',name:'代谢组学联合课题组',ownerId:'chen-1',invitedAt:'2026-11-02 10:20:00',members:[{id:'owner-1',role:'member'},{id:'lin-1',role:'member'},{id:'xia-1',role:'visitor'}]});
+if(!collabRecords.some(r=>r.groupId==='group-joint'))collabRecords.push({id:'record-group-joint-meta-01',projectId:'meta-01',projectName:'肠道微生物16S多样性分析',code:'MT20261019001A',initiatedBy:'chen-1',groupId:'group-joint',groupName:'代谢组学联合课题组',members:[{id:'owner-1',role:'member'},{id:'lin-1',role:'member'}],createdAt:'2026-11-02 10:30:00',updatedAt:'2026-11-02 10:30:00',status:'协作中'});
 for(const r of collabRecords)r.members=(r.members||[]).filter(m=>!isSupportPerson(m));
 for(const p of projects){if(p.name==='测试示例-定量蛋白组分析')p.name='测试示例-定量蛋白组云分析';if(p.name==='测试示例-农学 SmallRNA分析')p.name='测试示例-农学SmallRNA分析';}
 for(const p of projects){p.shareUserIds=[...new Set(Array.isArray(p.shareUserIds)?p.shareUserIds:[])];p.shared=!!(p.shared||p.shareUserIds.length);}
@@ -251,6 +251,8 @@ for(const p of projects){
   p.hasCollaborated=!!(p.hasCollaborated||p.collab||p.directCollabMembers.length||collabRecords.some(r=>r.projectId===p.id));
   rebuildProjectMembers(p);
 }
+for(const g of groups)g.name=g.name.replaceAll('空'+'间','课题组');
+for(const r of collabRecords)if(r.groupName)r.groupName=r.groupName.replaceAll('空'+'间','课题组');
 let projectMenuOpen=true;
 let supportUserId=projectSupportPeople.some(u=>u.id===previewParams.get('supportUser'))?previewParams.get('supportUser'):'support-1';
 let collaborationGroupPresetId=null, collabDraftProjectIds=[],spaceTab='joined';
@@ -362,13 +364,13 @@ function renderRolePreview() {
   document.querySelector('.sidebar').classList.toggle('technical-support-navigation',support);
   document.getElementById('projectMenuLabel').textContent=support?'项目管理':'项目列表';
   const subnav=document.getElementById('projectSubnav');
-  subnav.innerHTML=support?'<button class="nav-item nav-sub-item" data-nav="projects"><span class="nav-sub-dot"></span>项目协作</button>':`<button class="nav-item nav-sub-item" data-nav="visual" type="button" disabled aria-disabled="true" title="暂未开放"><span class="nav-sub-dot"></span>云图汇</button><button class="nav-item nav-sub-item" data-nav="projects"><span class="nav-sub-dot"></span>云分析</button><button class="nav-item nav-sub-item" data-nav="spaces"><span class="nav-sub-dot"></span>协作空间</button>${identity!=='support'?'<button class="nav-item nav-sub-item" data-nav="team"><span class="nav-sub-dot"></span>成员与课题组</button>':''}`;
+  subnav.innerHTML=support?'<button class="nav-item nav-sub-item" data-nav="projects"><span class="nav-sub-dot"></span>项目协作</button>':`<button class="nav-item nav-sub-item" data-nav="visual" type="button" disabled aria-disabled="true" title="暂未开放"><span class="nav-sub-dot"></span>云图汇</button><button class="nav-item nav-sub-item" data-nav="projects"><span class="nav-sub-dot"></span>云分析</button><button class="nav-item nav-sub-item" data-nav="spaces"><span class="nav-sub-dot"></span>课题组管理</button>${identity!=='support'?'<button class="nav-item nav-sub-item" data-nav="team"><span class="nav-sub-dot"></span>成员与课题组</button>':''}`;
   subnav.setAttribute('aria-label',support?'项目管理子目录':'项目列表子目录');
   document.querySelector('[data-project-menu] .nav-icon').innerHTML=icon(support?'layers':'folder');
   document.getElementById('navProjectCount').hidden=support;
   document.querySelectorAll('.sidebar [data-nav=visual]').forEach(button=>button.hidden=support);
   document.querySelectorAll('[data-preview-role]').forEach(button=>{const active=button.dataset.previewRole===identity;button.classList.toggle('active',active);button.setAttribute('aria-pressed',String(active));});
-  document.getElementById('rolePreviewCaption').textContent=support?'仅展示已添加你的项目，可进入项目详情':identity==='member'?'可创建课题组、添加成员，并查看受邀协作空间':'可管理拥有或受邀管理的项目';
+  document.getElementById('rolePreviewCaption').textContent=support?'仅展示已添加你的项目，可进入项目详情':identity==='member'?'可创建课题组、添加成员，并查看受邀课题组':'可管理拥有或受邀管理的项目';
   document.getElementById('currentRoleLabel').textContent=`${support?supportTypes[viewer.supportType]:previewRoleNames[identity]} · ${viewer.name}`;
   document.getElementById('recipientAccountControl').hidden=identity!=='member';
   const select=document.getElementById('recipientSelect');
@@ -388,7 +390,7 @@ function syncRecords(pid) {
 }
 function navigate(next, options = {}) {
   if(next==='visual')return notify('云图汇暂未开放');
-  if(identity==='support'&&next==='spaces'){page='projects';render();return notify('技术支持账号不进入协作空间');}
+  if(identity==='support'&&next==='spaces'){page='projects';render();return notify('技术支持账号不进入课题组管理');}
   if(identity==='support'&&['team','groups','members','spaces'].includes(next)){page='projects';search='';categoryFilter='';render();return notify('技术支持账号仅可查看项目列表与项目详情');}
   if(['groups','members'].includes(next)){teamTab=next;next='team';}else if(next==='team'&&page!=='team')teamTab='members';
   // 已删除的独立页面及未知旧入口均回到项目列表，不保留隐藏页面。
@@ -412,7 +414,7 @@ function openProjectDetail(id, recordId = null, origin = 'projects') {
   tab = 'data';filePath=[];selectedFileIds=[];
   navigate('detail');
 }
-function avatar(name, index = 0) { return `<span class="avatar ${['','lavender','sand','blue','coral'][index % 5]}">${safe(name.slice(0, 1))}</span>`; }
+function avatar() { return ''; }
 function heading(title, subtitle, actions = '') { return `<div class="page-heading"><div><h1>${title}</h1>${subtitle?`<p>${subtitle}</p>`:''}</div>${actions ? `<div class="heading-actions">${actions}</div>` : ''}</div>`; }
 function emptyState(title, subtitle = '', action = '') { return `<div class="empty-icon">${icon('folder')}</div><strong>${title}</strong><p>${subtitle}</p>${action}`; }
 function memberRoster(members, max = 5) { return members.length ? `<div class="roster">${members.slice(0,max).map((m,i)=>`<span class="roster-item">${avatar(person(m.id).name,i)}<span>${safe(person(m.id).name)}</span></span>`).join('')}${members.length>max?`<span class="more-count">+${members.length-max}</span>`:''}</div>` : '<span class="roster-empty">暂无成员</span>'; }
@@ -466,11 +468,11 @@ function renderSpaces() {
   const rows=list.filter(g=>`${g.name} ${person(g.ownerId||me).name}`.toLowerCase().includes(q));
   const row=g=>{
     const owner=person(g.ownerId||me),mine=(g.ownerId||'owner-1')===me;
-    return `<tr><td><div class="group-cell"><span class="group-emblem">${icon('people')}</span><div><strong>${safe(g.name)}</strong><small>${mine?'我创建的空间':`由 ${safe(owner.name)} 邀请加入`}</small></div></div></td><td><span class="collab-sharer">${safe(owner.name)}${mine?'（我）':''}</span></td><td><span class="role-pill ${mine?'owner':'member'}">${icon(mine?'shield':'person')}${mine?'空间所有者':'受邀成员'}</span></td><td>${memberRoster(g.members)}</td><td class="date-cell">${safe(mine?(g.createdAt||'-'):(g.invitedAt||'-'))}</td><td>${mine?`<div class="table-actions group-actions"><button class="btn primary small" data-group-add-member="${safe(g.id)}">${icon('plus')}添加成员</button><button class="btn quiet small" data-group-members="${safe(g.id)}">编辑成员</button></div>`:'<span class="fixed">—</span>'}</td></tr>`;
+    return `<tr><td><div class="group-cell"><span class="group-emblem">${icon('people')}</span><div><strong>${safe(g.name)}</strong><small>${mine?'我创建的课题组':`由 ${safe(owner.name)} 邀请加入`}</small></div></div></td><td><span class="collab-sharer">${safe(owner.name)}${mine?'（我）':''}</span></td><td><span class="role-pill ${mine?'owner':'member'}">${icon(mine?'shield':'person')}${mine?'课题组所有者':'受邀成员'}</span></td><td>${memberRoster(g.members)}</td><td class="date-cell">${safe(mine?(g.createdAt||'-'):(g.invitedAt||'-'))}</td><td>${mine?`<div class="table-actions group-actions"><button class="btn primary small" data-group-add-member="${safe(g.id)}">${icon('plus')}添加成员</button><button class="btn quiet small" data-group-members="${safe(g.id)}">编辑成员</button></div>`:'<span class="fixed">—</span>'}</td></tr>`;
   };
-  return `<div class="page" data-screen-label="协作空间">${heading('协作空间','这里汇总你参与过的协作空间：别人邀请你加入的，以及你邀请别人加入的。')}
-    <div class="team-management-tabs" role="tablist" aria-label="协作空间分类"><button type="button" role="tab" data-space-tab="joined" class="${spaceTab==='joined'?'active':''}" aria-selected="${spaceTab==='joined'}">${icon('people')}受邀加入<span class="tab-count">${joined.length}</span></button><button type="button" role="tab" data-space-tab="owned" class="${spaceTab==='owned'?'active':''}" aria-selected="${spaceTab==='owned'}">${icon('shield')}我创建的<span class="tab-count">${owned.length}</span></button></div>
-    <section class="surface"><div class="surface-top"><h2 class="surface-title">${spaceTab==='owned'?'我创建的空间':'受邀加入的空间'} <span class="tab-count">${rows.length}</span></h2><span class="surface-caption">空间成员与项目授权由各自所有者维护</span></div><div class="toolbar">${searchField('spaceSearch','搜索空间名称或所有者')}${identity!=='support'?`<button class="btn ghost" data-nav="groups">${icon('people')}课题组管理</button>`:''}</div><div class="table-shell space-table"><div class="table-scroll"><table><thead><tr><th>协作空间</th><th>空间所有者</th><th>我的身份</th><th>成员名单</th><th>${spaceTab==='owned'?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${rows.map(row).join('')||`<tr><td colspan="6" class="empty-cell">${emptyState(spaceTab==='owned'?'你还没有创建协作空间':'还没有空间邀请你','在课题组管理里创建空间，或等待同事把课题组的协作邀请发给你。')}</td></tr>`}</tbody></table></div></div>${tableFooter(rows.length,'个协作空间')}</section>${pageFoot('我创建的空间可添加成员、移除成员和修改角色；受邀空间由空间所有者维护。技术支持账号不进入协作空间。')}</div>`;
+  return `<div class="page" data-screen-label="课题组管理">${heading('课题组管理','这里汇总你参与过的课题组：别人邀请你加入的，以及你邀请别人加入的。')}
+    <div class="team-management-tabs" role="tablist" aria-label="课题组管理分类"><button type="button" role="tab" data-space-tab="joined" class="${spaceTab==='joined'?'active':''}" aria-selected="${spaceTab==='joined'}">${icon('people')}受邀加入<span class="tab-count">${joined.length}</span></button><button type="button" role="tab" data-space-tab="owned" class="${spaceTab==='owned'?'active':''}" aria-selected="${spaceTab==='owned'}">${icon('shield')}我创建的<span class="tab-count">${owned.length}</span></button></div>
+    <section class="surface"><div class="surface-top"><h2 class="surface-title">${spaceTab==='owned'?'我创建的课题组':'受邀加入的课题组'} <span class="tab-count">${rows.length}</span></h2><span class="surface-caption">课题组成员与项目授权由各自所有者维护</span></div><div class="toolbar">${searchField('spaceSearch','搜索课题组名称或所有者')}${identity!=='support'?`<button class="btn ghost" data-nav="groups">${icon('people')}课题组管理</button>`:''}</div><div class="table-shell space-table"><div class="table-scroll"><table><thead><tr><th>课题组</th><th>课题组所有者</th><th>我的身份</th><th>成员名单</th><th>${spaceTab==='owned'?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${rows.map(row).join('')||`<tr><td colspan="6" class="empty-cell">${emptyState(spaceTab==='owned'?'你还没有创建课题组':'还没有课题组邀请你','在课题组管理里创建课题组，或等待同事把课题组的协作邀请发给你。')}</td></tr>`}</tbody></table></div></div>${tableFooter(rows.length,'个课题组')}</section>${pageFoot('我创建的课题组可添加成员、移除成员和修改角色；受邀课题组由课题组所有者维护。技术支持账号不进入课题组管理。')}</div>`;
 }
 function renderGroups() {
   const q = search.trim().toLowerCase();
@@ -491,11 +493,11 @@ function renderMemberDirectory() {
   const list=directory.filter(d=>!isSupportPerson(d)&&!isDirectoryOwner(d.id)&&accountSearchText(d).includes(q));
   return `<div class="page" data-screen-label="成员列表">${heading('成员管理','',`<button class="btn primary" data-add-directory ${!canManageGroups()?'disabled':''}>${icon('plus')}添加成员</button>`)}
     <section class="surface"><div class="surface-top"><h2 class="surface-title">所有成员 <span class="tab-count">${list.length}</span></h2><span class="surface-caption">云平台账号信息</span></div><div class="toolbar">${searchField('memberSearch',isEnglishVersion?'Search name, username or email':'搜索姓名、用户名、手机号或已绑定邮箱')}<span class="small-count">共 ${list.length} 位成员</span></div>
-    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>成员</th><th>用户名</th><th>${memberContactLabel}</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map((d,i)=>{const contact=safe(accountContact(d,'',true).value||(isEnglishVersion?'Not provided':'未登记')); return `<tr><td><div class="member-cell">${avatar(d.name,i)}<div><div class="member-name">${safe(d.name)}</div><span class="member-note">${d.id==='owner-1'?'项目所有者':'云平台成员'}</span></div></div></td><td>${safe(d.account)}${safe(demoMemberLabel(d))}</td><td class="date-cell">${contact}</td><td class="directory-actions-column"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canManageGroups()||isDirectoryOwner(d.id)?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':'从成员库移除，并同步退出其所在课题组与协作项目'}" aria-label="移除成员${safe(d.name)}">移除成员</button></td></tr>`;}).join('')||`<tr><td colspan="4" class="empty-cell">${emptyState('未找到匹配的成员','试试其他姓名、用户名、手机号或邮箱。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot('移除成员会同步退出其所在课题组与协作项目；不删除对方的云平台账号。')}</div>`;
+    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>成员</th><th>用户名</th><th>${memberContactLabel}</th><th>成员备注</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map((d,i)=>{const contact=safe(accountContact(d,'',true).value||(isEnglishVersion?'Not provided':'未登记')); return `<tr><td><div class="member-cell">${avatar(d.name,i)}<div><div class="member-name">${safe(d.name)}</div><span class="member-note">${d.id==='owner-1'?'项目所有者':'云平台成员'}</span></div></div></td><td>${safe(d.account)}${safe(demoMemberLabel(d))}</td><td class="date-cell">${contact}</td><td class="member-remark-cell">${safe(d.remark||'—')}</td><td class="directory-actions-column"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canManageGroups()||isDirectoryOwner(d.id)?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':'从成员库移除，并同步退出其所在课题组与协作项目'}" aria-label="移除成员${safe(d.name)}">移除成员</button></td></tr>`;}).join('')||`<tr><td colspan="5" class="empty-cell">${emptyState('未找到匹配的成员','试试其他姓名、用户名、手机号或邮箱。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot('移除成员会同步退出其所在课题组与协作项目；不删除对方的云平台账号。')}</div>`;
 }
 function renderDetail() {
   const p=project();
-  return `<div class="page project-detail-page" data-screen-label="项目详情"><button class="back-link" data-back-project-list>${icon('back')}返回${detailOrigin.page==='spaces'?'协作空间':{mine:identity==='support'?'协作项目':'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]+'列表'}</button>
+  return `<div class="page project-detail-page" data-screen-label="项目详情"><button class="back-link" data-back-project-list>${icon('back')}返回${detailOrigin.page==='spaces'?'课题组管理':{mine:identity==='support'?'协作项目':'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]+'列表'}</button>
     <section class="reference-detail-summary"><div class="reference-detail-title"><span class="detail-project-icon">${icon(p.type==='云图汇'?'chart':'folder')}</span><div><h1>${safe(p.name)}</h1><span class="reference-detail-status">状态：${safe(p.status)}</span></div></div>
     <dl><dt>开题单号</dt><dd><span class="ticket-cell"><span class="ticket-link">${safe(p.ticket)}</span><button class="copy-ticket" data-copy-ticket="${p.id}" aria-label="复制开题单号 ${safe(p.ticket)}">${icon('copy')}</button></span></dd></dl><dl><dt>合同号</dt><dd>${safe(p.contract)}</dd></dl><dl><dt>云平台项目编号</dt><dd>${safe(p.code)}</dd></dl><button class="btn primary detail-result-button" data-show-result>查看结果</button></section>
     ${renderProjectSupport(p)}
@@ -518,7 +520,7 @@ function render() {
     const p=project();
     if(!visibleProjects().some(item=>item.id===p.id)){page='projects';}
     else {
-      AnalysisResult.mount({project:p,viewer:{...person(currentUserId()),id:currentUserId(),projectRole:projectAccessRole(p)},participants:p.members.map(member=>({...person(member.id),id:member.id,projectRole:member.role})),canSubmit:detailOrigin.listTab!=='shared'&&['owner','admin','member'].includes(projectAccessRole(p)),canManageRecords:canManageProject(p),onViewerChange:switchAnalysisViewer,onBack:backFromAnalysis});
+      AnalysisResult.mount({project:p,viewer:{...person(currentUserId()),id:currentUserId(),projectRole:projectAccessRole(p)},participants:p.members.map(member=>({...person(member.id),id:member.id,projectRole:member.role})),canRenameRecords:p.collab===true,canSubmit:detailOrigin.listTab!=='shared'&&['owner','admin','member'].includes(projectAccessRole(p)),canManageRecords:canManageProject(p),onViewerChange:switchAnalysisViewer,onBack:backFromAnalysis});
       return;
     }
   }
@@ -528,14 +530,13 @@ function render() {
   if(page==='detail'&&((detailOrigin.listTab==='mine'&&!projectAccessRole(project()))||(detailOrigin.listTab==='shared'&&!sharedProjects().some(p=>p.id===activeProjectId)))){page=detailOrigin.page;listTab='mine';tab='data';search='';}
   const viewer=person(currentUserId());
   document.querySelector('.side-user strong').textContent=viewer.name;
-  document.querySelectorAll('.side-user .user-avatar,.header-avatar').forEach(el=>{el.textContent=viewer.name.slice(0,1);el.setAttribute('aria-label',`当前用户：${viewer.name}`);});
   document.body.classList.remove('reference-mode');
   const renderers={projects:renderProjects,team:renderTeam,spaces:renderSpaces,detail:renderDetail};
   main.innerHTML=(renderers[page]||renderProjects)();
-  const labels={projects:identity==='support'?'项目协作':'云分析',team:'成员与课题组',spaces:'协作空间',detail:'项目详情'};
+  const labels={projects:identity==='support'?'项目协作':'云分析',team:'成员与课题组',spaces:'课题组管理',detail:'项目详情'};
   const navPage=page==='detail'?'projects':page;
   const nested=['projects','team','spaces'].includes(navPage);
-  document.getElementById('crumb').innerHTML=`工作空间 <span>/</span> ${nested?(identity==='support'?'项目管理 <span>/</span> ':'项目列表 <span>/</span> '):''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${{mine:identity==='support'?'协作项目':'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;
+  document.getElementById('crumb').innerHTML=`工作课题组 <span>/</span> ${nested?(identity==='support'?'项目管理 <span>/</span> ':'项目列表 <span>/</span> '):''}<strong>${labels[navPage]||'项目列表'}</strong>${page==='detail'?`<span>/</span>${{mine:identity==='support'?'协作项目':'派森诺项目',shared:'共享项目',collab:'协作项目'}[detailOrigin.listTab]}<span>/</span>${safe(project().name.replace(/^测试示例-/,''))}`:''}`;
   document.querySelectorAll('[data-nav]').forEach(n=>{const active=n.dataset.nav===navPage;n.classList.toggle('active',active);if(n.closest('.side-nav')){if(active)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current');}});
   const menu=document.getElementById('projectSubnav'),menuButton=document.querySelector('[data-project-menu]');
   menu.hidden=!projectMenuOpen;menuButton.setAttribute('aria-expanded',String(projectMenuOpen));menuButton.classList.toggle('directory-active',nested);
@@ -563,25 +564,13 @@ function dismissModal() {
   closeConfirmation();modal=parent;showModal();
   if(focus)modalRoot.querySelector(focus)?.focus({preventScroll:true});
 }
-function showAccountConfirmation(user) {
-  if(modal.roleAccountId!==user.id)modal.selectedRole=defaultMemberRole(person(user.id));
-  modal.roleAccountId=user.id;
-  modal.pendingUser=user; modalRoot.inert=true;
-  confirmRoot.innerHTML=`<span class="account-tip-icon">${icon('info')}</span><span>${safe(safetyMessage)}</span>`;
-  confirmRoot.hidden=false;
-  const modalTop=modalRoot.querySelector('.modal').getBoundingClientRect().top;
-  confirmRoot.style.top=`${Math.max(12,Math.round(modalTop-confirmRoot.getBoundingClientRect().height-16))}px`;
-  confirmationTimer=setTimeout(()=>{
-    if(!modal || !['add','directory-add'].includes(modal.type) || modal.step!=='verify' || modal.pendingUser!==user) return;
-    closeConfirmation(); modal.user=user; modal.step=modal.type==='directory-add'?'confirm':'role'; showModal(); modalRoot.querySelector('input[name=role], [data-confirm-add], [data-directory-add-confirm]')?.focus();
-  },1600);
-}
+
 function rolesRadio(selected='member') {
   const names=isEnglishVersion?{admin:'Administrator',member:'Member',visitor:'Viewer'}:roleNames;
   const descriptions=isEnglishVersion?{admin:'Manage members and permissions within the project.',member:'Run analyses and use authorized project data.',visitor:'View authorized content; downloads are managed separately.'}:roleDescriptions;
   return `<div class="role-choices">${['admin','member','visitor'].map(r=>`<label class="role-option ${r}"><input type="radio" name="role" value="${r}" ${selected===r?'checked':''}><span class="role-icon">${icon(roleIcons[r])}</span><span><strong>${names[r]}</strong><small>${descriptions[r]}</small></span></label>`).join('')}</div>`;
 }
-function openAdd(target='project', groupId=null) { if((target==='group'||target==='directory')&&!canManageGroups()) return notify('当前角色不能添加成员'); if(target==='project'&&!canManageCollaborationMembers()) return notify('支持人员不能修改项目成员'); modal={type:'add',target,groupId,step:'verify',contact:'',error:''}; showModal(); }
+function openAdd(target='project',groupId=null) { if(target==='project'?!canManageCollaborationMembers():!canManageGroups())return notify('当前角色不能添加成员');modal={type:'add',target,groupId,lookupKey:'account',lookupValue:'',remark:'',error:''};showModal(); }
 function openGroupCreate(parent=null) { if(!canManageGroups()) return notify('当前角色不能添加课题组'); modal={type:'group-create',name:'',members:[],memberQuery:'',pickerOpen:false,error:'',memberError:'',parent,parentFocus:'[data-new-collab-group]'}; showModal(); }
 function groupCollabRecords(g) { return collabRecords.filter(r=>r.groupId===g.id||r.groupName===g.name); }
 function groupMemberProjects(g,id) { return [...new Set(groupCollabRecords(g).filter(r=>(r.members||[]).some(m=>m.id===id)).map(r=>r.projectId))]; }
@@ -713,64 +702,36 @@ function saveGroupRoles() {
   if(!changed){closeModal();render();return notify('课题组角色没有变化');}
   saveAll();modal=null;closeModal();render();notify(`已更新 ${changed} 位成员的课题组角色`);
 }
-function openDirectoryAdd(parent=null){ if(!canManageGroups()) return notify('当前角色不能添加成员'); modal={type:'directory-add',step:'verify',account:'',contact:'',error:'',parent,parentFocus:'#groupMemberSearch'}; showModal(); }
-function accountIdentityCard(u) {
-  const contact=accountContact(u,contactKeyFor(modal.contact));
-  return `<div class="verify-success account-identity-card">${avatar(u.name)}<div><strong>${safe(u.name)}</strong><span>${isEnglishVersion?'Username':'用户名'}：${safe(u.account)}${safe(demoMemberLabel(u))}</span><span>${contact.label}：${safe(contact.value)}</span></div><span class="checkmark">${isEnglishVersion?'Account matched':'演示核对通过'}</span></div>`;
-}
+function openDirectoryAdd(parent=null) { if(!canManageGroups())return notify('当前角色不能添加成员');modal={type:'directory-add',lookupKey:'account',lookupValue:'',remark:'',error:'',parent,parentFocus:'#groupMemberSearch'};showModal(); }
+
 function showMemberAccountLookup(title) {
-  modal.contact=modal.contact||'';
-  modal.account=modal.account||'';
-  const fields=[['contact',memberContactLabel,isEnglishVersion?'email':'text',isEnglishVersion?'email':'text',100,isEnglishVersion?'Enter account email':'请输入注册手机号或后续绑定的邮箱',isEnglishVersion?'Enter a valid account email.':'请输入有效手机号或已绑定邮箱'],['account',isEnglishVersion?'Username':'用户名','text','text',80,isEnglishVersion?'Enter username':'请输入云平台用户名',isEnglishVersion?'Enter a valid username.':'请匹配有效的云平台用户名']];
-  const examples=demoPlatformAccounts.filter(user=>isRepeatableDemoAccount(user)).map(user=>{
-    const contact=accountContact(user,isEnglishVersion?'email':'phone');
-    return {user,contact};
-  }).filter(example=>example.contact.value);
-  const exampleHtml=`<div class="demo-account-examples"><div class="demo-example-title">${icon('info')}${isEnglishVersion?'Example account (click to fill)':'示例账号（点击自动填入）'}</div><div class="demo-example-list">${examples.map(({user,contact})=>`<button type="button" class="demo-example-chip" data-example-contact="${safe(contact.value)}" data-example-account="${safe(user.account)}"><span class="demo-example-avatar">${safe(user.name.slice(0,1))}</span><span class="demo-example-meta"><strong>${safe(user.name)}</strong><small>${safe(contact.label)}：${safe(contact.value)} · ${safe(user.account)}</small></span></button>`).join('')}</div><p class="demo-example-hint">${isEnglishVersion?'Click to fill. This example can be added repeatedly without a limit; each confirmation creates a separate demo record.':'点击自动填入，示例可无限次重复添加；每次确认新增一条独立演示记录。'}</p></div>`;
-  const formTitle=isEnglishVersion?'Add member':title;
-  modalFrame(formTitle,isEnglishVersion?'Match the account, then confirm to add the member.':'先匹配账户，确认后以“成员”身份加入。',`<form id="verifyForm" novalidate>${fields.map(([key,label,type,inputmode,max,placeholder,errorText])=>`<label class="field" id="${key}Field"><span class="field-label">${label}</span><input id="${key}" data-account-key="${key}" type="${type}" inputmode="${inputmode}" autocomplete="off" maxlength="${max}" placeholder="${placeholder}" value="${safe(modal[key])}" aria-describedby="${key==='contact'?'memberContactHint accountLookup':'accountLookup'}" aria-invalid="false"><span class="field-error">${errorText}</span></label>${key==='contact'?`<p class="member-contact-hint" id="memberContactHint">${accountCopy.contactHint}</p>`:''}`).join('')}<div id="accountLookup" aria-live="polite"></div><div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error)}</div>${exampleHtml}</form>`,`<button class="btn" data-close>${isEnglishVersion?'Cancel':'取消'}</button><button class="btn primary" data-verify>${isEnglishVersion?'Next: Confirm':'下一步：确认添加'}</button>`);
-  drawAccountLookup();document.getElementById(modal.lookupSource||'contact')?.focus();
-  modalRoot.querySelectorAll('.demo-example-chip').forEach(button=>button.addEventListener('click',()=>{
-    const input=document.getElementById('contact');
-    input.value=button.dataset.exampleContact;
-    input.dispatchEvent(new Event('input',{bubbles:true}));
-    document.getElementById('contact')?.focus();
-  }));
+  modal.lookupKey=modal.lookupKey||'account';modal.lookupValue=modal.lookupValue||'';
+  const labels={account:'用户名',phone:'手机号',email:'邮箱'},example=demoPlatformAccounts.find(isRepeatableDemoAccount);
+  modalFrame(title,'选择添加方式，所有信息均为必填，填写后直接添加。',`<form id="memberAddForm" novalidate><label class="field" for="memberLookupType"><span class="field-label">添加方式</span><select id="memberLookupType" required aria-required="true" aria-label="选择用户名、手机号或邮箱">${Object.entries(labels).map(([key,label])=>`<option value="${key}" ${modal.lookupKey===key?'selected':''}>${label}</option>`).join('')}</select></label><label class="field" id="memberAccountField"><span class="field-label">${labels[modal.lookupKey]}</span><input id="memberAccount" required aria-required="true" autocomplete="off" maxlength="100" value="${safe(modal.lookupValue)}" placeholder="请输入${modal.lookupKey==='email'?'已绑定邮箱':labels[modal.lookupKey]}" aria-describedby="accountLookupError"><span class="field-error">请输入有效的${labels[modal.lookupKey]}</span></label>${memberRemarkField()}<div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error)}</div><div class="demo-account-examples"><p class="demo-example-title">示例账号</p><button type="button" class="demo-example-chip" data-fill-member-example><span class="demo-example-meta"><strong>${safe(example.name)}</strong><small>${safe(usableAccountValue(example,modal.lookupKey))}</small></span></button></div></form>`,'<button class="btn" data-close>取消</button><button type="submit" form="memberAddForm" class="btn primary">添加成员</button>');
+  modalRoot.querySelector('[data-fill-member-example]').addEventListener('click',()=>{modal.lookupValue=usableAccountValue(example,modal.lookupKey);document.getElementById('memberAccount').value=modal.lookupValue;});
+  document.getElementById('memberAccount')?.focus();
 }
-function lookupError(message,keys=[]) {
-  modal.error=message;
-  const el=document.getElementById('accountLookupError');el.textContent=message;el.hidden=false;
-  keys.forEach(key=>{document.getElementById(key+'Field')?.classList.add('invalid');document.getElementById(key)?.setAttribute('aria-invalid','true');});
+function lookupError(message) { modal.error=message;const el=document.getElementById('accountLookupError');if(el){el.textContent=message;el.hidden=false;}document.getElementById('memberAccountField')?.classList.add('invalid');document.getElementById('memberAccount')?.setAttribute('aria-invalid','true'); }
+
+
+function memberRemarkField() {
+  return `<label class="field member-remark-field" id="memberRemarkField"><span class="field-label">成员备注</span><input id="memberRemark" aria-required="true" value="${safe(modal.remark||'')}" maxlength="20" required placeholder="请输入20字以内的中文备注" aria-describedby="memberRemarkHint"><span id="memberRemarkHint" class="member-contact-hint">仅限中文，1—20个字</span><span class="field-error">成员备注必须为中文，且不超过20个字。</span></label>`;
 }
-function drawAccountLookup() {
-  const slot=document.getElementById('accountLookup');if(!slot)return;
-  const key=modal.lookupSource||'contact';
-  const result=resolvePlatformAccount(modal[key],key),user=result.user;
-  slot.innerHTML=user?`<div class="account-preview">${avatar(user.name)}<div><strong>${safe(user.name)}</strong><small>${isEnglishVersion?'Matched username':'已匹配用户名'}：${safe(user.account)}</small></div><span>${isEnglishVersion?'Matched':'已匹配'}</span></div>`:modal[key]?`<p class="lookup-status ${result.status==='ambiguous'?'lookup-conflict':''}">${result.status==='ambiguous'?accountCopy.ambiguous:accountCopy.unmatched}</p>`:'';
-}
-function updateAccountLookup(key,value) {
-  modal.lookupSource=key;modal.error='';modal.user=null;modal[key]=value;
-  const result=resolvePlatformAccount(value,key);
-  const other=key==='contact'?'account':'contact';
-  modal[other]=result.user?(other==='account'?result.user.account:accountContact(result.user,contactKeyFor(modal.contact)).value):'';
-  for(const field of ['contact','account']){
-    const input=document.getElementById(field);if(input){input.value=modal[field];input.setAttribute('aria-invalid','false');}
-    document.getElementById(field+'Field')?.classList.remove('invalid');
+function validateMemberRemark() {
+  const input=document.getElementById('memberRemark');
+  modal.remark=(input?.value||'').trim();
+  if(!/^\p{Script=Han}{1,20}$/u.test(modal.remark)){
+    document.getElementById('memberRemarkField')?.classList.add('invalid');input?.setAttribute('aria-invalid','true');input?.focus();return false;
   }
-  const error=document.getElementById('accountLookupError');error.hidden=true;error.textContent='';drawAccountLookup();
+  return true;
 }
-
-function showDirectoryAddModal(){
-  if(modal.step==='verify')return showMemberAccountLookup('添加成员',accountCopy.subtitle);
-  const u=modal.user,inGroup=modal.parent?.type==='group-create';
-
-  modalFrame(isEnglishVersion?'Confirm member':inGroup?'确认课题组成员':'确认成员',isEnglishVersion?'Review the account before adding. The member joins with the default member role.':'账号核对通过，确认后以“成员”身份加入。',`${accountIdentityCard(u)}<p class="member-role-hint">确认后以“成员”身份加入${inGroup?'当前课题组':'成员库'}；项目访问仍以协作授权为准。</p>`,`<button class="btn" data-back-verify>${isEnglishVersion?'Back':'返回修改'}</button><button class="btn primary" data-directory-add-confirm>${isEnglishVersion?'Add member':'确认添加'}</button>`);
-}
+function showDirectoryAddModal() { return showMemberAccountLookup('添加成员'); }
 function confirmDirectoryAdd(){
-  if(!canManageGroups()||modal?.type!=='directory-add'||modal.step!=='confirm'||!modal.user)return;
+  if(!canManageGroups()||modal?.type!=='directory-add'||!modal.user)return;
+  if(!validateMemberRemark())return;
   const parent=modal.parent;
-  if(!isRepeatableDemoAccount(modal.user)&&directory.some(d=>visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(modal.user,k)))){modal.error='该成员已在成员库中';modal.step='verify';return showModal();}
-  const role=selectedMemberRole(modal.user),u=memberForAddition(modal.user,role);
+  if(!isRepeatableDemoAccount(modal.user)&&directory.some(d=>visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(modal.user,k)))){return lookupError('该成员已在成员库中');}
+  const role=selectedMemberRole(modal.user),u={...memberForAddition(modal.user,role),remark:modal.remark};
   directory.push({...u});saveAll();
   if(parent?.type==='group-create'){
     if(!parent.members.some(m=>m.id===u.id))parent.members.push({id:u.id,role});
@@ -1087,8 +1048,8 @@ function showCollabModal() {
   const memberSections=collabMemberSections(modal),available=members.filter(m=>m.role!=='owner');
   const scrollTop=modalRoot.querySelector('.collaboration-modal .modal-body')?.scrollTop||0;
   const collapsed=[...modalRoot.querySelectorAll('[data-collab-member-section]:not([open])')].map(el=>el.dataset.collabMemberSection);
-  const body=`<div class="picker-layout"><section class="picker-block group-picker-panel"><div class="picker-heading"><h3>选择课题组 <span class="picker-note">可多选</span></h3>${modal.recordId||identity!=='owner'?'':'<button class="btn quiet small text-primary" data-new-collab-group>＋ 添加课题组</button>'}</div><div class="collab-group-tools"><label><input type="checkbox" data-select-all-collab-groups ${modal.recordId||!groups.length?'disabled':''}>全选课题组</label><span>${modal.selectedGroupIds.length} / ${groups.length}</span><button type="button" data-clear-collab-groups ${modal.recordId||!modal.selectedGroupIds.length?'disabled':''}>清空</button></div><div class="check-list group-list-picker">${groups.map(g=>`<label class="check-item"><input type="checkbox" data-collab-group="${g.id}" ${modal.selectedGroupIds.includes(g.id)?'checked':''} ${modal.recordId?'disabled':''}><span class="check-main"><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员</small></span></label>`).join('')||'<div class="picker-empty">暂无课题组，点击上方“添加课题组”跳转创建</div>'}</div></section>
-  <section class="picker-block collab-members-panel"><div class="collab-members-header"><div class="collab-members-title"><h3>协作成员</h3><span id="collabMemberCount">已选 <b>${modal.selectedMemberIds.length}</b> / ${available.length} 位成员（去重）</span></div><div class="collab-member-actions"><button type="button" class="btn collab-select-all" data-select-all-collab-members>${icon("check")}全选</button><button type="button" class="btn collab-clear-all" data-clear-collab-members>清空</button></div></div><p class="inline-member-hint">按课题组展示；同一账号在多组中同步勾选与角色，人数去重统计。勾选即新增授权，取消勾选即移除授权，保存后生效。</p><div class="check-list inline-collab-members">${memberSections.map(section=>`<details class="collab-member-section" data-collab-member-section="${safe(section.id)}" open><summary><strong>${safe(section.name)}</strong><span>已选 ${section.members.filter(m=>modal.selectedMemberIds.includes(m.id)).length} / ${section.members.filter(m=>m.role!=='owner').length} 人</span></summary><div class="collab-section-roster">${section.members.map((m,i)=>{
+  const body=`<div class="picker-layout"><section class="picker-block group-picker-panel"><div class="picker-heading"><h3>选择课题组 <span class="picker-note">可多选</span></h3>${modal.recordId||identity!=='owner'?'':'<button class="btn quiet small text-primary" data-new-collab-group>＋ 添加课题组</button>'}</div><div class="collab-group-tools"><label><input type="checkbox" data-select-all-collab-groups ${modal.recordId||!groups.length?'disabled':''}>全选课题组</label><span>${modal.selectedGroupIds.length} / ${groups.length}</span><button type="button" data-clear-collab-groups ${modal.recordId||!modal.selectedGroupIds.length?'disabled':''}>取消全选</button></div><div class="check-list group-list-picker">${groups.map(g=>`<label class="check-item"><input type="checkbox" data-collab-group="${g.id}" ${modal.selectedGroupIds.includes(g.id)?'checked':''} ${modal.recordId?'disabled':''}><span class="check-main"><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员</small></span></label>`).join('')||'<div class="picker-empty">暂无课题组，点击上方“添加课题组”跳转创建</div>'}</div></section>
+  <section class="picker-block collab-members-panel"><div class="collab-members-header"><div class="collab-members-title"><h3>协作成员</h3><span id="collabMemberCount">已选 <b>${modal.selectedMemberIds.length}</b> / ${available.length} 位成员（去重）</span></div><div class="collab-member-actions"><button type="button" class="btn collab-select-all" data-select-all-collab-members>${icon("check")}全选</button><button type="button" class="btn collab-clear-all" data-clear-collab-members>取消全选</button></div></div><p class="inline-member-hint">按课题组展示；同一账号在多组中同步勾选与角色，人数去重统计。勾选即新增授权，取消勾选即移除授权，保存后生效。</p><div class="check-list inline-collab-members">${memberSections.map(section=>`<details class="collab-member-section" data-collab-member-section="${safe(section.id)}" open><summary><strong>${safe(section.name)}</strong><span>已选 ${section.members.filter(m=>modal.selectedMemberIds.includes(m.id)).length} / ${section.members.filter(m=>m.role!=='owner').length} 人</span></summary><div class="collab-section-roster">${section.members.map((m,i)=>{
     const selected=modal.selectedMemberIds.includes(m.id),removed=modal.removedMemberIds.includes(m.id),existing=current.some(x=>x.id===m.id),owner=m.role==='owner';
     const value=collabRoleValue(modal,m);
     const alwaysIn=owner;
@@ -1118,17 +1079,7 @@ function showModal() {
   if(modal.type==='directory-add') return showDirectoryAddModal();
   if(modal.type==='directory-remove') return showDirectoryRemoveModal();
   if(modal.type==='collab') return showCollabModal();
-  if(modal.type==='add' && modal.step==='verify') {
-    const title=modal.target==='group'?'添加课题组成员':'添加项目成员';
-    return showMemberAccountLookup(title,accountCopy.subtitle);
-  }
-  if(modal.type==='add' && modal.step==='role') {
-    const u=modal.user;
-    const title=modal.target==='group'?'确认课题组成员':'确认成员与项目角色';
-    modalFrame(title,'账号核对通过，点击添加成员；新成员默认为“成员”角色。',
-      `${accountIdentityCard(u)}`,
-      '<button class="btn" data-back-verify>返回修改</button><button class="btn primary" data-confirm-add>添加成员</button>'); return;
-  }
+  if(modal.type==='add')return showMemberAccountLookup(modal.target==='group'?'添加课题组成员':'添加项目成员');
   if(modal.type==='edit') {
     modalFrame('调整项目角色',`为 ${safe(person(modal.id).name)} 设置新的协作权限`,
       `<span class="field-label">选择角色</span>${rolesRadio(modal.role)}<div class="verify-hint" style="margin-top:16px">项目所有者不可在这里调整；角色变化仅对当前项目生效。</div>`,
@@ -1140,35 +1091,22 @@ function showModal() {
       '<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-remove>确认移除</button>');
   }
 }
-function verify() {
-  if(!canManageGroups()||!modal||!['add','directory-add'].includes(modal.type)||modal.step!=='verify')return;
-  for(const key of ['contact','account']){
-    modal[key]=document.getElementById(key)?.value.trim()||'';
-    document.getElementById(key+'Field')?.classList.remove('invalid');
-    document.getElementById(key)?.setAttribute('aria-invalid','false');
-  }
-  const contactKey=contactKeyFor(modal.contact);
-  const validContact=contactKey==='email'?/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(modal.contact):/^1[3-9]\d{9}$/.test(modal.contact);
-  const invalid=[];
-  if(!validContact)invalid.push('contact');
-  if(!modal.account)invalid.push('account');
-  if(invalid.length)return lookupError(isEnglishVersion?'Enter a valid email and username.':`请填写完整的${accountPairLabel}。`,invalid);
-  const contactResult=resolvePlatformAccount(modal.contact,'contact');
-  const accountResult=resolvePlatformAccount(modal.account,'account');
-  if(contactResult.status==='ambiguous'||accountResult.status==='ambiguous')return lookupError(accountCopy.ambiguous,['contact','account']);
-  const user=contactResult.user;
-  if(!user||accountResult.user?.id!==user.id)return lookupError(!user?accountCopy.unmatched:accountCopy.mismatch,['contact','account']);
-
-  if(modal.type==='directory-add'){
-    if(!isRepeatableDemoAccount(user)&&directory.some(d=>d.id===user.id||visibleAccountKeys.some(k=>usableAccountValue(d,k)&&usableAccountValue(d,k)===usableAccountValue(user,k))))return lookupError('该成员已在成员库中，可在课题组中直接选用');
-  }else{
-    const container=modal.target==='group'?group(modal.groupId)?.members:projectMemberList();if(!container)return;
-    if(user.id==='owner-1')return lookupError('项目所有者无需重复添加');
-    if(!isRepeatableDemoAccount(user)&&container.some(m=>m.id===user.id))return lookupError('该用户已在当前列表中');
-  }
-  modal.error='';showAccountConfirmation(user);
+function submitMemberAdd() {
+  if(!modal||!['add','directory-add'].includes(modal.type))return;
+  if(modal.type==='add'&&modal.target==='project'?!canManageCollaborationMembers():!canManageGroups())return;
+  modal.lookupValue=document.getElementById('memberAccount')?.value.trim()||'';
+  const result=resolvePlatformAccount(modal.lookupValue,modal.lookupKey);
+  if(!result.user)return lookupError(result.status==='ambiguous'?accountCopy.ambiguous:'未找到该账号，请填写已有用户名、手机号或已绑定邮箱。');
+  if(!validateMemberRemark())return;
+  modal.user=result.user;
+  if(modal.type==='directory-add')return confirmDirectoryAdd();
+  const container=modal.target==='group'?group(modal.groupId)?.members:projectMemberList();if(!container)return;
+  if(!isRepeatableDemoAccount(modal.user)&&container.some(m=>m.id===modal.user.id))return lookupError('该成员已在当前名单中');
+  const role=selectedMemberRole(modal.user),u={...memberForAddition(modal.user,role),remark:modal.remark};
+  if(!directory.some(d=>d.id===u.id))directory.push({...u});
+  if(modal.target==='project'){project().directCollabMembers.push({id:u.id,role,invitedBy:currentUserId()});project().hasCollaborated=true;rebuildProjectMembers(project());}else container.push({id:u.id,role});
+  saveAll();closeModal();render();notify('成员添加成功');
 }
-
 function confirmGroupCreate() {
   if(!canManageGroups()||modal?.type!=='group-create')return;
   modal.name=document.getElementById('groupName').value.trim();modal.error='';modal.memberError='';
@@ -1312,19 +1250,6 @@ modalRoot.addEventListener('click',e=>{
   if(a.hasAttribute('data-select-all-collab-members'))return selectAllCollabMembers();
   if(a.hasAttribute('data-clear-collab-members'))return clearCollabMembers();
   if(a.hasAttribute('data-confirm-collab'))return confirmCollab();
-  if(a.hasAttribute('data-verify'))return verify();
-  if(a.hasAttribute('data-back-verify')){modal.step='verify';return showModal();}
-  if(a.hasAttribute('data-confirm-add')&&modal.type==='add'&&modal.step==='role'){
-    if(modal.target==='project'&&!canManageCollaborationMembers())return notify('支持人员不能修改项目成员');
-    const container=modal.target==='group'?group(modal.groupId).members:projectMemberList();
-    if(!isRepeatableDemoAccount(modal.user)&&container.some(m=>m.id===modal.user.id))return notify('该成员已在当前名单中');
-    const role=selectedMemberRole(modal.user),u=memberForAddition(modal.user,role);
-    if(!directory.some(d=>d.id===u.id))directory.push({...u});
-    if(modal.target==='project'){project().directCollabMembers.push({id:u.id,role,invitedBy:currentUserId()});project().hasCollaborated=true;rebuildProjectMembers(project());}else container.push({id:u.id,role});
-    saveAll();
-    if(modal.parent?.type==='group-members'){modal=modal.parent;showModal();}else closeModal();
-    render();return notify('成员添加成功');
-  }
   if(a.hasAttribute('data-save-role')&&modal.type==='edit'){
     if(!canManageCollaborationMembers())return closeModal();
     const m=projectMemberList().find(x=>x.id===modal.id);if(!m||m.role==='owner'||isSupportPerson(m))return closeModal();
@@ -1336,13 +1261,14 @@ modalRoot.addEventListener('click',e=>{
     project().members=project().members.filter(x=>x.id!==modal.id);syncRecords(project().id);saveAll();closeModal();render();return notify('成员已从项目中移除');
   }
 });
-modalRoot.addEventListener('submit',e=>{e.preventDefault();if(!canManage()&&!(canManageGroups()&&['verifyForm','groupForm'].includes(e.target.id)))return;if(e.target.id==='folderForm')confirmFolder();else if(e.target.id==='shareForm')addShareUser();else if(e.target.id==='verifyForm')verify();else if(e.target.id==='groupForm')confirmGroupCreate();});
+modalRoot.addEventListener('submit',e=>{e.preventDefault();if(!canManage()&&!(canManageGroups()&&['memberAddForm','groupForm'].includes(e.target.id)))return;if(e.target.id==='folderForm')confirmFolder();else if(e.target.id==='shareForm')addShareUser();else if(e.target.id==='memberAddForm')submitMemberAdd();else if(e.target.id==='groupForm')confirmGroupCreate();});
 modalRoot.addEventListener('input',e=>{
   if(!modal)return;
   e.target.closest('.field')?.classList.remove('invalid');
   if(e.target.id==='shareAccount'){modal.account=e.target.value;modal.error='';e.target.setAttribute('aria-invalid','false');e.target.closest('.share-account-control').classList.remove('invalid');document.getElementById('shareAccountError').hidden=true;drawShareAccountLookup();}
   if(e.target.id==='folderName')modal.name=e.target.value;
-  if(e.target.dataset.accountKey)return updateAccountLookup(e.target.dataset.accountKey,e.target.value);
+  if(e.target.id==='memberRemark'){modal.remark=e.target.value;e.target.setAttribute('aria-invalid','false');}
+  if(e.target.id==='memberAccount'){modal.lookupValue=e.target.value;modal.error='';document.getElementById('accountLookupError').hidden=true;e.target.setAttribute('aria-invalid','false');}
   if(e.target.id==='groupName'){modal.name=e.target.value;modal.error='';}
   if(e.target.id==='groupMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;drawGroupPicker();}
   if(e.target.id==='groupAddMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;document.getElementById('directoryMemberOptions').innerHTML=directoryPickerOptions();}
@@ -1350,6 +1276,7 @@ modalRoot.addEventListener('input',e=>{
 modalRoot.addEventListener('focusin',e=>{if(modal?.type==='group-create'&&e.target.id==='groupMemberSearch'){modal.pickerOpen=true;drawGroupPicker();}});
 modalRoot.addEventListener('change',e=>{
   if(!modal||(!canManage()&&!canManageGroups()))return;
+  if(e.target.id==='memberLookupType'){const user=resolvePlatformAccount(modal.lookupValue,modal.lookupKey).user;modal.lookupKey=e.target.value;modal.lookupValue=user?usableAccountValue(user,modal.lookupKey):'';modal.error='';return showModal();}
   if(e.target.name==='role'&&['admin','member','visitor'].includes(e.target.value)){modal.selectedRole=e.target.value;return;}
   if(e.target.dataset.collabRole){const id=e.target.dataset.collabRole;if(!isSupportPerson(id)&&['admin','member','visitor'].includes(e.target.value)){modal.roleOverrides[id]=e.target.value;modalRoot.querySelectorAll('[data-collab-role]').forEach(el=>{if(el.dataset.collabRole===id)el.value=e.target.value;});}return;}
   if(e.target.hasAttribute('data-collab-download')){modal.downloadOverride=e.target.checked;return;}

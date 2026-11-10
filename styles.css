@@ -370,3 +370,6 @@
 
 .group-table .group-actions{flex-wrap:wrap;gap:5px}
 .group-table .group-actions .btn{min-height:28px;font-size:11px;padding:0 10px}
+
+/* 成员备注与去除头像后的列表排版 */
+.member-remark-cell{max-width:220px;overflow-wrap:anywhere;white-space:normal}.required-mark{color:#f56c6c}.member-remark-field{margin-top:20px}.member-remark-field .member-contact-hint{display:block;margin:6px 0}.side-user{gap:0}.roster-item{gap:0}.member-cell{gap:0}

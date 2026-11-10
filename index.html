@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>项目协作 · 派森诺基因云平台</title>
-  <meta name="description" content="派森诺科研协作空间：管理项目、课题组与成员，体验单项目和批量项目协作。">
+  <meta name="description" content="派森诺科研课题组管理：管理项目、课题组与成员，体验单项目和批量项目协作。">
   <meta name="theme-color" content="#1989fa">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231989fa'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261104-project-support">
-  <link rel="stylesheet" href="analysis-result.css?v=20261104-project-support">
+  <link rel="stylesheet" href="styles.css?v=20261110-member-lookup">
+  <link rel="stylesheet" href="analysis-result.css?v=20261110-member-lookup">
 </head>
 <body>
   <div class="app-shell" data-screen-label="项目协作交互原型">
     <aside class="sidebar" aria-label="主导航">
       <a class="brand" href="#projects" aria-label="派森诺基因云平台首页"><span class="brand-symbol" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M9 7h8a7 7 0 0 1 0 14H9M9 7v20m0-13h8" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg></span><span><strong>派森诺<span class="brand-dot">.</span></strong><small>基因云平台</small></span></a>
-      <div class="workspace-label"><span class="workspace-logo" data-icon="layers"></span><span>我的科研空间<small>项目与团队协作</small></span><span class="workspace-indicator"></span></div>
-      <div class="side-caption">工作空间</div>
+      <div class="workspace-label"><span class="workspace-logo" data-icon="layers"></span><span>我的科研课题组<small>项目与团队协作</small></span><span class="workspace-indicator"></span></div>
+      <div class="side-caption">工作课题组</div>
       <nav class="side-nav">
         <div class="project-nav-group">
           <button class="nav-item project-menu-button" data-project-menu aria-expanded="true" aria-controls="projectSubnav"><span class="nav-icon" data-icon="folder"></span><span id="projectMenuLabel">项目列表</span><span class="nav-count" id="navProjectCount">8</span><span class="nav-menu-chevron" aria-hidden="true">⌃</span></button>
@@ -27,12 +27,12 @@
           </div>
         </div>
       </nav>
-      <div class="side-bottom"><div class="side-note-icon" data-icon="shield"></div><strong>让科研协作，井然有序</strong><p>连接课题组与项目，<br>共同探索数据的更多可能。</p><span class="side-note-badge"><i></i>科研协作空间</span></div>
-      <div class="side-user"><span class="user-avatar">王</span><span><strong>王老师</strong><small>个人工作空间</small></span><span class="user-online" aria-label="在线"></span></div>
+      <div class="side-bottom"><div class="side-note-icon" data-icon="shield"></div><strong>让科研协作，井然有序</strong><p>连接课题组与项目，<br>共同探索数据的更多可能。</p><span class="side-note-badge"><i></i>科研课题组管理</span></div>
+      <div class="side-user"><span><strong>王老师</strong><small>个人工作课题组</small></span><span class="user-online" aria-label="在线"></span></div>
     </aside>
 
     <div class="workspace">
-      <header class="topbar"><div class="crumb" id="crumb">工作空间 <span>/</span> 项目列表</div><div class="header-actions"><span class="demo-badge"><i></i>交互演示</span><span class="current-role-label" id="currentRoleLabel">项目管理者 · 王老师</span><div class="user-avatar header-avatar" aria-label="当前用户">王</div></div></header>
+      <header class="topbar"><div class="crumb" id="crumb">工作课题组 <span>/</span> 项目列表</div><div class="header-actions"><span class="demo-badge"><i></i>交互演示</span><span class="current-role-label" id="currentRoleLabel">项目管理者 · 王老师</span></div></header>
       <section class="role-preview-bar" aria-label="角色切换">
         <span class="role-preview-title">角色切换</span>
         <div class="role-preview-buttons" role="group" aria-label="选择体验角色">
@@ -45,14 +45,14 @@
         <span class="role-preview-caption" id="rolePreviewCaption">可管理成员、角色和项目权限</span>
       </section>
       <main id="main"></main>
-      <footer class="workspace-footer"><span>派森诺 · 科研协作空间</span><span>示例数据 · 交互操作保存在当前浏览器</span></footer>
+      <footer class="workspace-footer"><span>派森诺 · 科研课题组管理</span><span>示例数据 · 交互操作保存在当前浏览器</span></footer>
     </div>
   </div>
 
   <div id="modalRoot" class="modal-root" hidden></div>
   <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="analysis-result.js?v=20261104-project-support"></script>
-  <script src="script.js?v=20261104-project-support"></script>
+  <script src="analysis-result.js?v=20261110-member-lookup"></script>
+  <script src="script.js?v=20261110-member-lookup"></script>
 </body>
 </html>
