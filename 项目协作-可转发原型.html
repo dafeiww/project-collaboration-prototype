@@ -1408,11 +1408,11 @@ function renderSpaces() {
   const rows=list.filter(g=>`${g.name} ${person(g.ownerId||me).account||''} ${person(g.ownerId||me).name}`.toLowerCase().includes(q));
   const row=g=>{
     const owner=person(g.ownerId||me),mine=(g.ownerId||'owner-1')===me,invitedManager=!mine&&canEditGroupRoles(g),ownerAccount=owner.account||memberIdentifier(owner);
-    return `<tr data-group-row="${safe(g.id)}"><td><div class="group-cell"><span class="group-emblem">${icon('people')}</span><div><strong>${safe(g.name)}</strong><small>${mine?'我创建的课题组':`由 ${safe(ownerAccount)} 邀请加入`}</small></div></div></td>${ownTab?'':`<td><span class="collab-sharer">${safe(ownerAccount)}${mine?'（我）':''}</span></td><td><span class="role-pill ${mine?'owner':invitedManager?'admin':'member'}">${icon(mine||invitedManager?'shield':'person')}${mine?'课题组所有者':invitedManager?'管理者':'受邀成员'}</span></td>`}<td>${memberRoster(g.members)}</td><td class="date-cell">${safe(mine?(g.createdAt||'-'):(g.invitedAt||'-'))}</td><td>${mine?`<div class="table-actions group-actions"><button class="btn primary small" data-group-add-member="${safe(g.id)}">${icon('plus')}添加成员</button><button class="btn quiet small" data-group-members="${safe(g.id)}">编辑成员</button>${groupDeleteButton(g)}</div>`:invitedManager?`<button type="button" class="btn primary small" data-group-roles="${safe(g.id)}">修改角色</button>`:'<span class="fixed">—</span>'}</td></tr>`;
+    return `<tr data-group-row="${safe(g.id)}"><td><div class="group-cell"><span class="group-emblem">${icon('people')}</span><div><strong>${safe(g.name)}</strong><small>${mine?'我创建的课题组':`由 ${safe(ownerAccount)} 邀请加入`}</small></div></div></td>${ownTab?'':`<td><span class="collab-sharer">${safe(ownerAccount)}${mine?'（我）':''}</span></td><td><span class="role-pill ${mine?'owner':invitedManager?'admin':'member'}">${icon(mine||invitedManager?'shield':'person')}${mine?'课题组所有者':invitedManager?'管理者':'受邀成员'}</span></td>`}<td>${memberRoster(g.members)}</td><td class="date-cell">${safe(mine?(g.createdAt||'-'):(g.invitedAt||'-'))}</td><td>${mine?`<div class="table-actions group-actions"><button class="btn primary small" data-group-add-member="${safe(g.id)}">${icon('plus')}添加成员</button><button class="btn quiet small" data-group-members="${safe(g.id)}">编辑成员</button>${groupDeleteButton(g)}</div>`:invitedManager?`<div class="table-actions group-actions"><button type="button" class="btn primary small" data-group-add-member="${safe(g.id)}">${icon('plus')}添加成员</button><button type="button" class="btn quiet small" data-group-roles="${safe(g.id)}">修改角色</button></div>`:'<span class="fixed">—</span>'}</td></tr>`;
   };
   return `<div class="page" data-screen-label="课题组管理">${heading('课题组管理','这里汇总你参与过的课题组：别人邀请你加入的，以及你邀请别人加入的。')}
     <div class="team-management-tabs" role="tablist" aria-label="课题组管理分类"><button type="button" role="tab" data-space-tab="joined" class="${spaceTab==='joined'?'active':''}" aria-selected="${spaceTab==='joined'}">${icon('people')}受邀加入<span class="tab-count">${joined.length}</span></button><button type="button" role="tab" data-space-tab="owned" class="${spaceTab==='owned'?'active':''}" aria-selected="${spaceTab==='owned'}">${icon('shield')}我创建的<span class="tab-count">${owned.length}</span></button></div>
-    <section class="surface"><div class="surface-top"><h2 class="surface-title">${spaceTab==='owned'?'我创建的课题组':'受邀加入的课题组'} <span class="tab-count">${rows.length}</span></h2><span class="surface-caption">成员增删由创建者维护，受邀管理者仅可修改角色</span></div><div class="toolbar">${searchField('spaceSearch','搜索课题组名称或所有者')}${identity!=='support'?`<button class="btn" data-create-group>${icon('plus')}创建课题组</button>`:''}</div><div class="table-shell space-table ${ownTab?'owned-space-table':'joined-space-table'}"><div class="table-scroll"><table><thead><tr><th>课题组</th>${ownTab?'':'<th>课题组所有者</th><th>我的身份</th>'}<th>成员名单</th><th>${spaceTab==='owned'?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${rows.map(row).join('')||`<tr><td colspan="${ownTab?4:6}" class="empty-cell">${emptyState(spaceTab==='owned'?'你还没有创建课题组':'还没有课题组邀请你','在课题组管理里创建课题组，或等待同事把课题组的协作邀请发给你。')}</td></tr>`}</tbody></table></div></div>${tableFooter(rows.length,'个课题组')}</section>${pageFoot('我创建的课题组可添加成员、编辑成员和删除课题组；受邀课题组由课题组所有者维护，管理者仅可修改成员角色。技术支持账号不进入课题组管理。')}</div>`;
+    <section class="surface"><div class="surface-top"><h2 class="surface-title">${spaceTab==='owned'?'我创建的课题组':'受邀加入的课题组'} <span class="tab-count">${rows.length}</span></h2><span class="surface-caption">创建者管理成员，受邀管理者可添加成员和修改角色</span></div><div class="toolbar">${searchField('spaceSearch','搜索课题组名称或所有者')}${identity!=='support'?`<button class="btn" data-create-group>${icon('plus')}创建课题组</button>`:''}</div><div class="table-shell space-table ${ownTab?'owned-space-table':'joined-space-table'}"><div class="table-scroll"><table><thead><tr><th>课题组</th>${ownTab?'':'<th>课题组所有者</th><th>我的身份</th>'}<th>成员名单</th><th>${spaceTab==='owned'?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${rows.map(row).join('')||`<tr><td colspan="${ownTab?4:6}" class="empty-cell">${emptyState(spaceTab==='owned'?'你还没有创建课题组':'还没有课题组邀请你','在课题组管理里创建课题组，或等待同事把课题组的协作邀请发给你。')}</td></tr>`}</tbody></table></div></div>${tableFooter(rows.length,'个课题组')}</section>${pageFoot('我创建的课题组可添加成员、编辑成员和删除课题组；受邀课题组由课题组所有者维护，管理者可添加成员和修改角色，不可移除成员或删除课题组。技术支持账号不进入课题组管理。')}</div>`;
 }
 function renderGroups() {
   const q = search.trim().toLowerCase();
@@ -1512,6 +1512,12 @@ function openGroupCreate(parent=null) { if(!canManageGroups()) return notify('�
 function groupCollabRecords(g) { return collabRecords.filter(r=>r.groupId===g.id||r.groupName===g.name); }
 function canEditGroupMembers(g) { return !!g&&canManageGroups()&&(g.ownerId||'owner-1')===currentUserId(); }
 function canEditGroupRoles(g) { return canEditGroupMembers(g)||!!g&&identity==='manager'&&(g.ownerId||'owner-1')!==currentUserId()&&g.members.some(m=>m.id===currentUserId()&&m.role==='admin'); }
+function canAddGroupMembers(g) { return canEditGroupMembers(g)||!!g&&identity==='manager'&&canEditGroupRoles(g); }
+function groupAddMemberCandidates(g) {
+  const invitedManager=identity==='manager'&&(g?.ownerId||'owner-1')!==currentUserId();
+  const people=invitedManager?directory:memberDirectoryForViewer();
+  return people.filter(u=>!isSupportPerson(u)&&!isDirectoryOwner(u.id)&&u.id!==g?.ownerId&&u.id!==currentUserId());
+}
 function canDeleteGroup(g) { return canEditGroupMembers(g); }
 function canRemoveDirectoryPerson(id) { return canManage()&&!isDirectoryOwner(id); }
 function groupDeleteButton(g) { return canDeleteGroup(g)?`<button type="button" class="btn quiet small danger" data-delete-group="${safe(g.id)}" aria-label="删除课题组${safe(g.name)}">删除课题组</button>`:''; }
@@ -1615,31 +1621,31 @@ function saveGroupMembers() {
 }
 function openGroupAddMember(id) {
   if(!canManageGroups())return notify('当前角色不能添加课题组成员');
-  const g=group(id);if(!canEditGroupMembers(g))return notify('仅课题组创建者可添加成员');
+  const g=group(id);if(!canAddGroupMembers(g))return notify('仅课题组创建者或受邀管理者可添加成员');
   modal={type:'group-add-members',groupId:g.id,selectedIds:[],memberQuery:'',pickerOpen:true};showModal();
 }
 function directoryPickerOptions() {
   const q=accountValue(modal.memberQuery);
   // 只读取成员管理列表，项目所有者、支持人员与当前账号不进入课题组名单。
-  const people=memberDirectoryForViewer().filter(d=>d.id!=='owner-1'&&d.id!==currentUserId()&&!isSupportPerson(d)&&accountSearchText(d).includes(q));
   const g=group(modal.groupId);
+  const people=groupAddMemberCandidates(g).filter(d=>accountSearchText(d).includes(q));
   return people.map(d=>{
     const joined=g?.members.some(m=>m.id===d.id),selected=modal.selectedIds.includes(d.id);
     return `<label class="group-member-option ${joined?'is-joined':''}"><input type="checkbox" data-pick-directory-member="${safe(d.id)}" ${selected?'checked':''} ${joined?'disabled':''}><span>${memberIdentity(d)}</span>${joined?'<span class="lookup-conflict">已在课题组</span>':''}</label>`;
   }).join('')||'<div class="picker-empty">成员管理列表暂无匹配成员，请先在成员管理中添加。</div>';
 }
 function showGroupAddMemberModal() {
-  const g=group(modal.groupId);if(!canEditGroupMembers(g))return closeModal();
+  const g=group(modal.groupId);if(!canAddGroupMembers(g))return closeModal();
   const options=directoryPickerOptions();
-  modalFrame('添加课题组成员','仅可从成员管理列表选择，默认以“成员”身份加入。',
+  modalFrame('添加课题组成员',identity==='manager'&&(g.ownerId||'owner-1')!==currentUserId()?'仅可从项目拥有者成员列表选择，默认以“成员”身份加入。':'仅可从成员管理列表选择，默认以“成员”身份加入。',
     `<div class="group-search-picker"><div class="group-search-control">${icon('search')}<input id="groupAddMemberSearch" type="search" autocomplete="off" placeholder="搜索姓名、用户名、手机号或邮箱" value="${safe(modal.memberQuery)}"><button type="button" class="group-picker-toggle" data-toggle-directory-picker aria-label="展开或收起成员选项">⌄</button></div><div class="group-member-dropdown" id="directoryMemberDropdown" ${modal.pickerOpen?'':'hidden'}><div id="directoryMemberOptions" class="group-member-options">${options}</div></div></div><p class="member-library-note">已选 <b>${modal.selectedIds.length}</b> 位成员；已在课题组成员不可重复选择。</p>`,
     '<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-add-members>添加</button>',true);
   document.getElementById('groupAddMemberSearch')?.focus({preventScroll:true});
 }
 function confirmGroupAddMembers() {
   if(!canManageGroups()||modal?.type!=='group-add-members')return closeModal();
-  const g=group(modal.groupId);if(!canEditGroupMembers(g))return closeModal();
-  const added=modal.selectedIds.filter(id=>memberDirectoryForViewer().some(u=>u.id===id)&&!g.members.some(m=>m.id===id));
+  const g=group(modal.groupId);if(!canAddGroupMembers(g))return closeModal();
+  const added=modal.selectedIds.filter(id=>groupAddMemberCandidates(g).some(u=>u.id===id)&&!g.members.some(m=>m.id===id));
   if(!added.length)return notify('请选择要添加的成员');
   added.forEach(id=>{ensureDirectoryPerson(id);g.members.push({id,role:'member'});});
   saveAll();modal=null;closeModal();render();notify(`已添加 ${added.length} 位成员`);
@@ -1654,7 +1660,7 @@ function showGroupRolesModal() {
   const rows=g.members.map((m,i)=>{const u=person(m.id);
     return `<div class="share-user-row group-role-row"><div class="share-user-meta">${memberIdentity(u)}</div><select class="group-role-select" data-group-role-edit="${safe(m.id)}" aria-label="设置${safe(u.name)}的课题组角色">${memberRoles.map(role=>`<option value="${role}" ${m.role===role?'selected':''}>${roleNames[role]}</option>`).join('')}</select></div>`;
   }).join('')||`<div class="share-empty">${icon('people')}<span>课题组暂无成员</span></div>`;
-  modalFrame('修改课题组成员角色',`「${safe(g.name)}」共 ${g.members.length} 位成员`,`<section class="share-recipients" aria-label="课题组成员角色"><div class="share-list-heading"><h3>成员角色</h3><span>仅可调整成员角色</span></div><div class="share-user-list group-role-list">${rows}</div></section><p class="member-library-note">受邀管理者仅可调整成员角色，不能添加、移除成员或删除课题组。保存仅更新课题组默认角色，项目中已单独设置的角色保持不变。</p>`,'<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-roles>保存</button>',true);
+  modalFrame('修改课题组成员角色',`「${safe(g.name)}」共 ${g.members.length} 位成员`,`<section class="share-recipients" aria-label="课题组成员角色"><div class="share-list-heading"><h3>成员角色</h3><span>仅可调整成员角色</span></div><div class="share-user-list group-role-list">${rows}</div></section><p class="member-library-note">受邀管理者可添加成员和调整成员角色，不能移除成员或删除课题组。保存仅更新课题组默认角色，项目中已单独设置的角色保持不变。</p>`,'<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-roles>保存</button>',true);
 }
 function saveGroupRoles() {
   if(!canManageGroups()||modal?.type!=='group-roles')return closeModal();
@@ -1802,7 +1808,7 @@ function showDirectoryRemoveModal() {
   const section=(title,items)=>items.length?`<section class="directory-association-section"><h3>${title}<span>${items.length}</span></h3><ul>${items.map(item=>`<li>${item}</li>`).join('')}</ul></section>`:'';
   const associations=section('所属课题组',refs.groups.map(g=>safe(g.name)))+section('协作授权',refs.records.map(r=>`<strong>${safe(projects.find(p=>p.id===r.projectId)?.name||r.projectName||'协作项目')}</strong><small>${safe(r.groupName)} · 协作成员</small>`))+section('项目分享',refs.shares.map(p=>`<strong>${safe(p.name)}</strong><small>共享用户 · ${safe(p.code)}</small>`));
   const links=[refs.groups.length?`${refs.groups.length} 个课题组`:'',refs.projects.length?`${refs.projects.length} 个协作项目`:'',refs.shares.length?`${refs.shares.length} 个项目分享`:''].filter(Boolean).join('、');
-  const body=`<div class="directory-remove-person"><div>${memberIdentity(u)}</div></div>${refs.preservedGroups.length?'<p class="member-library-note">此成员在受邀课题组中的成员关系及相应授权保留，管理者仅可修改这些课题组的成员角色。</p>':''}${protectedOwner?`<div class="directory-remove-warning">${icon('info')}<p>该成员是项目所有者，不可从成员库移除。</p></div>`:links?`<div class="directory-remove-warning">${icon('info')}<p>确认后，TA 将从成员库移除，并同步退出 ${links}；课题组的其他成员、项目本身与分析结果均不受影响。</p></div><div class="directory-associations">${associations}</div>`:'<p class="directory-remove-description">该成员未加入课题组，也未参与协作项目或项目分享，确认后仅从成员列表移除。</p>'}<p class="member-library-note">仅移出你的成员库，不会删除对方的云平台账号；以后仍可通过${accountEntryLabel}重新添加。</p>`;
+  const body=`<div class="directory-remove-person"><div>${memberIdentity(u)}</div></div>${refs.preservedGroups.length?'<p class="member-library-note">此成员在受邀课题组中的成员关系及相应授权保留，管理者可向这些课题组添加成员、修改成员角色。</p>':''}${protectedOwner?`<div class="directory-remove-warning">${icon('info')}<p>该成员是项目所有者，不可从成员库移除。</p></div>`:links?`<div class="directory-remove-warning">${icon('info')}<p>确认后，TA 将从成员库移除，并同步退出 ${links}；课题组的其他成员、项目本身与分析结果均不受影响。</p></div><div class="directory-associations">${associations}</div>`:'<p class="directory-remove-description">该成员未加入课题组，也未参与协作项目或项目分享，确认后仅从成员列表移除。</p>'}<p class="member-library-note">仅移出你的成员库，不会删除对方的云平台账号；以后仍可通过${accountEntryLabel}重新添加。</p>`;
   modalFrame('移除成员','请确认移除范围与同步退出的协作关系。',body,`<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-directory-remove ${protectedOwner?'disabled':''}>确认移除</button>`);
   modalRoot.querySelector('.modal').classList.add('directory-remove-modal');
 }
