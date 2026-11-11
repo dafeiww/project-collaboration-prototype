@@ -50,9 +50,9 @@ window.AnalysisResult = (() => {
     return Object.hasOwn(identityLabels,user.projectRole)?user.projectRole:'historical';
   }
   function submitterSnapshot(user) {
-    return {submitterId:user.id,submitterName:user.name,submitterAccount:user.account,submitterRemark:user.remark||context.getMemberRemark?.(user.id)||'协作成员',submitterIdentity:submitterIdentity(user),submitterIdentitySource:'snapshot'};
+    return {submitterId:user.id,submitterName:user.name,submitterAccount:user.account,submitterRemark:context.getMemberRemark?.(user.id)??user.remark??'',submitterIdentity:submitterIdentity(user),submitterIdentitySource:'snapshot'};
   }
-  const recordRemark = record => context.getMemberRemark?.(record.submitterId)||record.submitterRemark||'协作成员';
+  const recordRemark = record => context.getMemberRemark?.(record.submitterId)??record.submitterRemark??'';
   const methodFor = id => methods.find(m => m.id === id) || methods[0];
   const dateParts = value => new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date(value));
   const shortDate = value => dateParts(value).replace(/^\d{4}\//,'').replace(/\//g,'-').replace(/:\d{2}$/,'');
@@ -163,7 +163,7 @@ window.AnalysisResult = (() => {
   }
   function infoTable() {
     const p=context.project,rows=[['项目编号',p.code],['合同号',p.contract],['开题单号',p.ticket],['项目名称',p.name],['项目类别',p.category],['项目类型','标准分析'],['完成日期',p.created]];
-    return `<table class="ar-info-table"><tbody>${rows.map(([label,value])=>`<tr><th scope="row">${label}</th><td>${esc(value)}</td></tr>`).join('')}</tbody></table><div class="ar-project-context">${svg('info')}示例项目 · 当前账号：${esc(currentUser().name)}（${esc(currentUser().account)}） · 成员别称：${esc(currentUser().remark||context.getMemberRemark?.(currentUser().id)||'协作成员')}</div>`;
+    return `<table class="ar-info-table"><tbody>${rows.map(([label,value])=>`<tr><th scope="row">${label}</th><td>${esc(value)}</td></tr>`).join('')}</tbody></table><div class="ar-project-context">${svg('info')}示例项目 · 当前账号：${esc(currentUser().name)}（${esc(currentUser().account)}） · 成员别称：${esc(context.getMemberRemark?.(currentUser().id)??currentUser().remark??'')}</div>`;
   }
   function renderSection() {
     root.querySelectorAll('[data-ar-nav]').forEach(button=>button.classList.toggle('active',button.dataset.arNav===section));
