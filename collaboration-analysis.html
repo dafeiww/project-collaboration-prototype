@@ -977,7 +977,7 @@ function memberIdentifier(user) {
   return keys.map(key=>usableAccountValue(user,key)).find(Boolean)||(isEnglishVersion?'Not provided':'未登记');
 }
 const exampleMemberRemarks={'owner-1':'项目负责人','manager-1':'协作管理','chen-1':'课题负责人','li-1':'数据分析','zhou-1':'实验研究','xia-1':'临床研究','lin-1':'生信分析','demo-zhao':'科研协作','demo-sun':'数据整理','demo-wu':'结果审核'};
-function savedMemberRemark(user) { const value=String(user?.remark||'').trim();return value&&value!=='—'&&value!=='-'?value:''; }
+function savedMemberRemark(user) { return String(user?.remark||'').trim(); }
 function memberRemark(user) { return savedMemberRemark(user)||exampleMemberRemarks[user?.id]||exampleMemberRemarks[user?.demoSourceId]||(isSupportPerson(user)?'项目支持':'协作成员'); }
 function memberIdentity(user) { return `<strong class="member-account">${safe(memberIdentifier(user))}</strong><span class="member-remark">${safe(memberRemark(user))}</span>`; }
 function accountSearchText(user) { return [user.name,user.remark||'',...visibleAccountKeys.map(key=>usableAccountValue(user,key))].join(' ').toLowerCase(); }
@@ -1697,12 +1697,12 @@ function validateMemberDetails() {
 
 
 function memberRemarkField() {
-  return `<label class="field member-remark-field" id="memberRemarkField"><span class="field-label">成员备注</span><input id="memberRemark" aria-required="true" value="${safe(modal.remark||'')}" maxlength="20" required placeholder="请输入20字以内的中文备注" aria-describedby="memberRemarkHint"><span id="memberRemarkHint" class="member-contact-hint">仅限中文，1—20个字</span><span class="field-error">成员备注必须为中文，且不超过20个字。</span></label>`;
+  return `<label class="field member-remark-field" id="memberRemarkField"><span class="field-label">成员备注</span><input id="memberRemark" aria-required="true" value="${safe(modal.remark||'')}" maxlength="20" required placeholder="请输入20个字符以内的备注" aria-describedby="memberRemarkHint"><span id="memberRemarkHint" class="member-contact-hint">最多20个字符</span><span class="field-error">请填写成员备注，且不超过20个字符。</span></label>`;
 }
 function validateMemberRemark() {
   const input=document.getElementById('memberRemark');
   modal.remark=(input?.value||'').trim();
-  if(!/^\p{Script=Han}{1,20}$/u.test(modal.remark)){
+  if(!modal.remark||modal.remark.length>20){
     document.getElementById('memberRemarkField')?.classList.add('invalid');input?.setAttribute('aria-invalid','true');input?.focus();return false;
   }
   return true;
