@@ -382,9 +382,12 @@
 
 .share-user-meta .member-remark{display:block;margin-top:5px;line-height:1.6}.group-member-list .share-user-meta strong{line-height:1.6}.group-member-list .share-user-row>.btn{justify-self:end;white-space:nowrap}.group-member-list .group-role-select{width:100%;min-width:0}.group-member-list .share-user-row{padding:14px 12px}.group-member-list .share-user-meta .group-member-projects{margin-top:6px;line-height:1.5}
 
-/* 添加成员四项必填，统一字段间距 */
+/* 添加成员：下拉选择一种账号信息，备注必填 */
 .member-account-modal #memberAddForm .field{margin-bottom:16px}.member-account-modal #memberRemarkField{margin-top:0}.member-account-modal .modal-head p{max-width:420px}.member-account-modal .field-error{line-height:1.6}
 
-/* 管理者身份与四项必填弹窗 */
+/* 管理者身份与成员弹窗 */
 .project-identity-badge.manager{background:#f1edff;color:#7957b8}.member-account-modal{display:flex;flex-direction:column;overflow:hidden}.member-account-modal .modal-head,.member-account-modal .modal-foot{flex-shrink:0}.member-account-modal .modal-body{min-height:0;overflow:auto}.role-preview-buttons{flex-wrap:wrap}
 @media(max-width:640px){.role-preview-buttons button{flex:1 1 calc(50% - 6px)}}
+
+/* 项目表头按开题单号和云平台项目编号搜索 */
+.project-column-search{display:flex;align-items:center;gap:6px;margin-top:8px;padding:0 8px;height:31px;min-width:140px;max-width:210px;border:1px solid #dcdfe6;border-radius:5px;background:#fff;font-weight:400}.project-column-search .icon{width:13px;height:13px;color:#909399}.project-column-search input{min-width:0;width:100%;height:29px;border:0;background:transparent;outline:none;color:#606266;font-size:11px;box-shadow:none!important}.project-column-search:focus-within{border-color:#1989fa}.project-column-search input::placeholder{color:#a8abb2}.project-bulk-toolbar{display:flex;justify-content:flex-end;padding:16px 22px 0}.reference-project-table th.ticket-column,.reference-project-table th.code-column{vertical-align:top}.project-bulk-toolbar+.project-reference-note{margin-top:14px}

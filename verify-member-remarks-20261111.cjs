@@ -1,0 +1,56 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const key='personalbio-project-collaboration-preview-v6-collab-records';
+const entry=pathToFileURL(path.join(__dirname,'index.html')).href;
+(async()=>{
+ const b=await chromium.launch({channel:'chrome',headless:true}),checks=[],errors=[];
+ const read=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+ const checkRemarks=async p=>{const notes=await p.locator('.member-remark,.member-remark-cell').allTextContents();assert.ok(notes.length);for(const note of notes)assert.match(note,/^\p{Script=Han}{1,20}$/u);};
+ try{
+  const p=await b.newPage({viewport:{width:1600,height:1000}});p.on('pageerror',e=>errors.push(e.message));await p.goto(entry);
+  await p.reload();const original=await read(p);
+  const allRows=await p.locator('[data-project-row]').count(),sample=original.projects.find(p=>p.id==='pending-collab-01'),ticketQuery=sample.ticket.toLowerCase(),codeQuery=sample.code.toLowerCase();
+  assert.equal(await p.locator('#projectSearch').count(),0);assert.equal(await p.locator('th #projectTicketSearch').count(),1);assert.equal(await p.locator('th #projectCodeSearch').count(),1);
+  await p.locator('#projectTicketSearch').fill(ticketQuery);assert.equal(await p.locator('[data-project-row]').count(),1);
+  await p.locator('#projectCodeSearch').fill(codeQuery);assert.equal(await p.locator('[data-project-row]').count(),1);
+  await p.locator('[data-select-project="pending-collab-01"]').check();assert.equal(await p.locator('#projectTicketSearch').inputValue(),ticketQuery);assert.equal(await p.locator('#projectCodeSearch').inputValue(),codeQuery);
+  await p.locator('#projectCodeSearch').fill('unknown-code');assert.equal(await p.locator('[data-project-row]').count(),0);
+  await p.locator('#projectCodeSearch').fill('');assert.equal(await p.locator('[data-project-row]').count(),1);
+  await p.locator('#projectTicketSearch').fill('');assert.equal(await p.locator('[data-project-row]').count(),allRows);await p.locator('[data-select-project="pending-collab-01"]').uncheck();
+  for(const role of ['manager','support','member','owner']){await p.locator('[data-preview-role="'+role+'"]').click();for(const tab of ['shared','mine']){await p.locator('[data-list-tab="'+tab+'"]').click();assert.equal(await p.locator('th input[type="search"]').count(),2);assert.equal(await p.locator('#projectSearch,#categoryFilter').count(),0);}}
+  await p.screenshot({path:'效果图/20261111/18-项目列表-表头搜索.png',animations:'disabled'});checks.push('两列表头分别和组合搜索，忽略大小写，勾选时保留查询，所有角色与共享列表保持一致');
+  await p.evaluate(k=>{const data=JSON.parse(localStorage.getItem(k));data.directory.forEach(u=>u.remark='');data.platformAccounts.forEach(u=>u.remark='');data.directory.find(u=>u.id==='li-1').remark='保留研究备注';data.platformAccounts.find(u=>u.id==='lin-1').remark='保留平台备注';const source=data.platformAccounts.find(u=>u.id==='demo-zhao');for(const [i,remark] of ['示例备注甲','示例备注乙'].entries()){const u={...source,id:'demo-member-legacy-'+i,demoSourceId:'demo-zhao',demoSequence:i+1,remark};data.directory.push({...u});data.demoMemberInstances.push({...u});}localStorage.setItem(k,JSON.stringify(data));},key);
+  await p.reload();let saved=await read(p);
+  assert.equal(saved.directory.find(u=>u.id==='li-1').remark,'保留研究备注');assert.equal(saved.directory.find(u=>u.id==='lin-1').remark,'保留平台备注');
+  assert.equal(saved.demoMemberInstances.find(u=>u.id==='demo-member-legacy-0').remark,'示例备注甲');assert.equal(saved.demoMemberInstances.find(u=>u.id==='demo-member-legacy-1').remark,'示例备注乙');
+  for(const u of [...saved.directory,...saved.platformAccounts,...saved.demoMemberInstances])assert.match(u.remark,/^\p{Script=Han}{1,20}$/u);
+  assert.deepEqual(saved.projects,original.projects);assert.deepEqual(saved.groups,original.groups);assert.deepEqual(saved.collabRecords,original.collabRecords);
+  await p.reload();assert.equal((await read(p)).directory.find(u=>u.id==='li-1').remark,'保留研究备注');checks.push('历史空备注补齐，目录和平台已有备注及不同示例成员备注保留，刷新不覆盖授权');
+  await p.locator('.sidebar [data-nav="team"]').click();await checkRemarks(p);await p.screenshot({path:'效果图/20261111/16-成员管理-补齐备注.png',animations:'disabled'});
+  await p.locator('[data-team-tab="groups"]').click();await checkRemarks(p);
+  await p.locator('[data-group-members="group-onco"]').click();await checkRemarks(p);assert.match(await p.locator('.modal-body').innerText(),/保留研究备注/);await p.keyboard.press('Escape');
+  await p.locator('[data-create-group]').click();await p.locator('#groupMemberSearch').fill('保留研究备注');assert.equal(await p.locator('[data-pick-group-member="li-1"]').count(),1);await checkRemarks(p);await p.keyboard.press('Escape');
+  await p.locator('.sidebar [data-nav="spaces"]').click();await checkRemarks(p);await p.locator('[data-space-tab="owned"]').click();await checkRemarks(p);
+  await p.locator('.sidebar [data-nav="projects"]').click();await p.locator('[data-collab-one="pending-collab-01"]').click();await p.locator('[data-select-all-collab-groups]').check();await checkRemarks(p);await p.keyboard.press('Escape');
+  await p.locator('[data-share-project="single-cell"]').click();await checkRemarks(p);await p.keyboard.press('Escape');checks.push('成员、课题组、受邀列表、选人、编辑、协作和分享名单均显示备注');
+  await p.locator('[data-collaboration-demo]').click();assert.ok(await p.locator('.ar-record-remark').count()>0);assert.equal(await p.locator('.ar-record-row').count(),await p.locator('.ar-record-remark').count());
+  await p.locator('[data-ar-scope="all"]').click();const record=p.locator('[data-ar-submitter="li-1"]');if(await record.count()){await record.first().locator('[data-ar-open]').click();assert.match(await p.locator('#arDialog').innerText(),/保留研究备注/);await p.locator('#arDialog [data-ar-dialog-close]').first().click();}
+  await p.locator('#arRecordSearch').fill('保留研究备注');assert.ok(await p.locator('.ar-record-row').count()>0);await p.screenshot({path:'效果图/20261111/17-分析记录-成员备注.png',animations:'disabled'});checks.push('分析记录与详情展示成员备注，并可通过备注搜索');await p.close();
+  const m=await b.newPage({viewport:{width:1600,height:1000}});m.on('pageerror',e=>errors.push(e.message));await m.goto(entry+'?role=manager');await m.locator('.sidebar [data-nav="team"]').click();
+  assert.ok(await m.locator('[data-directory-member]').count()>0);assert.equal(await m.locator('[data-directory-member="li-1"] [data-remove-directory]').isEnabled(),true);
+  await m.locator('[data-team-tab="groups"]').click();assert.equal(await m.locator('[data-delete-group^="manager-owned-"]').count(),2);await checkRemarks(m);await m.screenshot({path:'效果图/20261111/19-管理者-自建课题组.png',animations:'disabled'});checks.push('管理者成员库和自建课题组都有示例，成员可删除');
+  await m.evaluate(()=>{const own=group('manager-owned-01'),invited=group('manager-joined-01'),p=projects.find(p=>p.id==='pending-collab-02');for(const g of [own,invited])collabRecords.push({id:'remark-test-'+g.id,projectId:p.id,groupId:g.id,groupName:g.name,initiatedBy:g.ownerId,members:[{id:'li-1',role:'member'},{id:'chen-1',role:'member'}],status:'协作中'});p.hasCollaborated=true;rebuildProjectMembers(p);saveAll();});
+  await m.evaluate(()=>{directory.find(u=>u.id==='li-1').remark='当前会话备注';saveAll();});
+  const before=await read(m),invited=before.groups.filter(g=>g.id.startsWith('manager-joined-'));
+  await m.locator('[data-team-tab="members"]').click();await m.locator('[data-remove-directory="li-1"]').click();assert.match(await m.locator('.modal-body').innerText(),/受邀课题组.*保留/);await m.locator('[data-confirm-directory-remove]').click();saved=await read(m);
+  assert.equal(saved.directory.some(u=>u.id==='li-1'),false);assert.equal(saved.groups.find(g=>g.id==='manager-owned-01').members.some(u=>u.id==='li-1'),false);assert.deepEqual(saved.groups.filter(g=>g.id.startsWith('manager-joined-')),invited);
+  assert.equal(saved.collabRecords.find(r=>r.id==='remark-test-manager-owned-01').members.some(u=>u.id==='li-1'),false);assert.deepEqual(saved.collabRecords.find(r=>r.id==='remark-test-manager-joined-01'),before.collabRecords.find(r=>r.id==='remark-test-manager-joined-01'));
+  assert.equal(saved.projects.find(p=>p.id==='pending-collab-02').members.some(u=>u.id==='li-1'),true);assert.equal(saved.platformAccounts.find(u=>u.id==='li-1').remark,'当前会话备注');
+  await m.reload();assert.equal((await read(m)).directory.some(u=>u.id==='li-1'),false);await m.locator('.sidebar [data-nav="spaces"]').click();await checkRemarks(m);checks.push('删除管理者成员只收回可管理关联，受邀组关系和授权及成员备注保留，刷新不复活');
+  await m.locator('[data-space-tab="owned"]').click();await m.locator('[data-delete-group="manager-owned-02"]').click();await m.locator('[data-confirm-delete-group]').click();await m.reload();assert.equal((await read(m)).groups.some(g=>g.id==='manager-owned-02'),false);checks.push('管理者自建示例课题组删除后不会重新补回');await m.close();
+  assert.deepEqual(errors,[]);fs.writeFileSync('效果图/20261111/verification-member-remarks.json',JSON.stringify({passed:checks.length,checks,errors},null,2));console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+ }finally{await b.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
