@@ -8,8 +8,8 @@
   <meta name="description" content="派森诺科研课题组管理：管理项目、课题组与成员，体验单项目和批量项目协作。">
   <meta name="theme-color" content="#1989fa">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231989fa'/%3E%3Cpath d='M22 17h12a10 10 0 0 1 0 20H22m0-20v31m0-20h12' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles.css?v=20261111-manager-required">
-  <link rel="stylesheet" href="analysis-result.css?v=20261111-manager-required">
+  <link rel="stylesheet" href="styles.css?v=20261111-collaborator-no-category">
+  <link rel="stylesheet" href="analysis-result.css?v=20261111-collaborator-no-category">
 </head>
 <body>
   <div class="app-shell" data-screen-label="项目协作交互原型">
@@ -39,9 +39,9 @@
           <button type="button" data-preview-role="owner" aria-pressed="true" class="active"><span data-icon="shield"></span>项目拥有者</button>
           <button type="button" data-preview-role="manager" aria-pressed="false"><span data-icon="shield"></span>管理者</button>
           <button type="button" data-preview-role="support" aria-pressed="false"><span data-icon="person"></span>技术支持</button>
-          <button type="button" data-preview-role="member" aria-pressed="false"><span data-icon="eye"></span>被分享用户</button>
+          <button type="button" data-preview-role="member" aria-pressed="false"><span data-icon="eye"></span>协作者</button>
         </div>
-        <label class="recipient-account-control" id="recipientAccountControl" hidden><span>查看账号</span><select id="recipientSelect" aria-label="选择被分享用户"></select></label>
+        <label class="recipient-account-control" id="recipientAccountControl" hidden><span>查看账号</span><select id="recipientSelect" aria-label="选择协作者"></select></label>
         <label class="recipient-account-control" id="supportAccountControl" hidden><span>支持账号</span><select id="supportSelect" aria-label="选择项目支持账号"></select></label>
         <span class="role-preview-caption" id="rolePreviewCaption">可管理成员、角色和项目权限</span>
       </section>
@@ -53,7 +53,7 @@
   <div id="modalRoot" class="modal-root" hidden></div>
   <div id="confirmRoot" class="account-tip" role="status" aria-live="assertive" hidden></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="analysis-result.js?v=20261111-manager-required"></script>
-  <script src="script.js?v=20261111-manager-required"></script>
+  <script src="analysis-result.js?v=20261111-collaborator-no-category"></script>
+  <script src="script.js?v=20261111-collaborator-no-category"></script>
 </body>
 </html>

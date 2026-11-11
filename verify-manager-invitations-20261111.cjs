@@ -1,0 +1,93 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const key='personalbio-project-collaboration-preview-v6-collab-records';
+const entry=pathToFileURL(path.join(__dirname,'index.html')).href;
+(async()=>{
+ const browser=await chromium.launch({channel:'chrome',headless:true});
+ const checks=[],errors=[],out=path.join(__dirname,'效果图/20261111');
+ const read=p=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
+ try{
+  const context=await browser.newContext({viewport:{width:1600,height:1000}}),p=await context.newPage();
+  context.setDefaultTimeout(10000);p.on('pageerror',e=>errors.push(e.message));
+  await p.goto(entry+'?role=manager');
+  assert.equal(await p.locator('[data-preview-role="member"]').innerText(),'协作者');
+  assert.equal(await p.locator('#recipientSelect').getAttribute('aria-label'),'选择协作者');
+  await p.locator('.sidebar [data-nav="spaces"]').click();
+  assert.equal(await p.locator('[data-group-row]').count(),3);
+  assert.equal(await p.locator('[data-group-roles]').count(),3);
+  assert.equal(await p.locator('[data-group-add-member],[data-group-members],[data-delete-group]').count(),0);
+  for(const label of await p.locator('[data-group-row] .role-pill').allTextContents())assert.equal(label,'管理者');
+  checks.push('管理者受邀列表提供3条示例及管理者标签，仅显示修改角色');
+  await p.screenshot({path:path.join(out,'10-管理者-受邀课题组.png'),animations:'disabled'});
+  const before=await read(p);
+  await p.locator('[data-group-roles="manager-joined-01"]').click();
+  assert.equal(await p.locator('[data-group-role-edit]').count(),3);
+  assert.equal(await p.locator('[data-remove-group-member],[data-group-add-member],[data-delete-group]').count(),0);
+  await p.locator('[data-group-role-edit="li-1"]').selectOption('visitor');
+  await p.locator('#modalRoot [data-close]').last().click();
+  assert.deepEqual(await read(p),before);checks.push('角色弹窗仅有角色操作，取消不保存');
+  await p.locator('[data-group-roles="manager-joined-01"]').click();
+  await p.locator('[data-group-role-edit="li-1"]').selectOption('visitor');
+  for(const width of [1600,390]){
+   await p.setViewportSize({width,height:1000});
+   assert.equal(await p.locator('.modal').evaluate(el=>el.scrollWidth<=el.clientWidth),true);
+   for(const row of await p.locator('.group-role-row').all()){
+    const meta=await row.locator('.share-user-meta').boundingBox(),role=await row.locator('select').boundingBox();
+    assert.ok(meta.width>80);assert.ok(meta.x+meta.width<=role.x);
+   }
+   await p.screenshot({path:path.join(out,width===1600?'11-管理者-修改受邀成员角色.png':'12-手机端-修改受邀角色.png'),animations:'disabled'});
+  }
+  await p.locator('[data-save-group-roles]').click();
+  const after=await read(p);
+  assert.equal(after.groups.find(g=>g.id==='manager-joined-01').members.find(m=>m.id==='li-1').role,'visitor');
+  assert.deepEqual(after.projects,before.projects);assert.deepEqual(after.collabRecords,before.collabRecords);
+  await p.reload();await p.locator('.sidebar [data-nav="spaces"]').click();
+  assert.equal((await read(p)).groups.find(g=>g.id==='manager-joined-01').members.find(m=>m.id==='li-1').role,'visitor');
+  checks.push('桌面和手机弹窗对齐，角色保存与刷新保持，项目单独授权不变');
+  const protectedState=await read(p);
+  await p.evaluate(()=>{
+   openGroupAddMember('manager-joined-01');closeModal();
+   openAdd('group','manager-joined-01');closeModal();
+   openGroupDelete('manager-joined-01');closeModal();
+   modal={type:'group-add-members',groupId:'manager-joined-01',selectedIds:['xia-1']};confirmGroupAddMembers();
+   modal={type:'group-members',groupId:'manager-joined-01',pendingRemovals:[{memberId:'li-1',affected:[]}]};saveGroupMembers();
+   modal={type:'group-member-remove',groupId:'manager-joined-01',memberId:'li-1',parent:{type:'group-members',groupId:'manager-joined-01',pendingRemovals:[]}};confirmGroupMemberRemove();
+   modal={type:'group-delete',groupId:'manager-joined-01'};confirmGroupDelete();
+   openDirectoryRemove('li-1');closeModal();modal={type:'directory-remove',id:'li-1'};confirmDirectoryRemove();
+  });
+  assert.deepEqual(await read(p),protectedState);checks.push('直接调用增删成员、删组及成员库级联移除均不能绕过权限');
+  await p.setViewportSize({width:1600,height:1000});
+  await p.locator('[data-group-roles="manager-joined-01"]').click();
+  await p.locator('[data-group-role-edit="li-1"]').selectOption('admin');
+  await p.evaluate(()=>{group('manager-joined-01').members.find(m=>m.id==='manager-1').role='member';saveAll();saveGroupRoles();});
+  assert.equal((await read(p)).groups.find(g=>g.id==='manager-joined-01').members.find(m=>m.id==='li-1').role,'visitor');
+  await p.reload();await p.locator('.sidebar [data-nav="spaces"]').click();
+  assert.equal(await p.locator('[data-group-roles="manager-joined-01"]').count(),0);
+  checks.push('提交前重查管理权限，降级后失去修改入口且不会被示例覆盖');
+  await p.locator('[data-preview-role="member"]').click();await p.locator('#recipientSelect').selectOption('li-1');
+  assert.match(await p.locator('#currentRoleLabel').innerText(),/^协作者/);
+  assert.equal((await p.locator('body').innerText()).includes('被分享用户'),false);
+  await p.locator('.sidebar [data-nav="spaces"]').click();assert.equal(await p.locator('[data-group-roles]').count(),0);
+  await p.evaluate(()=>openGroupRoles('manager-joined-01'));assert.equal(await p.locator('[data-save-group-roles]').count(),0);
+  checks.push('协作者名称覆盖角色切换与当前身份，普通受邀成员不能修改角色');
+  await p.locator('[data-preview-role="member"]').click();await p.locator('#recipientSelect').selectOption('chen-1');
+  await p.locator('.sidebar [data-nav="spaces"]').click();await p.locator('[data-space-tab="owned"]').click();
+  assert.equal(await p.locator('[data-group-add-member="manager-joined-01"]').count(),1);
+  await p.locator('[data-group-members="manager-joined-01"]').click();assert.ok(await p.locator('[data-remove-group-member]').count()>0);await p.keyboard.press('Escape');
+  await p.locator('[data-delete-group="manager-joined-01"]').click();await p.locator('[data-confirm-delete-group]').click();await p.reload();
+  assert.equal((await read(p)).groups.some(g=>g.id==='manager-joined-01'),false);checks.push('创建者保留增删与删组权限，删除后示例不会复活');
+  await context.close();
+  const old=await browser.newContext(),oldPage=await old.newPage();await oldPage.goto(entry);
+  await oldPage.evaluate(k=>{const data=JSON.parse(localStorage.getItem(k));delete data.managerInvitationsSeeded;data.groups=data.groups.filter(g=>!g.id.startsWith('manager-joined-'));data.deletedGroupIds=['manager-joined-02'];localStorage.setItem(k,JSON.stringify(data));},key);
+  await oldPage.reload();const migrated=await read(oldPage);
+  assert.equal(migrated.managerInvitationsSeeded,true);assert.equal(migrated.groups.filter(g=>g.id.startsWith('manager-joined-')).length,2);
+  await oldPage.reload();assert.equal((await read(oldPage)).groups.filter(g=>g.id.startsWith('manager-joined-')).length,2);
+  checks.push('旧浏览器数据补充一次示例，尊重删除记录且不会重复');await old.close();
+  assert.deepEqual(errors,[]);
+  fs.writeFileSync(path.join(out,'verification-manager-invitations.json'),JSON.stringify({passed:checks.length,checks,errors},null,2));
+  console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1;});
