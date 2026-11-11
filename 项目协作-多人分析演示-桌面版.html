@@ -357,14 +357,16 @@
 .space-table th:last-child,.space-table td:last-child{text-align:left}
 
 
-.group-table .group-actions{flex-wrap:wrap;gap:5px}
+.group-table .group-actions{flex-wrap:nowrap;gap:6px;width:max-content}
+.group-table th:last-child,.group-table td:last-child,.space-table th:last-child,.space-table td:last-child{width:286px;min-width:286px;white-space:nowrap}
+.group-actions>.btn{flex:0 0 auto}
 .group-table .group-actions .btn{min-height:28px;font-size:11px;padding:0 10px}
 
 /* 成员备注与去除头像后的列表排版 */
 .member-remark-cell{max-width:220px;overflow-wrap:anywhere;white-space:normal}.required-mark{color:#f56c6c}.member-remark-field{margin-top:20px}.member-remark-field .member-contact-hint{display:block;margin:6px 0}.side-user{gap:0}.roster-item{gap:0}.member-cell{gap:0}
 
 /* 课题组列表删除入口与影响说明 */
-.space-table .group-actions{flex-wrap:wrap;gap:6px}.group-delete-target{font-size:13px;line-height:1.9;color:#606266}.group-delete-members{margin-top:10px;font-size:12px;color:#909399}.group-delete-projects{margin:8px 0 0;padding-left:20px;line-height:1.9;max-height:160px;overflow:auto}
+.space-table .group-actions{flex-wrap:nowrap;gap:6px;width:max-content}.group-delete-target{font-size:13px;line-height:1.9;color:#606266}.group-delete-members{margin-top:10px;font-size:12px;color:#909399}.group-delete-projects{margin:8px 0 0;padding-left:20px;line-height:1.9;max-height:160px;overflow:auto}
 
 /* 成员名单只展示账号与备注 */
 .member-account{overflow-wrap:anywhere}.member-remark{font-size:11px;color:#909399;overflow-wrap:anywhere}.roster-item{max-width:100%;gap:6px;white-space:normal;overflow-wrap:anywhere}.roster-item .member-account{font-size:inherit;font-weight:500}.roster-item .member-remark{font-size:inherit}.group-member-option .member-remark,.picker-member .member-remark,.collab-member-info .member-remark{display:block;margin-top:4px}
