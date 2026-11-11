@@ -332,7 +332,7 @@
 /* 课题组管理 · 编辑成员弹窗与移除确认 */
 .group-member-list{max-height:260px}
 .group-members-modal{width:min(620px,100%)}
-.group-member-list .share-user-row{display:grid;grid-template-columns:33px minmax(0,1fr) auto 62px;align-items:center;gap:12px}
+.group-member-list .share-user-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 62px;align-items:center;gap:12px}
 .group-member-list .share-user-meta{flex:none;min-width:0}
 .group-member-list .share-user-meta strong,.group-member-list .share-user-meta span{overflow-wrap:anywhere}
 .group-member-projects{display:block;font-size:10px;color:#9b9ea3;margin-top:3px;overflow-wrap:anywhere}
@@ -347,7 +347,7 @@
 .group-member-revoke strong{display:block;font-size:12px;color:#45494e;font-weight:600}
 .group-member-revoke small{display:block;font-size:11px;color:#8e9195;margin-top:5px;line-height:1.75}
 .group-member-list .group-role-select{min-width:92px}.group-member-option.is-joined{opacity:.58}.group-member-option.is-joined input{cursor:not-allowed}
-@media(max-width:640px){.group-member-list .share-user-row{grid-template-columns:32px minmax(0,1fr) auto 56px;gap:9px}.group-member-impact,.group-member-revoke{padding:11px 12px}@media(max-width:640px){.collab-context-item>.collab-context-project{padding-right:30px}.collab-context-drop{top:6px;right:2px;width:20px;height:20px}}}
+@media(max-width:640px){.group-member-list .share-user-row{grid-template-columns:minmax(0,1fr) 84px 56px;gap:9px}.group-member-impact,.group-member-revoke{padding:11px 12px}@media(max-width:640px){.collab-context-item>.collab-context-project{padding-right:30px}.collab-context-drop{top:6px;right:2px;width:20px;height:20px}}}
 
 /* 项目协作弹窗：项目卡片移出本次协作、勾选即授权 */
 .collab-context-item{position:relative;min-width:0}
@@ -360,7 +360,7 @@
 .group-member-list .share-user-row.pending-removal{border:1px dashed #fbc4c4;background:#fef7f7;border-radius:8px}
 .group-member-list .share-user-row.pending-removal>div .share-user-meta strong,.group-member-list .share-user-row.pending-removal .role-pill{opacity:.62}
 .group-member-list .share-user-row.pending-removal .group-member-projects{color:#f56c6c}
-@media(max-width:640px){.group-member-list .share-user-row.pending-removal{padding:9px 10px}}.group-role-list .share-user-row{display:grid;grid-template-columns:33px minmax(0,1fr) auto;align-items:center;gap:12px}.group-role-select{min-width:92px;height:32px;border:1px solid #dcdfe6;border-radius:6px;background:#fff;color:#303133;font-size:11px;padding:0 8px}@media(max-width:640px){.group-role-list .share-user-row{grid-template-columns:32px minmax(0,1fr) auto;gap:9px}.group-role-select{min-width:84px}}
+@media(max-width:640px){.group-member-list .share-user-row.pending-removal{padding:9px 10px}}.group-role-list .share-user-row{display:grid;grid-template-columns:minmax(0,1fr) 92px;align-items:center;gap:12px}.group-role-select{min-width:92px;height:32px;border:1px solid #dcdfe6;border-radius:6px;background:#fff;color:#303133;font-size:11px;padding:0 8px}@media(max-width:640px){.group-role-list .share-user-row{grid-template-columns:minmax(0,1fr) 84px;gap:9px}.group-role-select{min-width:84px}}
 
 .space-table th:nth-child(1){width:250px}.space-table th:nth-child(3){width:130px}.space-table th:nth-child(5){width:170px}
 .space-table .group-cell small{overflow-wrap:anywhere}
@@ -373,3 +373,11 @@
 
 /* 成员备注与去除头像后的列表排版 */
 .member-remark-cell{max-width:220px;overflow-wrap:anywhere;white-space:normal}.required-mark{color:#f56c6c}.member-remark-field{margin-top:20px}.member-remark-field .member-contact-hint{display:block;margin:6px 0}.side-user{gap:0}.roster-item{gap:0}.member-cell{gap:0}
+
+/* 课题组列表删除入口与影响说明 */
+.space-table .group-actions{flex-wrap:wrap;gap:6px}.group-delete-target{font-size:13px;line-height:1.9;color:#606266}.group-delete-members{margin-top:10px;font-size:12px;color:#909399}.group-delete-projects{margin:8px 0 0;padding-left:20px;line-height:1.9;max-height:160px;overflow:auto}
+
+/* 成员名单只展示账号与备注 */
+.member-account{overflow-wrap:anywhere}.member-remark{font-size:11px;color:#909399;overflow-wrap:anywhere}.roster-item{max-width:100%;gap:6px;white-space:normal;overflow-wrap:anywhere}.roster-item .member-account{font-size:inherit;font-weight:500}.roster-item .member-remark{font-size:inherit}.group-member-option .member-remark,.picker-member .member-remark,.collab-member-info .member-remark{display:block;margin-top:4px}
+
+.share-user-meta .member-remark{display:block;margin-top:5px;line-height:1.6}.group-member-list .share-user-meta strong{line-height:1.6}.group-member-list .share-user-row>.btn{justify-self:end;white-space:nowrap}.group-member-list .group-role-select{width:100%;min-width:0}.group-member-list .share-user-row{padding:14px 12px}.group-member-list .share-user-meta .group-member-projects{margin-top:6px;line-height:1.5}
