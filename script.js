@@ -297,6 +297,7 @@ identity=previewRoleAliases[previewParams.get('role')]||'owner';
 if(previewAccounts().some(u=>u.id===previewParams.get('user')&&u.id!=='owner-1'))recipientUserId=previewParams.get('user');
 let detailOrigin = { page: 'projects', listTab: 'mine' };
 let filePath=[],selectedFileIds=[];
+let openProjectSearch=null;
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
 function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, platformAccounts, demoMemberInstances, deletedGroupIds, managerInvitationsSeeded, managerOwnedGroupsSeeded })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
@@ -458,8 +459,20 @@ function memberRoster(members, max = 5) { return members.length ? `<div class="r
 function searchField(id, label) { return `<label class="search-wrap">${icon('search')}<input id="${id}" type="search" placeholder="${label}" aria-label="${label}" value="${safe(search)}"></label>`; }
 function tableFooter(count, noun='个项目') { return `<div class="table-footer"><span>共 ${count} ${noun}${count ? `，显示全部 ${count} 条` : ''}</span><div class="page-info"><span>全部记录</span><button disabled aria-label="上一页">‹</button><span class="page-chip">1</span><button disabled aria-label="下一页">›</button></div></div>`; }
 function pageFoot(text) { return `<p class="list-foot">${icon('info')}${text}</p>`; }
-function projectColumnSearch(id,label,value) { return `<label class="project-column-search">${icon('search')}<input id="${id}" type="search" placeholder="搜索${label}" aria-label="搜索${label}" value="${safe(value)}" autocomplete="off"></label>`; }
-function resetProjectSearch() { projectTicketSearch='';projectCodeSearch=''; }
+function projectColumnSearch(id,label,value) {
+  const open=openProjectSearch===id;
+  return `<div class="project-search-control"><button type="button" class="project-search-toggle ${value?'is-active':''} ${open?'is-open':''}" data-project-search="${id}" aria-label="搜索${label}" aria-expanded="${open}" aria-controls="${id}Panel" title="搜索${label}${value?'：'+safe(value):''}">${icon('search')}</button><div class="project-column-search-panel" id="${id}Panel" ${open?'':'hidden'}><label class="project-column-search">${icon('search')}<input id="${id}" type="search" placeholder="搜索${label}" aria-label="搜索${label}" value="${safe(value)}" autocomplete="off"></label><button type="button" class="project-column-search-reset" data-clear-project-search="${id}">重置</button></div></div>`;
+}
+function closeProjectSearch() { const id=openProjectSearch;openProjectSearch=null;const panel=document.getElementById(id+'Panel');if(panel)panel.hidden=true;const button=main.querySelector(`[data-project-search="${id}"]`);if(button){button.setAttribute('aria-expanded','false');button.classList.remove('is-open');} }
+function positionProjectSearch() {
+  if(!openProjectSearch)return;
+  const button=main.querySelector(`[data-project-search="${openProjectSearch}"]`),panel=document.getElementById(openProjectSearch+'Panel');if(!button||!panel)return;
+  const rect=button.getBoundingClientRect(),width=panel.offsetWidth,height=panel.offsetHeight;
+  panel.style.left=Math.max(16,Math.min(rect.right-width,innerWidth-width-16))+'px';
+  const top=rect.bottom+height+8<=innerHeight?rect.bottom+8:rect.top-height-8;
+  panel.style.top=Math.max(12,Math.min(top,innerHeight-height-12))+'px';
+}
+function resetProjectSearch() { projectTicketSearch='';projectCodeSearch='';openProjectSearch=null; }
 function filteredProjects() { const ticket=projectTicketSearch.trim().toLowerCase(),code=projectCodeSearch.trim().toLowerCase(),source=listTab==='mine'?personalProjects():listTab==='shared'?sharedProjects():visibleProjects();return source.filter(p=>(identity==='support'||p.type==='云分析')&&String(p.ticket||'').toLowerCase().includes(ticket)&&String(p.code||'').toLowerCase().includes(code)); }
 
 async function copyProjectTicket(id) {
@@ -479,7 +492,7 @@ function renderProjects() {
   const showSelection=mine&&isManagementView()&&!isProjectSupportViewer(),selectedCount=selectedProjectIds.filter(id=>list.some(p=>p.id===id&&canConfigureCollaboration(p))).length;
   const identityNames={owner:'拥有者',manager:'管理者',collaborator:'协作者',visitor:'访问者'};
   const identityHints={owner:'拥有并管理项目，可发起和编辑协作。',manager:'管理项目、协作成员与分享，操作与项目拥有者一致。',collaborator:'受邀参与项目，具体操作按项目授权开放。',visitor:'受邀只读访问项目，不可分享或管理协作。'};
-  const head=`<tr>${showSelection?'<th class="check-cell"><input type="checkbox" data-select-all-projects aria-label="全选当前可管理项目"></th>':''}<th class="ticket-column"><span>开题单号</span>${projectColumnSearch('projectTicketSearch','开题单号',projectTicketSearch)}</th>${mine?'<th class="project-identity-column">项目身份</th>':''}<th class="contract-column">合同编号</th><th class="code-column"><span>云平台项目编号</span>${projectColumnSearch('projectCodeSearch','云平台项目编号',projectCodeSearch)}</th><th class="name-column">项目名称</th><th class="category-column">所属类别</th><th class="created-column">创建时间</th><th class="status-column">状态</th>${mine?'<th class="project-actions-column">操作</th>':''}</tr>`;
+  const head=`<tr>${showSelection?'<th class="check-cell"><input type="checkbox" data-select-all-projects aria-label="全选当前可管理项目"></th>':''}<th class="ticket-column"><div class="project-column-heading"><span>开题单号</span>${projectColumnSearch('projectTicketSearch','开题单号',projectTicketSearch)}</div></th>${mine?'<th class="project-identity-column">项目身份</th>':''}<th class="contract-column">合同编号</th><th class="code-column"><div class="project-column-heading"><span>云平台项目编号</span>${projectColumnSearch('projectCodeSearch','云平台项目编号',projectCodeSearch)}</div></th><th class="name-column">项目名称</th><th class="category-column">所属类别</th><th class="created-column">创建时间</th><th class="status-column">状态</th>${mine?'<th class="project-actions-column">操作</th>':''}</tr>`;
   const rows=list.map(p=>{
     const state=collaborationState(p),editable=canManageProject(p)&&!isProjectSupportViewer(),relation=projectListIdentity(p);
     const actionLabel=state==='active'?'编辑协作':state==='cancelled'?'重新协作':'去协作';
@@ -571,7 +584,9 @@ function render() {
   document.querySelector('.side-user strong').textContent=viewer.name;
   document.body.classList.remove('reference-mode');
   const renderers={projects:renderProjects,team:renderTeam,spaces:renderSpaces,detail:renderDetail};
+  const projectScroll=main.querySelector('[data-screen-label="项目列表"] .table-scroll')?.scrollLeft||0;
   main.innerHTML=(renderers[page]||renderProjects)();
+  if(page==='projects'){main.querySelector('.table-scroll').scrollLeft=projectScroll;positionProjectSearch();}
   const labels={projects:identity==='support'?'项目协作':'云分析',team:'成员与课题组',spaces:'课题组管理',detail:'项目详情'};
   const navPage=page==='detail'?'projects':page;
   const nested=['projects','team','spaces'].includes(navPage);
@@ -1287,6 +1302,8 @@ main.addEventListener('click', e => {
   if(a.dataset.copyTicket) return copyProjectTicket(a.dataset.copyTicket);
   if(a.hasAttribute('data-back-project-list')) return navigate(detailOrigin.page,{projectTab:detailOrigin.listTab});
   if(a.dataset.nav) return navigate(a.dataset.nav);
+  if(a.dataset.projectSearch){const id=a.dataset.projectSearch;openProjectSearch=openProjectSearch===id?null:id;render();if(openProjectSearch)document.getElementById(id)?.focus({preventScroll:true});return;}
+  if(a.dataset.clearProjectSearch){const id=a.dataset.clearProjectSearch;if(id==='projectTicketSearch')projectTicketSearch='';else projectCodeSearch='';render();document.getElementById(id)?.focus({preventScroll:true});return;}
   if(a.dataset.openProject) return openProjectDetail(a.dataset.openProject,a.dataset.collabRecord||null);
   if(a.dataset.groupAddMember) return openGroupAddMember(a.dataset.groupAddMember);
   if(a.dataset.groupRoles) return openGroupRoles(a.dataset.groupRoles);
@@ -1405,7 +1422,11 @@ modalRoot.addEventListener('change',e=>{
   if(e.target.dataset.collabMember){const id=e.target.dataset.collabMember;changeCollabMember(id,e.target.checked);showCollabModal();modalRoot.querySelector(`[data-collab-member="${id}"]`)?.focus({preventScroll:true});return;}
   if(e.target.dataset.groupRole){const m=modal.members.find(x=>x.id===e.target.dataset.groupRole);if(m&&!isSupportPerson(m))m.role=e.target.value;}
 });
+document.addEventListener('click',e=>{if(openProjectSearch&&!e.target.closest('.project-search-control'))closeProjectSearch();});
+window.addEventListener('resize',positionProjectSearch);
+document.addEventListener('scroll',positionProjectSearch,true);
 document.addEventListener('keydown',e=>{
+  if(openProjectSearch&&['Escape','Enter'].includes(e.key)&&modalRoot.hidden){const id=openProjectSearch;closeProjectSearch();main.querySelector(`[data-project-search="${id}"]`)?.focus({preventScroll:true});if(e.key==='Escape')return;}
   if(e.key==='Escape'&&!modalRoot.hidden){if(!confirmRoot.hidden){closeConfirmation();document.getElementById('account')?.focus();}else dismissModal();}
   if(e.key==='Tab'&&!modalRoot.hidden){const els=[...modalRoot.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')].filter(el=>el.offsetParent!==null);const first=els[0],last=els.at(-1);if(!first)return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}
   if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)&&e.target.getAttribute('role')==='tab'){
