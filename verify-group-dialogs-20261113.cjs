@@ -104,6 +104,19 @@ const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
   assert.deepEqual(adminAfter.groups,adminBefore.groups);assert.deepEqual(adminAfter.projects.filter(p=>p.id!==adminId),adminBefore.projects.filter(p=>p.id!==adminId));
   assert.equal(await p.locator(`[data-collab-project="${adminId}"]`).count(),0);await close();await p.reload();assert.equal((await read(p)).projects.find(p=>p.id===adminId).members.some(m=>m.id==='manager-1'),false);
   checks.push('管理员点击即可退出项目，无移交步骤；拥有者、其他成员、课题组和数据保留，刷新不恢复退出权限');
+  await p.locator('[data-space-tab=owned]').click();await p.locator('[data-project-authorization="manager-owned-01"]').click();
+  const managerOwnedIds=await p.evaluate(()=>groupVisibleProjects(group('manager-owned-01')).filter(p=>projectAccessRole(p)==='owner').map(p=>p.id));assert.ok(managerOwnedIds.length>=2);
+  const ownBefore=await read(p),ownTarget=ownBefore.projects.find(p=>p.id===managerOwnedIds[0]);
+  await p.locator(`[data-exit-project="${managerOwnedIds[0]}"]`).click();
+  assert.equal(await p.locator('#exitOwnerSelect,[data-confirm-project-exit]').count(),0);assert.equal(await p.locator(`[data-collab-project="${managerOwnedIds[0]}"]`).count(),0);
+  let ownAfter=await read(p),ownSaved=ownAfter.projects.find(p=>p.id===managerOwnedIds[0]);assert.equal(ownSaved.members.some(m=>m.id==='manager-1'),false);
+  assert.deepEqual(ownSaved.members,ownTarget.members.filter(m=>m.id!=='manager-1'));assert.deepEqual(ownSaved.files,ownTarget.files);assert.deepEqual(ownAfter.groups,ownBefore.groups);assert.deepEqual(ownAfter.projects.filter(p=>p.id!==ownTarget.id),ownBefore.projects.filter(p=>p.id!==ownTarget.id));
+  const detailTarget=managerOwnedIds[1];await p.locator(`[data-collab-project-card="${detailTarget}"] [data-open-project]`).click();assert.equal(await p.evaluate(()=>page),'detail');
+  const detailBefore=await read(p);await p.locator(`[data-exit-project="${detailTarget}"]`).click();assert.equal(await p.locator('#exitOwnerSelect,[data-confirm-project-exit]').count(),0);assert.equal(await p.evaluate(()=>page),'spaces');
+  const detailAfter=await read(p);assert.equal(detailAfter.projects.find(p=>p.id===detailTarget).members.some(m=>m.id==='manager-1'),false);assert.deepEqual(detailAfter.groups,detailBefore.groups);assert.deepEqual(detailAfter.projects.filter(p=>p.id!==detailTarget),detailBefore.projects.filter(p=>p.id!==detailTarget));
+  await p.reload();await p.locator('[data-space-tab=owned]').click();await p.locator('[data-project-authorization="manager-owned-01"]').click();assert.equal(await p.locator(`[data-collab-project="${managerOwnedIds[0]}"]`).count(),0);assert.equal(await p.locator(`[data-collab-project="${detailTarget}"]`).count(),0);await close();
+  checks.push('管理者在我创建的课题组中退出项目也直接生效，授权弹窗和详情入口均无移交步骤，其他人员权限保留且刷新不恢复');
+
 
   await p.locator('[data-preview-role=member]').click();await p.locator('#recipientSelect').selectOption('li-1');
   await p.locator(`[data-group-row="${gid}"] .group-actions [data-project-authorization]`).click();assert.equal(await p.locator('[data-confirm-collab]').count(),0);assert.equal(await p.locator('[data-collab-member]:not(:disabled)').count(),0);

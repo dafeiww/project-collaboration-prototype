@@ -387,17 +387,20 @@ function projectListIdentity(p) { const role=projectAccessRole(p);return role===
 function collaborationState(p) { return p.collab?'active':p.hasCollaborated?'cancelled':'never'; }
 function canExitProject(p) { return !!p&&!(p.exitedUserIds||[]).includes(currentUserId())&&(!!projectAccessRole(p)||(p.shareUserIds||[]).includes(currentUserId())); }
 
+function canDirectExitProject(p) { return canExitProject(p)&&(identity==='manager'||projectAccessRole(p)==='admin'); }
+
 function openExitProject(projectId) {
   const p=projects.find(x=>x.id===projectId);
   if(!canExitProject(p))return notify('当前账号未参与该项目');
   modal={type:'project-exit',projectId,parent:modal?.type==='collab'?structuredClone(modal):null};
-  if(projectAccessRole(p)==='admin')return confirmExitProject();
+  if(canDirectExitProject(p))return confirmExitProject();
   showModal();
 }
 
 function showProjectExitModal() {
   const p=projects.find(x=>x.id===modal.projectId);
   if(!canExitProject(p))return closeModal();
+  if(canDirectExitProject(p))return confirmExitProject();
   const owner=projectAccessRole(p)==='owner';
   const candidates=exitOwnerCandidates(p);
   const transfer=owner?`<label class="field exit-owner-field"><span class="field-label">转交项目拥有者</span><select id="exitOwnerSelect" required aria-required="true"><option value="">请选择接任的项目拥有者</option>${candidates.map(u=>`<option value="${safe(u.id)}">${safe(u.account||u.name)}${memberRemark(u)?' · '+safe(memberRemark(u)):''}</option>`).join('')}</select><span class="field-error">请先选择接任的项目拥有者</span></label><p class="member-library-note">确认后完成项目转交并退出；项目及其他成员的权限保留。</p>`:'';
@@ -413,7 +416,8 @@ function confirmExitProject() {
   const p=projects.find(x=>x.id===modal?.projectId);
   if(!canExitProject(p))return closeModal();
   const uid=currentUserId();
-  if(projectAccessRole(p)==='owner'){
+  if(projectAccessRole(p)==='owner'&&canDirectExitProject(p))p.ownerUserId||=uid;
+  if(projectAccessRole(p)==='owner'&&!canDirectExitProject(p)){
     const nextId=document.getElementById('exitOwnerSelect')?.value;
     if(!exitOwnerCandidates(p).some(u=>u.id===nextId)){document.getElementById('exitOwnerSelect')?.closest('.field').classList.add('invalid');return;}
     const successor=p.members.find(m=>m.id===nextId);
