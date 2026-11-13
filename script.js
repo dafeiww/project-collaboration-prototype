@@ -38,7 +38,7 @@ const previewRoleAliases={owner:'owner',manager:'manager',support:'support',memb
 let recipientUserId='li-1';
 const roleIcons = { owner:'shield', admin: 'shield', member: 'person', visitor:'eye' };
 const roleDescriptions = {
-  owner: '确认管理归属，指定管理员，负责项目交接。',
+  owner: '拥有项目，指定管理员并管理项目授权。',
   admin: '管理成员与权限，在授权范围内管理项目。',
   member: '开展分析，使用授权数据，修改分析记录名称。',
   visitor:'仅查看项目和分析结果，不提交分析或修改记录。'
@@ -75,6 +75,13 @@ const demoPlatformAccounts = [
   { id: 'demo-sun', name: '孙研究员', phone: '13800000008', email: 'sun.researcher@example.com', emailBound: false, account: 'sun.researcher' },
   { id: 'demo-wu', name: '吴研究员', phone: '13800000009', email: 'wu.researcher@example.com', emailBound: true, account: 'wu.researcher' }
 ];
+const groupRosterExampleAccounts = [
+  ['孙浩','sun.hao','转录组分析'],['赵敏','zhao.min','临床样本'],['刘洋','liu.yang','数据质控'],
+  ['周宁','zhou.ning','实验研究'],['吴桐','wu.tong','蛋白组分析'],['陈悦','chen.yue','统计分析'],
+  ['郑凯','zheng.kai','样本管理'],['许晨','xu.chen','多组学研究'],['何静','he.jing','代谢组分析'],
+  ['林安','lin.an','生信分析'],['Emma Wilson','emma.wilson','国际协作'],['David Chen','david.chen','结果复核']
+].map(([name,account,remark],index)=>({id:'roster-example-'+String(index+1).padStart(2,'0'),name,account,remark,phone:index<10?'13900001'+String(index+1).padStart(3,'0'):'',email:index>=10?account+'@example.org':'',emailBound:index>=10}));
+demoPlatformAccounts.push(...groupRosterExampleAccounts);
 const repeatableDemoAccountId='demo-zhao';
 // 重复演示记录使用独立 ID；不加入平台账号索引，避免同一联系方式被误判为多账户。
 let demoMemberInstances=[];
@@ -203,7 +210,7 @@ const initialGroups = [
   ]}
 ];
 const storageKey = 'personalbio-project-collaboration-preview-v6-collab-records';
-let managerMemberIds=null,groupProjectExamplesSeeded=false,groupInvitationExamplesSeeded=false;
+let managerMemberIds=null,groupProjectExamplesSeeded=false,groupInvitationExamplesSeeded=false,groupMemberExamplesSeeded=false,managerProjectOwnershipSeeded=false;
 let projects, groups, collabRecords = [], deletedGroupIds = [], managerInvitationsSeeded = false, managerOwnedGroupsSeeded = false;
 try {
   const saved = JSON.parse(localStorage.getItem(storageKey));
@@ -211,6 +218,8 @@ try {
   projects = saved.projects; groups = saved.groups;
   groupProjectExamplesSeeded=saved.groupProjectExamplesSeeded===true;
   groupInvitationExamplesSeeded=saved.groupInvitationExamplesSeeded===true;
+  groupMemberExamplesSeeded=saved.groupMemberExamplesSeeded===true;
+  managerProjectOwnershipSeeded=saved.managerProjectOwnershipSeeded===true;
   if(Array.isArray(saved.managerMemberIds))managerMemberIds=saved.managerMemberIds.filter(id=>typeof id==='string');
   managerInvitationsSeeded = saved.managerInvitationsSeeded === true;
   managerOwnedGroupsSeeded = saved.managerOwnedGroupsSeeded === true;
@@ -309,7 +318,9 @@ for(const p of projects){
   rebuildProjectMembers(p);
 }
 seedGroupInvitationExamples();
+seedGroupMemberExamples();
 seedGroupProjectExamples();
+normalizeManagerProjectExamples();
 for(const g of groups)g.name=g.name.replaceAll('空'+'间','课题组');
 for(const r of collabRecords)if(r.groupName)r.groupName=r.groupName.replaceAll('空'+'间','课题组');
 let projectMenuOpen=true;
@@ -322,7 +333,7 @@ let detailOrigin = { page: 'spaces', listTab: 'mine' };
 let filePath=[],selectedFileIds=[];
 let openProjectSearch=null;
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
-function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, managerMemberIds, platformAccounts, demoMemberInstances, deletedGroupIds, managerInvitationsSeeded, managerOwnedGroupsSeeded, groupProjectExamplesSeeded,groupInvitationExamplesSeeded })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
+function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, managerMemberIds, platformAccounts, demoMemberInstances, deletedGroupIds, managerInvitationsSeeded, managerOwnedGroupsSeeded, groupProjectExamplesSeeded,groupInvitationExamplesSeeded,groupMemberExamplesSeeded,managerProjectOwnershipSeeded })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
 function group(id) { return groups.find(g => g.id === id); }
 function person(id) { return projectSupportPeople.find(d=>d.id===id) || directory.find(d => d.id === id) || demoMemberInstances.find(d=>d.id===id) || platformAccounts.find(d=>d.id===id) || { name: '未知成员', phone: '', account: '' }; }
@@ -385,13 +396,13 @@ function projectAccessRole(p) { return p?.members.find(m=>m.id===currentUserId()
 function projectListIdentity(p) { const role=projectAccessRole(p);return role==='owner'?'owner':role==='admin'&&!isProjectSupportViewer()?'manager':role==='visitor'?'visitor':role?'collaborator':'shared'; }
 
 function collaborationState(p) { return p.collab?'active':p.hasCollaborated?'cancelled':'never'; }
-function canExitProject(p) { return !!p&&!(p.exitedUserIds||[]).includes(currentUserId())&&(!!projectAccessRole(p)||(p.shareUserIds||[]).includes(currentUserId())); }
+function canExitProject(p) { return !!p&&projectAccessRole(p)!=='owner'&&!(p.exitedUserIds||[]).includes(currentUserId())&&(!!projectAccessRole(p)||(p.shareUserIds||[]).includes(currentUserId())); }
 
-function canDirectExitProject(p) { return canExitProject(p)&&(identity==='manager'||projectAccessRole(p)==='admin'); }
+function canDirectExitProject(p) { return canExitProject(p)&&projectAccessRole(p)==='admin'; }
 
 function openExitProject(projectId) {
   const p=projects.find(x=>x.id===projectId);
-  if(!canExitProject(p))return notify('当前账号未参与该项目');
+  if(!canExitProject(p))return notify(projectAccessRole(p)==='owner'?'项目拥有者不能退出项目':'当前账号未参与该项目');
   modal={type:'project-exit',projectId,parent:modal?.type==='collab'?structuredClone(modal):null};
   if(canDirectExitProject(p))return confirmExitProject();
   showModal();
@@ -401,29 +412,13 @@ function showProjectExitModal() {
   const p=projects.find(x=>x.id===modal.projectId);
   if(!canExitProject(p))return closeModal();
   if(canDirectExitProject(p))return confirmExitProject();
-  const owner=projectAccessRole(p)==='owner';
-  const candidates=exitOwnerCandidates(p);
-  const transfer=owner?`<label class="field exit-owner-field"><span class="field-label">转交项目拥有者</span><select id="exitOwnerSelect" required aria-required="true"><option value="">请选择接任的项目拥有者</option>${candidates.map(u=>`<option value="${safe(u.id)}">${safe(u.account||u.name)}${memberRemark(u)?' · '+safe(memberRemark(u)):''}</option>`).join('')}</select><span class="field-error">请先选择接任的项目拥有者</span></label><p class="member-library-note">确认后完成项目转交并退出；项目及其他成员的权限保留。</p>`:'';
-  modalFrame('退出项目','仅解除你在当前项目中的访问权限。',`<div class="share-project-card"><span class="share-project-icon">${icon('folder')}</span><div><strong>${safe(p.name)}</strong><small>${safe(p.code)}</small></div></div>${transfer}<div class="share-cancel-warning">${icon('info')}<div><strong>确认退出「${safe(p.name)}」？</strong><p>项目数据、分析记录、其他成员权限，以及你的课题组关系和其他项目均保留。</p></div></div>`,'<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-project-exit>确认退出</button>');
-}
-function exitOwnerCandidates(p) {
-  const ids=new Set((p.members||[]).filter(m=>m.id!==currentUserId()&&!isSupportPerson(m)&&m.role!=='visitor').map(m=>m.id));
-  const existing=[...ids].map(person);
-  return existing.length?existing:directory.filter(u=>u.id!==currentUserId()&&!isSupportPerson(u));
+  modalFrame('退出项目','仅解除你在当前项目中的访问权限。',`<div class="share-project-card"><span class="share-project-icon">${icon('folder')}</span><div><strong>${safe(p.name)}</strong><small>${safe(p.code)}</small></div></div><div class="share-cancel-warning">${icon('info')}<div><strong>确认退出「${safe(p.name)}」？</strong><p>项目数据、分析记录、其他成员权限，以及你的课题组关系和其他项目均保留。</p></div></div>`,'<button class="btn" data-close>取消</button><button class="btn danger" data-confirm-project-exit>确认退出</button>');
 }
 
 function confirmExitProject() {
   const p=projects.find(x=>x.id===modal?.projectId);
   if(!canExitProject(p))return closeModal();
   const uid=currentUserId();
-  if(projectAccessRole(p)==='owner'&&canDirectExitProject(p))p.ownerUserId||=uid;
-  if(projectAccessRole(p)==='owner'&&!canDirectExitProject(p)){
-    const nextId=document.getElementById('exitOwnerSelect')?.value;
-    if(!exitOwnerCandidates(p).some(u=>u.id===nextId)){document.getElementById('exitOwnerSelect')?.closest('.field').classList.add('invalid');return;}
-    const successor=p.members.find(m=>m.id===nextId);
-    if(successor)successor.role='owner';else p.members.push({id:nextId,role:'owner'});
-    p.exitedUserIds=(p.exitedUserIds||[]).filter(id=>id!==nextId);
-  }
   p.exitedUserIds=[...new Set([...(p.exitedUserIds||[]),uid])];
   p.members=p.members.filter(m=>m.id!==uid);
   p.directCollabMembers=p.directCollabMembers.filter(m=>m.id!==uid);
@@ -479,6 +474,15 @@ function seedGroupInvitationExamples() {
   groupProjectExamplesSeeded=false;
   groupInvitationExamplesSeeded=true;
 }
+function seedGroupMemberExamples() {
+  if(groupMemberExamplesSeeded)return;
+  const demoIds=new Set(['group-onco','group-micro','group-joint','manager-owned-01','manager-owned-02','manager-joined-01','manager-joined-02','manager-joined-03']);
+  for(const u of groupRosterExampleAccounts){ensureDirectoryPerson(u.id);if(!managerMemberIds.includes(u.id))managerMemberIds.push(u.id);}
+  for(const g of groups.filter(g=>demoIds.has(g.id)||g.id.startsWith('invited-role-example-'))){
+    groupRosterExampleAccounts.forEach((u,i)=>{if(!g.members.some(m=>m.id===u.id))g.members.push({id:u.id,role:i===0?'admin':'member'});});
+  }
+  groupMemberExamplesSeeded=true;
+}
 function seedGroupProjectExamples() {
   if(groupProjectExamplesSeeded)return;
   const titles=['临床样本转录组分析','多组学联合研究','肠道菌群测序分析'];
@@ -488,7 +492,8 @@ function seedGroupProjectExamples() {
       if(projects.some(p=>p.id===id))continue;
       const code='PB20261113'+String(projects.length+1).padStart(4,'0');
       const roster=g.members.map((m,n)=>({id:m.id,role:m.id===g.exampleInviteUserId?g.exampleInviteRole:m.id==='manager-1'?'admin':['admin','member','visitor'][(i+n)%3]}));
-      const p={id,ticket:'KT20261113'+String(projects.length+1).padStart(4,'0'),contract:'CT20261113',code,name:titles[i]+' · '+g.name,category:['转录组分析','多组学分析','微生物组分析'][i],created:'2026-11-13 09:00:00',status:'完成',type:'云分析',collab:true,hasCollaborated:true,members:[{id:g.ownerId,role:'owner'}],managerUserIds:[],directCollabMembers:[],shareUserIds:[],shared:false,files:[],visitorDownload:false,supportAssignment:null,supportContactId:'support-1'};
+      const projectOwnerId=g.ownerId==='manager-1'?'owner-1':g.ownerId;
+      const p={id,ticket:'KT20261113'+String(projects.length+1).padStart(4,'0'),contract:'CT20261113',code,name:titles[i]+' · '+g.name,category:['转录组分析','多组学分析','微生物组分析'][i],created:'2026-11-13 09:00:00',status:'完成',type:'云分析',collab:true,hasCollaborated:true,members:[{id:projectOwnerId,role:'owner'}],managerUserIds:g.ownerId==='manager-1'?['manager-1']:[],directCollabMembers:[],shareUserIds:[],shared:false,files:[],visitorDownload:false,supportAssignment:null,supportContactId:'support-1'};
       projects.push(p);
       const support=g.supportInvitations?.[0];
       if(support){p.supportAssignment={personId:support.id,source:'group-invitation',addedAt:'2026-11-13 09:00:00'};p.supportContactId=support.id;}
@@ -497,6 +502,17 @@ function seedGroupProjectExamples() {
     }
   }
   groupProjectExamplesSeeded=true;
+}
+// 修正管理者示例：创建课题组不代表拥有其中的项目；已有退出与真实转交结果保留。
+function normalizeManagerProjectExamples() {
+  if(managerProjectOwnershipSeeded)return;
+  for(const p of projects.filter(p=>/^group-project-example-manager-owned-0[12]-/.test(p.id))){
+    if((p.exitedUserIds||[]).includes('owner-1')||p.members.some(m=>m.role==='owner'&&m.id!=='manager-1'))continue;
+    const manager=p.members.find(m=>m.id==='manager-1');
+    if(manager?.role==='owner'){manager.role='admin';p.managerUserIds=[...new Set([...(p.managerUserIds||[]),'manager-1'])];}
+    p.members.push({id:'owner-1',role:'owner'});p.ownerUserId='owner-1';rebuildProjectMembers(p);
+  }
+  managerProjectOwnershipSeeded=true;
 }
 function chooseRoleLanding() { page='spaces';spaceTab='joined'; }
 
@@ -605,7 +621,11 @@ function groupVisibleProjects(g) {
 }
 function groupProjectNames(g) {
   const list=groupVisibleProjects(g);
-  return list.length?`<div class="group-project-names">${list.slice(0,2).map(p=>`<button class="group-project-name-link" data-open-project="${safe(p.id)}" title="${safe(p.name)}">${safe(p.name)}</button>`).join('')}${list.length>2?`<span>共 ${list.length} 个项目</span>`:''}</div>`:'<span class="fixed">暂无可访问项目</span>';
+  const links=items=>items.map(p=>`<button class="group-project-name-link" data-open-project="${safe(p.id)}" title="${safe(p.name)}">${safe(p.name)}</button>`).join('');
+  return list.length?`<div class="group-project-names">${links(list.slice(0,2))}${list.length>2?`<details class="group-project-more" data-group-project-more="${safe(g.id)}"><summary><span class="project-more-label">更多（共 ${list.length} 个项目）</span><span class="project-less-label">收起</span></summary><div class="group-project-extra">${links(list.slice(2))}</div></details>`:''}</div>`:'<span class="fixed">暂无可访问项目</span>';
+}
+function groupProjectActionLabel(g) {
+  return g.ownerId===currentUserId()||groupInvitationRole(g)==='admin'?'授权项目':'查看项目';
 }
 
 function groupInvitationRole(g) {
@@ -621,10 +641,10 @@ function mySpaces() {
 function renderSpaces() {
   const me=currentUserId(),all=mySpaces(),joined=all.filter(g=>g.ownerId!==me),owned=all.filter(g=>g.ownerId===me),ownTab=!isProjectSupportViewer()&&spaceTab==='owned';
   const q=search.trim().toLowerCase(),list=(ownTab?owned:joined).filter(g=>`${g.name} ${person(g.ownerId).account} ${person(g.ownerId).name} ${groupVisibleProjects(g).map(p=>p.name).join(' ')}`.toLowerCase().includes(q));
-  const row=g=>`<tr data-group-row="${safe(g.id)}"><td><span class="group-name-text">${safe(g.name)}</span></td>${ownTab?'':`<td>${safe(person(g.ownerId).account)}</td><td><span class="role-pill ${groupInvitationRole(g)}" data-group-identity="${safe(g.id)}">${groupInviteRoleNames[groupInvitationRole(g)]}</span></td><td class="group-project-names-cell">${groupProjectNames(g)}</td>`}<td>${memberRoster(g.members,3,true,g.id)}</td><td class="date-cell">${safe((ownTab?g.createdAt:g.invitedAt)||'—')}</td><td><div class="table-actions group-actions"><button class="btn ${canEditGroupRoles(g)?'primary':'quiet'} small" data-project-authorization="${safe(g.id)}">项目授权</button>${canEditGroupRoles(g)?`<button class="btn quiet small" data-group-members="${safe(g.id)}">成员管理</button>`:''}${groupDeleteButton(g)}${canExitGroup(g)?`<button class="btn quiet small danger" data-exit-group="${safe(g.id)}">退出课题组</button>`:''}</div></td></tr>`;
+  const row=g=>`<tr data-group-row="${safe(g.id)}"><td><span class="group-name-text">${safe(g.name)}</span></td>${ownTab?'':`<td>${safe(person(g.ownerId).account)}</td><td><span class="role-pill ${groupInvitationRole(g)}" data-group-identity="${safe(g.id)}">${groupInviteRoleNames[groupInvitationRole(g)]}</span></td>`}<td class="group-project-names-cell">${groupProjectNames(g)}</td><td>${memberRoster(g.members,3,true,g.id)}</td><td class="date-cell">${safe((ownTab?g.createdAt:g.invitedAt)||'—')}</td><td><div class="table-actions group-actions"><button class="btn ${canEditGroupRoles(g)?'primary':'quiet'} small" data-project-authorization="${safe(g.id)}">${groupProjectActionLabel(g)}</button>${canEditGroupRoles(g)?`<button class="btn quiet small" data-group-members="${safe(g.id)}">成员管理</button>`:''}${groupDeleteButton(g)}${canExitGroup(g)?`<button class="btn quiet small danger" data-exit-group="${safe(g.id)}">退出课题组</button>`:''}</div></td></tr>`;
   return `<div class="page" data-screen-label="课题组管理">${heading('课题组管理','先创建课题组和成员，再通过项目授权查看项目、设置参与成员及权限。',ownTab&&canCreateGroups()?'<button class="btn primary" data-create-group>创建课题组</button>':'')}
   <div class="team-management-tabs" role="tablist"><button role="tab" data-space-tab="joined" class="${!ownTab?'active':''}" aria-selected="${!ownTab}">受邀加入<span class="tab-count">${joined.length}</span></button>${!isProjectSupportViewer()?`<button role="tab" data-space-tab="owned" class="${ownTab?'active':''}" aria-selected="${ownTab}">我创建的<span class="tab-count">${owned.length}</span></button>`:''}</div>
-  <section class="surface"><div class="surface-top"><h2 class="surface-title">${ownTab?'我创建的课题组':'受邀加入的课题组'}</h2></div><div class="toolbar">${searchField('spaceSearch','搜索课题组、创建者或项目名称')}</div><div class="table-shell space-table ${ownTab?'owned-space-table':'joined-space-table'}"><div class="table-scroll"><table><thead><tr><th>课题组</th>${ownTab?'':'<th>创建者</th><th>我的身份</th><th>项目名称</th>'}<th>成员名单</th><th>${ownTab?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="${ownTab?4:7}" class="empty-cell">${emptyState('暂无课题组','创建课题组或等待邀请加入。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'个课题组')}</section>${pageFoot('项目授权统一查看和管理项目及成员权限；点击项目名称进入详情。')}</div>`;
+  <section class="surface"><div class="surface-top"><h2 class="surface-title">${ownTab?'我创建的课题组':'受邀加入的课题组'}</h2></div><div class="toolbar">${searchField('spaceSearch','搜索课题组、创建者或项目名称')}</div><div class="table-shell space-table ${ownTab?'owned-space-table':'joined-space-table'}"><div class="table-scroll"><table><thead><tr><th>课题组</th>${ownTab?'':'<th>创建者</th><th>我的身份</th>'}<th>项目名称</th><th>成员名单</th><th>${ownTab?'创建时间':'加入时间'}</th><th>操作</th></tr></thead><tbody>${list.map(row).join('')||`<tr><td colspan="${ownTab?5:7}" class="empty-cell">${emptyState('暂无课题组','创建课题组或等待邀请加入。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'个课题组')}</section>${pageFoot('项目授权统一查看和管理项目及成员权限；点击项目名称进入详情。')}</div>`;
 }
 
 function openProjectAuthorization(id) {
@@ -675,7 +695,7 @@ function renderDetail() {
   const p=project();
   return `<div class="page project-detail-page" data-screen-label="项目详情"><button class="back-link" data-back-project-list>${icon('back')}返回${detailOrigin.page==='spaces'?'课题组管理':{mine:'课题组项目',received:'课题组项目',shared:'课题组项目',collab:'协作项目'}[detailOrigin.listTab]+'列表'}</button>
     <section class="reference-detail-summary"><div class="reference-detail-title"><span class="detail-project-icon">${icon(p.type==='云图汇'?'chart':'folder')}</span><div><h1>${safe(p.name)}</h1><span class="reference-detail-status">状态：${safe(p.status)}</span></div></div>
-    <dl><dt>开题单号</dt><dd><span class="ticket-cell"><span class="ticket-link">${safe(p.ticket)}</span><button class="copy-ticket" data-copy-ticket="${p.id}" aria-label="复制开题单号 ${safe(p.ticket)}">${icon('copy')}</button></span></dd></dl><dl><dt>合同号</dt><dd>${safe(p.contract)}</dd></dl><dl><dt>云平台项目编号</dt><dd>${safe(p.code)}</dd></dl><div class="detail-project-actions"><button class="btn primary detail-result-button" data-show-result>查看结果</button>${projectSupportAction(p)}${canExitProject(p)?`<button class="btn quiet danger" data-exit-project="${safe(p.id)}">退出项目</button>`:''}</div></section>
+    <dl><dt>开题单号</dt><dd><span class="ticket-cell"><span class="ticket-link">${safe(p.ticket)}</span><button class="copy-ticket" data-copy-ticket="${p.id}" aria-label="复制开题单号 ${safe(p.ticket)}">${icon('copy')}</button></span></dd></dl><dl><dt>合同号</dt><dd>${safe(p.contract)}</dd></dl><dl><dt>云平台项目编号</dt><dd>${safe(p.code)}</dd></dl><div class="detail-project-actions"><button class="btn primary detail-result-button" data-show-result>查看结果</button>${projectSupportAction(p)}</div></section>
     ${renderProjectSupport(p)}
     <div class="detail-download-banner"><span>下载派森诺云盘，一键下载全部项目数据。</span><button class="btn" data-cloud-download>${icon('download')}下载派森诺云盘</button></div>
     ${detailOrigin.listTab==='shared'?`<div class="shared-detail-context">分享人：${safe(person(p.shareInitiatedBy||p.members.find(m=>m.role==='owner')?.id||'owner-1').name)}<span>仅查看原始分析结果</span></div>`:''}
@@ -1326,7 +1346,7 @@ function showCollabModal() {
     return `<section class="collab-project-members" data-collab-project-members="${safe(p.id)}"><div class="collab-project-member-heading"><h4>${safe(p.name)}</h4><span>已选 ${selected.size} 人</span></div>${data.total>10?`<label class="collab-project-search collab-roster-search">${icon('search')}<input type="search" data-collab-member-search="${safe(p.id)}" placeholder="搜索用户名或成员别称" value="${safe(d.query||'')}"></label>`:''}${disabled?'':`<div class="collab-selection-tools"><button data-select-all-collab-members data-collab-target="${safe(p.id)}">全选成员</button><button data-clear-collab-members data-collab-target="${safe(p.id)}">取消全选</button></div>`}${roster.map(m=>`<div class="collab-member-item ${selected.has(m.id)?'is-selected':''}" data-collab-member-row="${safe(m.id)}"><label class="collab-member-left"><input type="checkbox" data-collab-member="${safe(m.id)}" data-collab-target="${safe(p.id)}" ${selected.has(m.id)?'checked':''} ${disabled?'disabled':''}><span class="collab-member-info">${memberIdentity(person(m.id))}</span></label><select class="collab-member-role" data-collab-role="${safe(m.id)}" data-collab-target="${safe(p.id)}" ${disabled||!selected.has(m.id)?'disabled':''} aria-label="${safe(p.name)}中${safe(person(m.id).account)}的项目角色">${projectRoles.map(role=>`<option value="${role}" ${(d.roles[m.id]||'member')===role?'selected':''}>${roleNames[role]}</option>`).join('')}</select></div>`).join('')||'<div class="picker-empty">暂无匹配成员</div>'}${data.total>10?memberPageButtons(data,'data-collab-member-page',`data-collab-target="${safe(p.id)}"`):''}</section>`;
   }).join('');
   const body=`<div class="collab-group-heading"><span>课题组名称</span><strong>${safe(g.name)}</strong><small>${g.members.length} 位成员</small></div><div class="picker-layout"><section class="picker-block collab-projects-panel"><div class="picker-heading"><h3>项目列表 <span class="picker-note">可多选</span></h3><span>已选 ${selectedProjects.length} 个</span></div><label class="collab-project-search">${icon('search')}<input id="collabProjectSearch" type="search" placeholder="搜索项目名称或合同编号" value="${safe(state.projectQuery)}"></label><div class="collab-selection-tools"><label><input type="checkbox" data-select-all-collab-projects ${filtered.length&&filtered.every(p=>state.selectedProjectIds.includes(p.id))?'checked':''}>全选当前项目</label><button data-clear-collab-projects>取消全选</button></div><div class="collab-project-options">${projectCards||'<div class="picker-empty">暂无匹配项目</div>'}</div></section><section class="picker-block collab-members-panel"><div class="picker-heading"><h3>${readOnly?'协作成员':'项目成员与角色'}</h3><span>${selectedProjects.length} 个项目</span></div><div class="collab-member-options">${memberSections||'<div class="picker-empty collab-no-project">请先在左侧选择项目</div>'}</div></section></div><p class="inline-collab-summary">${readOnly?'选择项目查看对应成员，点击项目名称进入详情。':'按项目分别设置成员与角色；仅保存已选且有管理权限的项目。取消选择不撤回原授权。'}</p>`;
-  modalFrame('项目授权',readOnly?'按项目查看成员与角色。':'选择项目后，为每个项目分别授权成员。',body,readOnly?'<button class="btn" data-close>关闭</button>':`<button class="btn" data-close>取消</button><button class="btn primary" data-confirm-collab ${!selectedProjects.some(canConfigureCollaboration)?'disabled':''}>保存授权</button>`,true);
+  modalFrame(groupProjectActionLabel(g),readOnly?'按项目查看成员与角色。':'选择项目后，为每个项目分别授权成员。',body,readOnly?'<button class="btn" data-close>关闭</button>':`<button class="btn" data-close>取消</button><button class="btn primary" data-confirm-collab ${!selectedProjects.some(canConfigureCollaboration)?'disabled':''}>保存授权</button>`,true);
   modalRoot.querySelector('.modal-body').scrollTop=scroll;modalRoot.querySelector('.collab-project-options').scrollTop=ps;modalRoot.querySelector('.collab-member-options').scrollTop=ms;
 }
 function showModal() {
@@ -1454,7 +1474,6 @@ main.addEventListener('click', e => {
   if(a.dataset.collabOne){const p=projects.find(p=>p.id===a.dataset.collabOne);const gid=projectRecords(p).find(r=>collaborationGroups().some(g=>g.id===r.groupId))?.groupId||null;return openCollab(gid,[p.id],null,p.collab);}
   if(a.dataset.manageRecord){const r=collabRecords.find(x=>x.id===a.dataset.manageRecord);if(!r) return;return openCollab(r.groupId||groups.find(g=>g.name===r.groupName)?.id,[r.projectId],r.id);}
   if(a.dataset.shareProject)return openShare(a.dataset.shareProject);
-  if(a.dataset.exitProject)return openExitProject(a.dataset.exitProject);
 });
 document.querySelector('.sidebar').addEventListener('click',e=>{const menu=e.target.closest('[data-project-menu]');if(menu){projectMenuOpen=!projectMenuOpen;document.getElementById('projectSubnav').hidden=!projectMenuOpen;menu.setAttribute('aria-expanded',String(projectMenuOpen));return;}const a=e.target.closest('[data-nav],.brand');if(a){e.preventDefault();if(a.disabled||a.getAttribute('aria-disabled')==='true')return;navigate(a.dataset.nav||'projects');}});
 main.addEventListener('input',e=>{
