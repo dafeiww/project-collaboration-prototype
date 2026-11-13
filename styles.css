@@ -418,3 +418,8 @@
 @media(max-width:700px){.collab-projects-panel .collab-project-options{height:220px}.collab-members-panel .collab-member-options{height:250px}}
 
 .group-project-names>.group-project-name-link{display:block;max-width:275px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#1989fa;text-align:left;font-size:12px;line-height:1.6}.group-project-name-link:hover,.collab-project-title:hover{text-decoration:underline}.collab-project-card-content{flex:1;min-width:0}.collab-project-title{display:block;padding:0;background:transparent;color:#1989fa;font-size:12px;font-weight:500;line-height:1.6;text-align:left;overflow-wrap:anywhere}.collab-project-identity{display:block;font-size:11px;color:#909399;margin-top:5px}.collab-project-card-actions{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:8px}.collab-project-card-actions .btn{min-height:25px;padding:0 5px;font-size:11px}.collab-project-option>input:disabled{cursor:default}.collab-project-option:has(>input:disabled){cursor:default}.collab-project-title:focus-visible,.group-project-name-link:focus-visible{outline:2px solid #1989fa;outline-offset:3px}
+
+.detail-project-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;justify-content:flex-end}.detail-project-actions .detail-result-button{margin:0}.detail-project-actions .btn{white-space:nowrap}
+
+@media(max-width:1200px){.detail-project-actions{grid-column:3;grid-row:1}}
+@media(max-width:640px){.detail-project-actions{grid-column:1/-1;grid-row:auto;justify-content:flex-start}}
