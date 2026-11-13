@@ -444,17 +444,14 @@
 .collab-project-member-heading>span{flex:none;font-size:11px;color:#909399;line-height:1.8}
 .collab-project-members .collab-member-item:last-child{margin-bottom:0}
 .collab-members-panel .collab-member-options{height:420px}.collab-projects-panel .collab-project-options{height:340px}
-.managed-member-add{margin-bottom:20px}.managed-member-add h3{font-size:13px;margin:0 0 12px}.managed-member-candidates{max-height:160px;overflow:auto;margin-top:8px;border:1px solid #ebeef5;border-radius:6px}.managed-member-candidates .group-member-option{padding:10px}
 .group-members-modal{width:min(760px,100%)}.group-member-list{max-height:300px;overflow:auto}
-@media(max-width:700px){.collab-members-panel .collab-member-options{height:330px}.collab-projects-panel .collab-project-options{height:200px}.collab-project-members{padding:10px}.collab-project-member-heading{display:block}.collaboration-modal .collab-member-item{flex-wrap:wrap;gap:8px}.collaboration-modal .collab-member-role{margin-left:22px}.managed-member-candidates{max-height:140px}}
+@media(max-width:700px){.collab-members-panel .collab-member-options{height:330px}.collab-projects-panel .collab-project-options{height:200px}.collab-project-members{padding:10px}.collab-project-member-heading{display:block}.collaboration-modal .collab-member-item{flex-wrap:wrap;gap:8px}.collaboration-modal .collab-member-role{margin-left:22px}}
 
 /* 多人成员列表保持主表行高，完整名单在成员管理内搜索和分页。 */
 .roster-overflow{display:flex;align-items:center;gap:10px;margin-top:3px;padding-left:7px;font-size:11px;color:#909399}.roster-view-all{padding:0;background:transparent;color:#1989fa;font-size:11px;line-height:1.8}
 .member-roster-search{margin:12px 0}.group-members-modal .group-member-list{max-height:320px;min-height:86px;overflow:auto}.group-members-modal .member-list-readonly .share-user-row{grid-template-columns:minmax(0,1fr) 125px}
 .member-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;font-size:11px;color:#909399}.member-pagination>div{display:flex;align-items:center;gap:10px}.member-pagination button{padding:5px 8px;background:#fff;border:1px solid #dcdfe6;border-radius:4px;font-size:11px;color:#606266}.member-pagination button:disabled{opacity:.4;cursor:default}.collab-roster-search{margin:10px 0}.collab-roster-search input{height:30px}
 @media(max-width:640px){.member-pagination{flex-wrap:wrap}.group-members-modal .member-list-readonly .share-user-row{grid-template-columns:minmax(0,1fr) 100px}.group-members-modal .group-member-list{max-height:270px}}
-
-.managed-member-lookup{position:relative}.managed-member-lookup .managed-member-candidates{position:absolute;z-index:5;top:100%;left:0;right:0;max-height:180px;margin-top:5px;background:#fff;box-shadow:0 5px 18px #1f36551a}.managed-member-candidates[hidden]{display:none}
 
   </style>
   <style>
@@ -1734,7 +1731,7 @@ function confirmGroupDelete() {
 function groupMemberProjects(g,id) { return [...new Set(groupCollabRecords(g).filter(r=>(r.members||[]).some(m=>m.id===id)).map(r=>r.projectId))]; }
 function openGroupMembers(id) {
   const g=mySpaces().find(g=>g.id===id);if(!g)return notify('当前账号未加入该课题组');
-  modal={type:'group-members',groupId:g.id,pendingRemovals:[],addedIds:[],roleDrafts:{},memberQuery:'',memberPickerOpen:false,rosterQuery:'',memberPage:1,readOnly:!canEditGroupRoles(g)};showModal();
+  modal={type:'group-members',groupId:g.id,pendingRemovals:[],roleDrafts:{},rosterQuery:'',memberPage:1,readOnly:!canEditGroupRoles(g)};showModal();
 }
 function pagedMembers(items,query,currentPage=1) {
   const q=accountValue(query),filtered=items.filter(m=>accountSearchText(person(m.id)).includes(q)),pages=Math.max(1,Math.ceil(filtered.length/10));
@@ -1746,40 +1743,28 @@ function memberPageButtons(data,attribute,target='') {
 }
 function groupManagedRoster() {
   const g=group(modal.groupId);
-  return pagedMembers([...g.members,...modal.addedIds.map(id=>({id,role:'member'}))],modal.rosterQuery,modal.memberPage);
+  return pagedMembers(g.members,modal.rosterQuery,modal.memberPage);
 }
 function groupManagementRows() {
   const g=group(modal.groupId),pending=modal.pendingRemovals||[];
   return groupManagedRoster().items.map(m=>{
-    const u=person(m.id),stage=pending.find(x=>x.memberId===m.id),added=modal.addedIds.includes(m.id);
-    const note=stage?'待移除，保存后生效':added?'待添加，保存后生效':`已协作 ${groupMemberProjects(g,m.id).length} 个项目`;
-    const action=modal.readOnly?'':added?`<button class="btn quiet small" data-unpick-managed-member="${safe(m.id)}">取消添加</button>`:canEditGroupMembers(g)?stage?`<button class="btn quiet small" data-undo-group-member="${safe(m.id)}">撤销</button>`:`<button class="btn quiet small danger" data-remove-group-member="${safe(m.id)}">移除</button>`:'';
+    const u=person(m.id),stage=pending.find(x=>x.memberId===m.id);
+    const note=stage?'待移除，保存后生效':`已协作 ${groupMemberProjects(g,m.id).length} 个项目`;
+    const action=modal.readOnly?'':canEditGroupMembers(g)?stage?`<button class="btn quiet small" data-undo-group-member="${safe(m.id)}">撤销</button>`:`<button class="btn quiet small danger" data-remove-group-member="${safe(m.id)}">移除</button>`:'';
     return `<div class="share-user-row ${stage?'pending-removal':''}" data-group-member-row="${safe(m.id)}"><div class="share-user-meta">${memberIdentity(u)}<span class="group-member-projects">${note}</span></div><select class="group-role-select" data-group-member-role="${safe(m.id)}" ${stage||modal.readOnly?'disabled':''} aria-label="设置${safe(u.account)}的课题组角色">${memberRoles.map(role=>`<option value="${role}" ${(modal.roleDrafts[m.id]||m.role)===role?'selected':''}>${groupRoleNames[role]}</option>`).join('')}</select>${action}</div>`;
   }).join('')||'<div class="picker-empty">暂无匹配成员</div>';
-}
-function managedMemberOptions() {
-  const g=group(modal.groupId),q=accountValue(modal.memberQuery);
-  return groupAddMemberCandidates(g).filter(u=>!g.members.some(m=>m.id===u.id)&&accountSearchText(u).includes(q)).map(u=>`<label class="group-member-option"><input type="checkbox" data-pick-managed-member="${safe(u.id)}" ${modal.addedIds.includes(u.id)?'checked':''}><span>${memberIdentity(u)}</span></label>`).join('')||'<div class="picker-empty">暂无可添加的匹配成员</div>';
 }
 function showGroupMembersModal() {
   const g=mySpaces().find(g=>g.id===modal.groupId);if(!g)return closeModal();
   modal.readOnly=!canEditGroupRoles(g);
   const data=groupManagedRoster();modal.memberPage=data.page;
-  const add=modal.readOnly?'':`<section class="managed-member-add"><h3>添加成员</h3><div class="managed-member-lookup"><label class="collab-project-search">${icon('search')}<input id="managedMemberSearch" type="search" autocomplete="off" aria-label="搜索要添加的成员" aria-expanded="${!!modal.memberPickerOpen&&!!modal.memberQuery.trim()}" aria-controls="managedMemberDropdown" placeholder="输入用户名、手机号、邮箱或成员别称" value="${safe(modal.memberQuery)}"></label><div class="managed-member-candidates" id="managedMemberDropdown" ${modal.memberPickerOpen&&modal.memberQuery.trim()?'':'hidden'}>${modal.memberPickerOpen&&modal.memberQuery.trim()?managedMemberOptions():''}</div></div></section>`;
-  const note=modal.readOnly?'当前身份可查看成员名单及角色。':`${canEditGroupMembers(g)?'可添加成员、修改角色或移除成员。':'仅可添加项目拥有者成员列表中已有的成员、修改课题组角色。'}翻页和搜索保留修改，点击保存后统一生效。`;
-  modalFrame('成员管理',safe(g.name),`${add}<section class="share-recipients ${modal.readOnly?'member-list-readonly':''}" aria-label="课题组成员名单"><div class="share-list-heading"><h3>成员名单与角色</h3><span>共 ${data.total} 人${modal.addedIds.length?` · 待添加 ${modal.addedIds.length} 人`:''}</span></div><label class="collab-project-search member-roster-search">${icon('search')}<input id="groupRosterSearch" type="search" placeholder="搜索已有成员的用户名、手机号、邮箱或别称" value="${safe(modal.rosterQuery)}"></label><div class="share-user-list group-member-list" id="managedRosterRows">${groupManagementRows()}</div><div id="managedRosterPagination">${memberPageButtons(data,'data-managed-member-page')}</div></section><p class="member-library-note">${note}</p>`,modal.readOnly?'<button class="btn" data-close>关闭</button>':'<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-members>保存</button>');
+  const note=modal.readOnly?'当前身份可查看成员名单及角色。':`${canEditGroupMembers(g)?'可修改角色或移除成员。':'仅可修改课题组角色。'}翻页和搜索保留修改，点击保存后统一生效。`;
+  modalFrame('成员管理',safe(g.name),`<section class="share-recipients ${modal.readOnly?'member-list-readonly':''}" aria-label="课题组成员名单"><div class="share-list-heading"><h3>成员名单与角色</h3><span>共 ${data.total} 人</span></div><label class="collab-project-search member-roster-search">${icon('search')}<input id="groupRosterSearch" type="search" placeholder="搜索已有成员的用户名、手机号、邮箱或别称" value="${safe(modal.rosterQuery)}"></label><div class="share-user-list group-member-list" id="managedRosterRows">${groupManagementRows()}</div><div id="managedRosterPagination">${memberPageButtons(data,'data-managed-member-page')}</div></section><p class="member-library-note">${note}</p>`,modal.readOnly?'<button class="btn" data-close>关闭</button>':'<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-members>保存</button>');
 }
 function drawManagedRoster() {
   const data=groupManagedRoster();modal.memberPage=data.page;
   document.getElementById('managedRosterRows').innerHTML=groupManagementRows();
   document.getElementById('managedRosterPagination').innerHTML=memberPageButtons(data,'data-managed-member-page');
-}
-function drawManagedMemberPicker() {
-  if(modal?.type!=='group-members'||modal.readOnly)return;
-  const dropdown=document.getElementById('managedMemberDropdown'),input=document.getElementById('managedMemberSearch');if(!dropdown||!input)return;
-  const visible=!!modal.memberPickerOpen&&!!modal.memberQuery.trim();
-  dropdown.hidden=!visible;input.setAttribute('aria-expanded',String(visible));
-  dropdown.innerHTML=visible?managedMemberOptions():'';
 }
 function openGroupMemberRemove(groupId,memberId) {
   const g=group(groupId);if(!canEditGroupMembers(g)||modal?.type!=='group-members')return;
@@ -1811,10 +1796,9 @@ function undoGroupMemberRemoval(id) {
 function saveGroupMembers() {
   if(modal?.type!=='group-members')return;
   const g=group(modal.groupId);if(!canEditGroupRoles(g))return closeModal();
-  const pending=modal.pendingRemovals||[],allowed=new Set(groupAddMemberCandidates(g).map(u=>u.id));
+  const pending=modal.pendingRemovals||[];
   if(pending.length&&!canEditGroupMembers(g))return notify('只有课题组创建者可以移除成员');
-  if(modal.addedIds.some(id=>!allowed.has(id))||Object.values(modal.roleDrafts).some(role=>!memberRoles.includes(role)))return notify('成员或角色无效，请重新选择');
-  modal.addedIds.forEach(id=>{if(!g.members.some(m=>m.id===id)){ensureDirectoryPerson(id);g.members.push({id,role:'member'});}});
+  if(Object.values(modal.roleDrafts).some(role=>!memberRoles.includes(role)))return notify('角色无效，请重新选择');
   g.members.forEach(m=>{if(modal.roleDrafts[m.id])m.role=modal.roleDrafts[m.id];});
   const affected=new Set();
   pending.forEach(({memberId})=>{
@@ -2409,7 +2393,6 @@ document.getElementById('recipientSelect').addEventListener('change',e=>switchPr
 document.getElementById('supportSelect').addEventListener('change',e=>switchPreviewRole('support',e.target.value));
 modalRoot.addEventListener('click',e=>{
   if(e.target===modalRoot||e.target.closest('[data-close]')) return dismissModal();
-  if(modal?.type==='group-members'&&!e.target.closest('.managed-member-lookup')){modal.memberPickerOpen=false;drawManagedMemberPicker();}
   const a=e.target.closest('button');if(!a||a.disabled||!modal) return;
   if(a.dataset.openProject)return openGroupProjectDetail(a.dataset.openProject);
   if(a.dataset.projectAnalysis)return openGroupProjectDetail(a.dataset.projectAnalysis,true);
@@ -2424,7 +2407,6 @@ modalRoot.addEventListener('click',e=>{
   if(a.dataset.managedMemberPage&&modal.type==='group-members'){modal.memberPage=Number(a.dataset.managedMemberPage);drawManagedRoster();modalRoot.querySelector('.group-member-list').scrollTop=0;return;}
   if(a.dataset.collabMemberPage&&modal.type==='collab'){const d=collabProjectDraft(modal,a.dataset.collabTarget);d.page=Number(a.dataset.collabMemberPage);return showCollabModal();}
   if(!canManage()&&!(canManageGroups()&&['group-create','group-delete','group-members','group-member-remove','group-roles','group-add-members','add','directory-add'].includes(modal.type)))return closeModal();
-  if(a.dataset.unpickManagedMember&&modal.type==='group-members'){modal.addedIds=modal.addedIds.filter(id=>id!==a.dataset.unpickManagedMember);return showGroupMembersModal();}
   if(a.dataset.removeGroupMember&&modal.type==='group-members')return openGroupMemberRemove(modal.groupId,a.dataset.removeGroupMember);
   if(a.hasAttribute('data-confirm-delete-group'))return confirmGroupDelete();
   if(a.hasAttribute('data-save-group-members'))return saveGroupMembers();
@@ -2469,7 +2451,6 @@ modalRoot.addEventListener('input',e=>{
   if(e.target.id==='shareAccount'){modal.account=e.target.value;modal.error='';e.target.setAttribute('aria-invalid','false');e.target.closest('.share-account-control').classList.remove('invalid');document.getElementById('shareAccountError').hidden=true;drawShareAccountLookup();}
   if(e.target.id==='groupRosterSearch'&&modal.type==='group-members'){modal.rosterQuery=e.target.value;modal.memberPage=1;drawManagedRoster();return;}
   if(e.target.dataset.collabMemberSearch&&modal.type==='collab'){const pid=e.target.dataset.collabMemberSearch,d=collabProjectDraft(modal,pid);d.query=e.target.value;d.page=1;showCollabModal();const input=modalRoot.querySelector(`[data-collab-member-search="${pid}"]`);input.focus({preventScroll:true});return;}
-  if(e.target.id==='managedMemberSearch'){modal.memberQuery=e.target.value;modal.memberPickerOpen=!!e.target.value.trim();drawManagedMemberPicker();return;}
   if(e.target.id==='collabProjectSearch'){const pos=e.target.selectionStart;modal.projectQuery=e.target.value;showCollabModal();const input=document.getElementById('collabProjectSearch');input.focus({preventScroll:true});try{input.setSelectionRange(pos,pos);}catch{}return;}
   if(e.target.id==='folderName')modal.name=e.target.value;
   if(e.target.id==='memberRemark'){modal.remark=e.target.value;e.target.setAttribute('aria-invalid','false');}
@@ -2478,14 +2459,13 @@ modalRoot.addEventListener('input',e=>{
   if(e.target.id==='groupMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;drawGroupPicker();}
   if(e.target.id==='groupAddMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;document.getElementById('directoryMemberOptions').innerHTML=directoryPickerOptions();}
 });
-modalRoot.addEventListener('focusin',e=>{if(modal?.type==='group-members'&&!modal.readOnly){if(e.target.id==='managedMemberSearch'){modal.memberPickerOpen=!!modal.memberQuery.trim();drawManagedMemberPicker();}else if(!e.target.closest('.managed-member-lookup')){modal.memberPickerOpen=false;drawManagedMemberPicker();}}if(modal?.type==='group-create'&&e.target.id==='groupMemberSearch'){modal.pickerOpen=true;drawGroupPicker();}});
+modalRoot.addEventListener('focusin',e=>{if(modal?.type==='group-create'&&e.target.id==='groupMemberSearch'){modal.pickerOpen=true;drawGroupPicker();}});
 modalRoot.addEventListener('change',e=>{
   if(!modal)return;
   if(modal.type==='collab'&&e.target.dataset.collabProject){const id=e.target.dataset.collabProject;if(!collabProjectSource(modal).some(p=>p.id===id))return;modal.selectedProjectIds=e.target.checked?[...new Set([...modal.selectedProjectIds,id])]:modal.selectedProjectIds.filter(x=>x!==id);return showCollabModal();}
   if(modal.type==='collab'&&e.target.hasAttribute('data-select-all-collab-projects')){const q=accountValue(modal.projectQuery),ids=collabProjectSource(modal).filter(p=>`${p.name} ${p.contract||''} ${p.code} ${p.ticket}`.toLowerCase().includes(q)).map(p=>p.id);modal.selectedProjectIds=e.target.checked?[...new Set([...modal.selectedProjectIds,...ids])]:modal.selectedProjectIds.filter(id=>!ids.includes(id));return showCollabModal();}
   if(modal.readOnly||(!canManage()&&!canManageGroups()))return;
   if(e.target.dataset.groupMemberRole&&modal.type==='group-members'){if(memberRoles.includes(e.target.value))modal.roleDrafts[e.target.dataset.groupMemberRole]=e.target.value;return;}
-  if(e.target.dataset.pickManagedMember&&modal.type==='group-members'){const id=e.target.dataset.pickManagedMember;if(!groupAddMemberCandidates(group(modal.groupId)).some(u=>u.id===id))return;modal.addedIds=e.target.checked?[...new Set([...modal.addedIds,id])]:modal.addedIds.filter(x=>x!==id);if(e.target.checked){modal.rosterQuery='';modal.memberPage=Math.ceil((group(modal.groupId).members.length+modal.addedIds.length)/10);}modal.memberQuery='';modal.memberPickerOpen=false;const focus=`[data-pick-managed-member="${id}"]`;showGroupMembersModal();modalRoot.querySelector(focus)?.focus({preventScroll:true});return;}
   if(e.target.id==='memberLookupType'){modal.remark=document.getElementById('memberRemark')?.value||'';modal.lookupKey=e.target.value;modal.error='';return showModal();}
   if(e.target.name==='role'&&projectRoles.includes(e.target.value)){modal.selectedRole=e.target.value;return;}
   if(e.target.dataset.collabRole){const id=e.target.dataset.collabRole,pid=e.target.dataset.collabTarget;if(!isSupportPerson(id)&&canConfigureCollaboration(projects.find(p=>p.id===pid))&&projectRoles.includes(e.target.value)){const d=collabProjectDraft(modal,pid);d.roles[id]=e.target.value;d.dirty=true;}return;}
@@ -2501,7 +2481,6 @@ document.addEventListener('click',e=>{if(openProjectSearch&&!e.target.closest('.
 window.addEventListener('resize',positionProjectSearch);
 document.addEventListener('scroll',positionProjectSearch,true);
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'&&modal?.type==='group-members'&&modal.memberPickerOpen){modal.memberPickerOpen=false;drawManagedMemberPicker();document.getElementById('managedMemberSearch')?.focus({preventScroll:true});modal.memberPickerOpen=false;drawManagedMemberPicker();return;}
   if(openProjectSearch&&['Escape','Enter'].includes(e.key)&&modalRoot.hidden){const id=openProjectSearch;closeProjectSearch();main.querySelector(`[data-project-search="${id}"]`)?.focus({preventScroll:true});if(e.key==='Escape')return;}
   if(e.key==='Escape'&&!modalRoot.hidden){if(!confirmRoot.hidden){closeConfirmation();document.getElementById('account')?.focus();}else dismissModal();}
   if(e.key==='Tab'&&!modalRoot.hidden){const els=[...modalRoot.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),a[href]')].filter(el=>el.offsetParent!==null);const first=els[0],last=els.at(-1);if(!first)return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}

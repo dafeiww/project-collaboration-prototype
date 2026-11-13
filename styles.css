@@ -433,14 +433,11 @@
 .collab-project-member-heading>span{flex:none;font-size:11px;color:#909399;line-height:1.8}
 .collab-project-members .collab-member-item:last-child{margin-bottom:0}
 .collab-members-panel .collab-member-options{height:420px}.collab-projects-panel .collab-project-options{height:340px}
-.managed-member-add{margin-bottom:20px}.managed-member-add h3{font-size:13px;margin:0 0 12px}.managed-member-candidates{max-height:160px;overflow:auto;margin-top:8px;border:1px solid #ebeef5;border-radius:6px}.managed-member-candidates .group-member-option{padding:10px}
 .group-members-modal{width:min(760px,100%)}.group-member-list{max-height:300px;overflow:auto}
-@media(max-width:700px){.collab-members-panel .collab-member-options{height:330px}.collab-projects-panel .collab-project-options{height:200px}.collab-project-members{padding:10px}.collab-project-member-heading{display:block}.collaboration-modal .collab-member-item{flex-wrap:wrap;gap:8px}.collaboration-modal .collab-member-role{margin-left:22px}.managed-member-candidates{max-height:140px}}
+@media(max-width:700px){.collab-members-panel .collab-member-options{height:330px}.collab-projects-panel .collab-project-options{height:200px}.collab-project-members{padding:10px}.collab-project-member-heading{display:block}.collaboration-modal .collab-member-item{flex-wrap:wrap;gap:8px}.collaboration-modal .collab-member-role{margin-left:22px}}
 
 /* 多人成员列表保持主表行高，完整名单在成员管理内搜索和分页。 */
 .roster-overflow{display:flex;align-items:center;gap:10px;margin-top:3px;padding-left:7px;font-size:11px;color:#909399}.roster-view-all{padding:0;background:transparent;color:#1989fa;font-size:11px;line-height:1.8}
 .member-roster-search{margin:12px 0}.group-members-modal .group-member-list{max-height:320px;min-height:86px;overflow:auto}.group-members-modal .member-list-readonly .share-user-row{grid-template-columns:minmax(0,1fr) 125px}
 .member-pagination{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:12px;font-size:11px;color:#909399}.member-pagination>div{display:flex;align-items:center;gap:10px}.member-pagination button{padding:5px 8px;background:#fff;border:1px solid #dcdfe6;border-radius:4px;font-size:11px;color:#606266}.member-pagination button:disabled{opacity:.4;cursor:default}.collab-roster-search{margin:10px 0}.collab-roster-search input{height:30px}
 @media(max-width:640px){.member-pagination{flex-wrap:wrap}.group-members-modal .member-list-readonly .share-user-row{grid-template-columns:minmax(0,1fr) 100px}.group-members-modal .group-member-list{max-height:270px}}
-
-.managed-member-lookup{position:relative}.managed-member-lookup .managed-member-candidates{position:absolute;z-index:5;top:100%;left:0;right:0;max-height:180px;margin-top:5px;background:#fff;box-shadow:0 5px 18px #1f36551a}.managed-member-candidates[hidden]{display:none}
