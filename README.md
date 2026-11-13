@@ -179,9 +179,9 @@
 - 旧版单人演示数据在当前项目已有授权范围内补充多人的独立运行，保留原记录和自定义名称；只补充一次，已删除的示例不会重新出现。
 - 可转发单文件与多人演示文件已同步，无需额外脚本或样式文件。验收记录见 [查看结果与分析记录验收](20261102-分析记录与查看结果验收记录.md)。
 
-[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261103-compact-collaboration-dialog)
+[打开新版多人协作原型](https://dafeiww.github.io/project-collaboration-prototype/collaboration-analysis.html?v=20261113-group-first-collaboration)
 
-[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261103-compact-collaboration-dialog)
+[从项目列表开始体验](https://dafeiww.github.io/project-collaboration-prototype/?v=20261113-group-first-collaboration)
 
 2026年10月29日更新。面向电脑浏览器的交互原型，沿用深灰蓝导航与蓝色操作色，统一项目协作、添加课题组、添加成员等网页弹窗。
 
