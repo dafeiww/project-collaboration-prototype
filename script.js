@@ -554,7 +554,13 @@ function openProjectDetail(id, recordId = null, origin = 'projects') {
 }
 function heading(title, subtitle, actions = '') { return `<div class="page-heading"><div><h1>${title}</h1>${subtitle?`<p>${subtitle}</p>`:''}</div>${actions ? `<div class="heading-actions">${actions}</div>` : ''}</div>`; }
 function emptyState(title, subtitle = '', action = '') { return `<div class="empty-icon">${icon('folder')}</div><strong>${title}</strong><p>${subtitle}</p>${action}`; }
-function memberRoster(members, max = 5, compact = false) { return members.length ? `<div class="roster ${compact?'roster-compact':''}">${members.slice(0,max).map(m=>`<span class="roster-item">${memberIdentity(person(m.id))}</span>`).join('')}${members.length>max?`<span class="more-count">+${members.length-max}</span>`:''}</div>` : '<span class="roster-empty">暂无成员</span>'; }
+function memberRoster(members, max = 5, compact = false) {
+  if(!members.length)return '<span class="roster-empty">暂无成员</span>';
+  const item=m=>`<span class="roster-item">${memberIdentity(person(m.id))}</span>`;
+  const remaining=members.slice(max);
+  const more=remaining.length?(compact?`<details class="roster-more"><summary><span class="roster-expand">展开剩余 ${remaining.length} 位成员</span><span class="roster-collapse">收起成员名单</span></summary><div class="roster-extra">${remaining.map(item).join('')}</div></details>`:`<span class="more-count">+${remaining.length}</span>`):'';
+  return `<div class="roster ${compact?'roster-compact':''}">${members.slice(0,max).map(item).join('')}${more}</div>`;
+}
 function searchField(id, label) { return `<label class="search-wrap">${icon('search')}<input id="${id}" type="search" placeholder="${label}" aria-label="${label}" value="${safe(search)}"></label>`; }
 function tableFooter(count, noun='个项目') { return `<div class="table-footer"><span>共 ${count} ${noun}${count ? `，显示全部 ${count} 条` : ''}</span><div class="page-info"><span>全部记录</span><button disabled aria-label="上一页">‹</button><span class="page-chip">1</span><button disabled aria-label="下一页">›</button></div></div>`; }
 function pageFoot(text) { return `<p class="list-foot">${icon('info')}${text}</p>`; }
