@@ -1,0 +1,103 @@
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const {pathToFileURL}=require('node:url');
+const entry=process.argv[2]||pathToFileURL(path.join(__dirname,'index.html')).href;
+const checks=[],errors=[];
+const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
+(async()=>{
+ const b=await chromium.launch({channel:'chrome',headless:true});
+ const p=await b.newPage({viewport:{width:1600,height:1000}});p.setDefaultTimeout(7000);p.on('pageerror',e=>errors.push(e.message));
+ try{
+  await p.goto(entry);
+  for(const role of ['owner','manager','member','support']){
+   await p.locator(`[data-preview-role="${role}"]`).click();
+   assert.equal(await p.locator('.sidebar [data-nav=projects]').count(),0);
+   assert.equal(await p.locator('[data-screen-label="项目列表"],[data-screen-label="课题组项目列表"],[data-list-tab]').count(),0);
+   assert.equal(await p.evaluate(()=>page),'spaces');
+   await p.evaluate(()=>navigate('projects'));assert.equal(await p.evaluate(()=>page),'spaces');
+   const labels=await p.locator('[data-group-identity]').allTextContents();
+   assert.deepEqual([...new Set(labels)].sort(),['管理员','协作者','访问者'].sort());
+   assert.equal(await p.locator('[data-exit-group]').count(),await p.locator('[data-group-row]').count());
+  }
+  checks.push('所有角色删除独立项目页面；受邀身份只有管理员、协作者、访问者，每行提供退出课题组');
+  for(const uid of ['support-1','support-2','aftersales-1','aftersales-2']){
+   await p.locator('#supportSelect').selectOption(uid);
+   assert.equal(await p.locator('[data-space-tab=owned],[data-create-group],.sidebar [data-nav=team],[data-add-group-projects],[data-group-add-member]').count(),0);
+   const expected=await p.evaluate(uid=>groups.filter(g=>!(g.exitedUserIds||[]).includes(uid)&&collabRecords.some(r=>r.groupId===g.id&&projects.some(p=>p.id===r.projectId&&p.supportAssignment?.personId===uid&&!(p.exitedUserIds||[]).includes(uid)))).map(g=>g.id).sort(),uid);
+   assert.deepEqual(await p.locator('[data-group-row]').evaluateAll(els=>els.map(e=>e.dataset.groupRow).sort()),expected);
+   const gid=`invited-role-example-${uid}-visitor`;await p.locator(`[data-group-row="${gid}"] .group-actions [data-group-projects]`).click();
+   const projectIds=await p.locator('.modal [data-project-row]').evaluateAll(els=>els.map(e=>e.dataset.projectRow).sort());
+   assert.deepEqual(projectIds,await p.evaluate(({uid,gid})=>projects.filter(p=>p.supportAssignment?.personId===uid&&collabRecords.some(r=>r.groupId===gid&&r.projectId===p.id)).map(p=>p.id).sort(),{uid,gid}));
+   assert.equal(await p.locator('.modal [data-view-collab-project],.modal [data-add-projects-from-view]').count(),0);await p.keyboard.press('Escape');
+  }
+  checks.push('四个支持账号仅展示受邀课题组及对应授权项目，无创建和成员管理入口');
+  await p.locator('[data-preview-role=owner]').click();
+  assert.equal(await p.locator('[data-space-tab=joined]').getAttribute('aria-selected'),'true');
+  assert.ok((await p.locator('th').allTextContents()).includes('项目名称'));
+  assert.ok((await p.locator('[data-group-row]').first().locator('td').first().boundingBox()).width>=190);
+  assert.ok((await p.locator('[data-group-identity]').first().boundingBox()).height<35);
+  const invited=p.locator('[data-group-row="group-joint"]');assert.match(await invited.locator('.group-project-names-cell').innerText(),/分析/);
+  await invited.locator('button[data-group-projects]').last().click();
+  assert.equal(await p.evaluate(()=>page),'spaces');assert.match(await p.locator('.modal-head h2').innerText(),/查看项目/);
+  assert.ok(await p.locator('.modal [data-project-row]').count()>=3);
+  const identities=await p.locator('.modal .role-pill').allTextContents();for(const label of ['管理员','协作者','访问者'])assert.ok(identities.includes(label));
+  await p.screenshot({path:'/private/tmp/group-projects-invited-modal.png',animations:'disabled'});await p.keyboard.press('Escape');
+  checks.push('受邀课题组显示项目名称，查看项目弹窗展示多条示例及三种身份，不跳转页面');
+  await p.locator('[data-space-tab=owned]').click();
+  const actions=await p.locator('[data-group-row="group-onco"] .group-actions > button').allTextContents();assert.equal(actions[0],'添加项目');assert.equal(actions[1],'查看项目');
+  await p.locator('[data-group-row="group-onco"] .group-actions [data-group-projects]').click();assert.ok(await p.locator('.modal [data-project-row]').count()>=3);await p.keyboard.press('Escape');
+  checks.push('我创建的课题组操作先添加项目再查看，已有多条示例数据');
+  const baseline=await read(p);const count=baseline.projects.length;await p.reload();assert.equal((await read(p)).projects.length,count);assert.deepEqual((await read(p)).collabRecords,baseline.collabRecords);
+  checks.push('示例只补充一次，刷新不重复添加或重置授权');
+  await p.locator('[data-space-tab=owned]').click();await p.locator('[data-create-group]').click();await p.locator('#groupName').fill('弹窗验收课题组');await p.locator('#groupMemberSearch').focus();await p.locator('[data-pick-group-member="li-1"]').check();await p.locator('[data-pick-group-member="chen-1"]').check();await p.locator('[data-create-group-confirm]').click();
+  const gid=(await read(p)).groups.find(g=>g.name==='弹窗验收课题组').id;
+  await p.locator(`[data-add-group-projects="${gid}"]`).click();
+  assert.match(await p.locator('.collab-group-heading').innerText(),/弹窗验收课题组/);assert.equal(await p.locator('.collab-group-heading select,[data-collab-source]').count(),0);
+  const allowed=await p.evaluate(()=>manageableProjects().filter(canConfigureCollaboration).map(p=>p.id).sort());
+  const offered=await p.locator('[data-collab-project]').evaluateAll(els=>els.map(e=>e.dataset.collabProject).sort());assert.deepEqual(offered,allowed);
+  assert.equal(offered.includes('group-project-example-group-joint-3'),false);
+  await p.locator('[data-collab-project="pending-collab-01"]').check();await p.locator('[data-collab-project="pending-collab-02"]').check();
+  await p.locator('[data-collab-member="li-1"]').check();await p.locator('[data-collab-role="li-1"]').selectOption('visitor');await p.locator('[data-collab-member="chen-1"]').check();
+  await p.locator('#collabProjectSearch').fill('PAIS20261029NC001');assert.equal(await p.locator('[data-collab-project]').count(),1);await p.locator('#collabProjectSearch').fill('');
+  const before=await read(p);await p.screenshot({path:'/private/tmp/group-authorized-collaboration.png',animations:'disabled'});await p.locator('.modal-foot [data-close]').click();assert.deepEqual(await read(p),before);
+  checks.push('协作弹窗固定组名，取消来源分类，项目严格匹配管理授权并支持搜索、多选和取消');
+  await p.locator(`[data-add-group-projects="${gid}"]`).click();await p.locator('[data-collab-project="pending-collab-01"]').check();await p.locator('[data-collab-project="pending-collab-02"]').check();await p.locator('[data-collab-member="li-1"]').check();await p.locator('[data-collab-role="li-1"]').selectOption('visitor');await p.locator('[data-collab-member="chen-1"]').check();await p.locator('[data-confirm-collab]').click();
+  let saved=await read(p);for(const id of ['pending-collab-01','pending-collab-02'])assert.equal(saved.collabRecords.find(r=>r.projectId===id&&r.groupId===gid).members.find(m=>m.id==='li-1').role,'visitor');assert.deepEqual(saved.groups,before.groups);assert.deepEqual(saved.collabRecords.filter(r=>!['pending-collab-01','pending-collab-02'].includes(r.projectId)),before.collabRecords.filter(r=>!['pending-collab-01','pending-collab-02'].includes(r.projectId)));
+  await p.locator(`[data-group-row="${gid}"] .group-actions [data-group-projects]`).click();assert.equal(await p.locator('.modal [data-project-row]').count(),2);assert.equal(await p.evaluate(()=>page),'spaces');
+  await p.locator('[data-view-collab-project="pending-collab-01"]').click();assert.match(await p.locator('.collab-group-heading').innerText(),/弹窗验收课题组/);await p.keyboard.press('Escape');
+  checks.push('保存只更新当前课题组及所选项目；查看和编辑都使用弹窗');
+  await p.locator('[data-preview-role=member]').click();await p.locator('#recipientSelect').selectOption('li-1');
+  await p.locator(`[data-group-row="${gid}"] .group-actions [data-group-projects]`).click();
+  assert.equal(await p.locator('[data-view-collab-project="pending-collab-01"]').count(),0);const beforeExit=await read(p);await p.locator('[data-exit-project="pending-collab-01"]').click();await p.locator('[data-confirm-project-exit]').click();
+  saved=await read(p);assert.deepEqual(saved.groups,beforeExit.groups);assert.deepEqual(saved.projects.filter(p=>p.id!=='pending-collab-01'),beforeExit.projects.filter(p=>p.id!=='pending-collab-01'));await p.reload();await p.locator(`[data-group-row="${gid}"] .group-actions [data-group-projects]`).click();assert.equal(await p.locator('[data-project-row="pending-collab-01"]').count(),0);assert.equal(await p.locator('[data-project-row="pending-collab-02"]').count(),1);await p.keyboard.press('Escape');
+  checks.push('访问者查看无编辑授权，可从弹窗退出当前项目且刷新不恢复');
+  await p.locator('[data-preview-role=manager]').click();await p.locator('[data-space-tab=joined]').click();assert.ok(await p.locator('[data-group-row="manager-joined-01"] .group-project-names').count());await p.locator('[data-add-group-projects="manager-joined-01"]').click();assert.equal(await p.locator('.collab-group-heading select').count(),0);
+  const managerAllowed=await p.evaluate(()=>manageableProjects().filter(canConfigureCollaboration).map(p=>p.id).sort());assert.deepEqual(await p.locator('[data-collab-project]').evaluateAll(els=>els.map(el=>el.dataset.collabProject).sort()),managerAllowed);
+  await p.keyboard.press('Escape');await p.locator('[data-space-tab=owned]').click();await p.locator('[data-group-row="manager-owned-01"] .group-actions [data-group-projects]').click();assert.ok(await p.locator('[data-project-row]').count()>=3);
+  await p.setViewportSize({width:390,height:844});assert.ok((await p.locator('.modal').boundingBox()).width<=390);await p.screenshot({path:'/private/tmp/group-project-view-mobile.png',animations:'disabled'});
+  checks.push('管理者受邀与创建课题组均有示例，授权过滤正确，手机弹窗可用');
+  await p.keyboard.press('Escape');await p.setViewportSize({width:1600,height:1000});
+  for(const [role,uid,groupRole] of [['owner','owner-1','admin'],['manager','manager-1','member'],['member','li-1','visitor'],['support','support-1','visitor']]){
+   await p.locator(`[data-preview-role="${role}"]`).click();
+   if(role==='member')await p.locator('#recipientSelect').selectOption(uid);
+   if(role==='support')await p.locator('#supportSelect').selectOption(uid);
+   const gid=`invited-role-example-${uid}-${groupRole}`;
+   if(role==='owner')await p.evaluate(({uid,gid})=>{const p=projects.find(p=>p.id===`group-project-example-${gid}-1`);p.directCollabMembers.push({id:uid,role:'member'});rebuildProjectMembers(p);saveAll();},{uid,gid});
+   const before=await read(p);await p.locator(`[data-exit-group="${gid}"]`).click();assert.match(await p.locator('.modal-head h2').innerText(),/退出课题组/);await p.locator('.modal-foot [data-close]').click();assert.deepEqual(await read(p),before);
+   await p.locator(`[data-exit-group="${gid}"]`).click();await p.locator('[data-confirm-group-exit]').click();
+   const after=await read(p),g=after.groups.find(g=>g.id===gid);assert.ok(g);assert.equal(g.members.some(m=>m.id===uid),false);assert.equal(g.supportInvitations.some(m=>m.id===uid),false);
+   assert.deepEqual(after.groups.filter(g=>g.id!==gid),before.groups.filter(g=>g.id!==gid));
+   assert.deepEqual(after.collabRecords.filter(r=>r.groupId!==gid),before.collabRecords.filter(r=>r.groupId!==gid));
+   const first=after.projects.find(p=>p.id===`group-project-example-${gid}-1`),second=after.projects.find(p=>p.id===`group-project-example-${gid}-2`);
+   assert.equal(first.members.some(m=>m.id===uid),role==='owner');assert.equal(second.members.some(m=>m.id===uid),false);
+   assert.deepEqual(first.files,before.projects.find(p=>p.id===first.id).files);
+   await p.reload();assert.equal(await p.locator(`[data-group-row="${gid}"]`).count(),0);assert.equal((await read(p)).groups.some(g=>g.id===gid),true);
+   if(role==='member'){assert.equal((await read(p)).groups.find(g=>g.id===`invited-role-example-${uid}-admin`).members.find(m=>m.id===uid).role,'admin');}
+  }
+  checks.push('管理员、协作者、访问者和技术支持可退出课题组；取消不保存，退出不删除课题组且保留其他来源授权，刷新不恢复');
+  await p.locator('[data-preview-role=owner]').click();await p.evaluate(()=>window.scrollTo(0,0));await p.screenshot({path:'/private/tmp/group-invitation-identities.png',animations:'disabled'});
+  assert.deepEqual(errors,[]);
+  console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
+ }finally{await b.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});
