@@ -457,6 +457,9 @@
 .owned-space-table th:nth-child(3),.owned-space-table td:nth-child(3){width:260px;min-width:260px}.owned-space-table th:nth-child(4),.owned-space-table td:nth-child(4){min-width:170px;white-space:nowrap}
 .collab-project-member-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px 10px;flex-shrink:0}.collab-project-member-actions>span{font-size:11px;color:#909399;white-space:nowrap}.collab-support-button{min-height:26px;padding:0 7px;font-size:11px;white-space:nowrap}.collab-support-button .icon{width:13px;height:13px}.collab-project-member-heading .collab-project-member-actions{max-width:100%}@media(max-width:700px){.collab-project-member-actions{justify-content:flex-start;margin-top:6px}}
 
+/* 成员查询候选项：输入或点击箭头后展示。 */
+.member-lookup-control{display:flex;align-items:center;border:1px solid #dcdfe6;border-radius:6px;background:#fff;overflow:hidden}.member-lookup-control:focus-within{border-color:#409eff}.member-lookup-control input{flex:1;min-width:0;border:0!important;box-shadow:none!important}.member-lookup-control>button{width:36px;height:36px;flex-shrink:0;background:#fff;color:#909399}.member-lookup-options{max-height:220px;overflow:auto;border:1px solid #dcdfe6;border-radius:6px;margin:-8px 0 16px;padding:4px;background:#fff}.member-lookup-options[hidden]{display:none}.member-lookup-option{display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;padding:10px 12px;background:#fff;text-align:left;border-radius:4px}.member-lookup-option:hover,.member-lookup-option:focus-visible{background:#ecf5ff;outline:none}.member-lookup-option strong{font-size:13px;color:#303133}.member-lookup-option span,.collab-support-pending{font-size:12px;color:#909399}.collab-project-member-actions{flex-wrap:wrap}
+
   </style>
   <style>
 body.analysis-result-mode > .app-shell { display: none; }
@@ -999,6 +1002,12 @@ const groupRosterExampleAccounts = [
   ['林安','lin.an','生信分析'],['Emma Wilson','emma.wilson','国际协作'],['David Chen','david.chen','结果复核']
 ].map(([name,account,remark],index)=>({id:'roster-example-'+String(index+1).padStart(2,'0'),name,account,remark,phone:index<10?'13900001'+String(index+1).padStart(3,'0'):'',email:index>=10?account+'@example.org':'',emailBound:index>=10}));
 demoPlatformAccounts.push(...groupRosterExampleAccounts);
+const memberPickerExamples = [
+  {id:'picker-example-he',name:'何研究员',account:'he.researcher',phone:'13900002001',email:'',emailBound:false,remark:'样本研究'},
+  {id:'picker-example-luo',name:'罗研究员',account:'luo.researcher',phone:'13900002002',email:'',emailBound:false,remark:'数据分析'},
+  {id:'picker-example-alice',name:'Alice Smith',account:'alice.smith',phone:'',email:'alice.smith@example.org',emailBound:true,remark:'国际协作'}
+];
+demoPlatformAccounts.push(...memberPickerExamples);
 const repeatableDemoAccountId='demo-zhao';
 // 重复演示记录使用独立 ID；不加入平台账号索引，避免同一联系方式被误判为多账户。
 let demoMemberInstances=[];
@@ -1127,6 +1136,7 @@ const initialGroups = [
   ]}
 ];
 const storageKey = 'personalbio-project-collaboration-preview-v6-collab-records';
+let memberPickerExamplesSeeded=false;
 let managerMemberIds=null,groupProjectExamplesSeeded=false,groupInvitationExamplesSeeded=false,groupMemberExamplesSeeded=false,managerProjectOwnershipSeeded=false;
 let projects, groups, collabRecords = [], deletedGroupIds = [], managerInvitationsSeeded = false, managerOwnedGroupsSeeded = false;
 try {
@@ -1136,6 +1146,7 @@ try {
   groupProjectExamplesSeeded=saved.groupProjectExamplesSeeded===true;
   groupInvitationExamplesSeeded=saved.groupInvitationExamplesSeeded===true;
   groupMemberExamplesSeeded=saved.groupMemberExamplesSeeded===true;
+  memberPickerExamplesSeeded=saved.memberPickerExamplesSeeded===true;
   managerProjectOwnershipSeeded=saved.managerProjectOwnershipSeeded===true;
   if(Array.isArray(saved.managerMemberIds))managerMemberIds=saved.managerMemberIds.filter(id=>typeof id==='string');
   managerInvitationsSeeded = saved.managerInvitationsSeeded === true;
@@ -1183,12 +1194,13 @@ for(const u of [...directory,...demoMemberInstances,...platformAccounts,...proje
   else u.remark=persistedMemberRemarks.get(u.id)||memberRemark(u);
 }
 if(managerMemberIds===null)managerMemberIds=directory.map(u=>u.id);
+if(!memberPickerExamplesSeeded){for(const u of memberPickerExamples)ensureDirectoryPerson(u.id);memberPickerExamplesSeeded=true;}
 platformAccounts=platformAccounts.filter(u=>!isSupportPerson(u));
 // 将旧版经课题组或直接邀请加入的支持人员迁为项目专属关联，保留已有项目访问。
 for(const p of projects){
   const legacy=[...(p.members||[]),...(p.directCollabMembers||[]),...collabRecords.filter(r=>r.projectId===p.id).flatMap(r=>r.members||[])].find(isSupportPerson);
   if(!projectSupportPeople.some(u=>u.id===p.supportAssignment?.personId))p.supportAssignment=legacy?{personId:legacy.id,source:'legacy',addedAt:null}:null;
-  p.supportContactId=p.supportAssignment?.personId||projectSupportAssignments[p.id]||null;
+  p.supportContactId=p.supportAssignment?.personId||(projectSupportPeople.some(u=>u.id===p.supportContactId)?p.supportContactId:projectSupportAssignments[p.id])||null;
   p.members=(p.members||[]).filter(m=>!isSupportPerson(m));
   if(Array.isArray(p.directCollabMembers))p.directCollabMembers=p.directCollabMembers.filter(m=>!isSupportPerson(m));
   if(Array.isArray(p.shareUserIds))p.shareUserIds=p.shareUserIds.filter(id=>!isSupportPerson(id));
@@ -1250,7 +1262,7 @@ let detailOrigin = { page: 'spaces', listTab: 'mine' };
 let filePath=[],selectedFileIds=[];
 let openProjectSearch=null;
 const main = document.getElementById('main'), modalRoot = document.getElementById('modalRoot'), confirmRoot = document.getElementById('confirmRoot');
-function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, managerMemberIds, platformAccounts, demoMemberInstances, deletedGroupIds, managerInvitationsSeeded, managerOwnedGroupsSeeded, groupProjectExamplesSeeded,groupInvitationExamplesSeeded,groupMemberExamplesSeeded,managerProjectOwnershipSeeded })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
+function saveAll() { try { localStorage.setItem(storageKey, JSON.stringify({ projects, groups, collabRecords, directory, managerMemberIds, platformAccounts, demoMemberInstances, deletedGroupIds, managerInvitationsSeeded, managerOwnedGroupsSeeded, groupProjectExamplesSeeded,groupInvitationExamplesSeeded,groupMemberExamplesSeeded,managerProjectOwnershipSeeded,memberPickerExamplesSeeded })); } catch { notify('浏览器未允许保存，当前操作将在本次浏览期间生效'); } }
 function project() { return projects.find(p => p.id === activeProjectId) || projects[0]; }
 function group(id) { return groups.find(g => g.id === id); }
 function person(id) { return projectSupportPeople.find(d=>d.id===id) || directory.find(d => d.id === id) || demoMemberInstances.find(d=>d.id===id) || platformAccounts.find(d=>d.id===id) || { name: '未知成员', phone: '', account: '' }; }
@@ -1697,6 +1709,8 @@ function groupCollabRecords(g) { return collabRecords.filter(r=>r.groupId===g.id
 function canEditGroupMembers(g) { return !!g&&canManageGroups()&&(g.ownerId||'owner-1')===currentUserId(); }
 function canEditGroupRoles(g) { return !!g&&!isProjectSupportViewer()&&((g.ownerId||'owner-1')===currentUserId()||g.members.some(m=>m.id===currentUserId()&&m.role==='admin')); }
 
+function canRemoveGroupMember(g,id) { return canEditGroupRoles(g)&&id!==(g.ownerId||'owner-1')&&id!==currentUserId(); }
+
 function canAddGroupMembers(g) { return canEditGroupRoles(g); }
 
 function groupAddMemberCandidates(g) {
@@ -1781,7 +1795,7 @@ function groupManagementRows() {
   return groupManagedRoster().items.map(m=>{
     const u=person(m.id),stage=pending.find(x=>x.memberId===m.id);
     const note=stage?'待移除，保存后生效':`已协作 ${groupMemberProjects(g,m.id).length} 个项目`;
-    const action=modal.readOnly?'':canEditGroupMembers(g)?stage?`<button class="btn quiet small" data-undo-group-member="${safe(m.id)}">撤销</button>`:`<button class="btn quiet small danger" data-remove-group-member="${safe(m.id)}">移除</button>`:'';
+    const action=modal.readOnly?'':canRemoveGroupMember(g,m.id)?stage?`<button class="btn quiet small" data-undo-group-member="${safe(m.id)}">撤销</button>`:`<button class="btn quiet small danger" data-remove-group-member="${safe(m.id)}">删除</button>`:'';
     return `<div class="share-user-row ${stage?'pending-removal':''}" data-group-member-row="${safe(m.id)}"><div class="share-user-meta">${memberIdentity(u)}<span class="group-member-projects">${note}</span></div><select class="group-role-select" data-group-member-role="${safe(m.id)}" ${stage||modal.readOnly?'disabled':''} aria-label="设置${safe(u.account)}的课题组角色">${memberRoles.map(role=>`<option value="${role}" ${(modal.roleDrafts[m.id]||m.role)===role?'selected':''}>${groupRoleNames[role]}</option>`).join('')}</select>${action}</div>`;
   }).join('')||'<div class="picker-empty">暂无匹配成员</div>';
 }
@@ -1789,7 +1803,7 @@ function showGroupMembersModal() {
   const g=mySpaces().find(g=>g.id===modal.groupId);if(!g)return closeModal();
   modal.readOnly=!canEditGroupRoles(g);
   const data=groupManagedRoster();modal.memberPage=data.page;
-  const note=modal.readOnly?'当前身份可查看成员名单及角色。':`${canEditGroupMembers(g)?'可修改角色或移除成员。':'仅可修改课题组角色。'}翻页和搜索保留修改，点击保存后统一生效。`;
+  const note=modal.readOnly?'当前身份可查看成员名单及角色。':'可修改角色或删除成员。翻页和搜索保留修改，点击保存后统一生效。';
   modalFrame('成员管理',safe(g.name),`<section class="share-recipients ${modal.readOnly?'member-list-readonly':''}" aria-label="课题组成员名单"><div class="share-list-heading"><h3>成员名单与角色</h3><span>共 ${data.total} 人</span></div><label class="collab-project-search member-roster-search">${icon('search')}<input id="groupRosterSearch" type="search" placeholder="搜索已有成员的用户名、手机号、邮箱或别称" value="${safe(modal.rosterQuery)}"></label><div class="share-user-list group-member-list" id="managedRosterRows">${groupManagementRows()}</div><div id="managedRosterPagination">${memberPageButtons(data,'data-managed-member-page')}</div></section><p class="member-library-note">${note}</p>`,modal.readOnly?'<button class="btn" data-close>关闭</button>':'<button class="btn" data-close>取消</button><button class="btn primary" data-save-group-members>保存</button>');
 }
 function drawManagedRoster() {
@@ -1798,12 +1812,12 @@ function drawManagedRoster() {
   document.getElementById('managedRosterPagination').innerHTML=memberPageButtons(data,'data-managed-member-page');
 }
 function openGroupMemberRemove(groupId,memberId) {
-  const g=group(groupId);if(!canEditGroupMembers(g)||modal?.type!=='group-members')return;
+  const g=group(groupId);if(!canRemoveGroupMember(g,memberId)||modal?.type!=='group-members')return;
   if(!g.members.some(m=>m.id===memberId))return notify('该成员已不在课题组名单中');
   modal={type:'group-member-remove',groupId,memberId,parent:modal,parentFocus:`[data-remove-group-member="${memberId}"]`};showModal();
 }
 function showGroupMemberRemoveModal() {
-  const g=group(modal.groupId);if(!canEditGroupMembers(g))return closeModal();
+  const g=group(modal.groupId);if(!canRemoveGroupMember(g,modal.memberId))return closeModal();
   const u=person(modal.memberId);
   const affected=groupMemberProjects(g,modal.memberId).map(id=>projects.find(p=>p.id===id)).filter(Boolean);
   const left=g.members.length-(modal.parent?.pendingRemovals||[]).length-1;
@@ -1812,7 +1826,7 @@ function showGroupMemberRemoveModal() {
 }
 function confirmGroupMemberRemove() {
   if(!canManageGroups()||modal?.type!=='group-member-remove')return closeModal();
-  const g=group(modal.groupId),id=modal.memberId,parent=modal.parent;if(!canEditGroupMembers(g)||!parent)return closeModal();
+  const g=group(modal.groupId),id=modal.memberId,parent=modal.parent;if(!canRemoveGroupMember(g,id)||!parent)return closeModal();
   const affected=groupMemberProjects(g,id);
   parent.pendingRemovals=(parent.pendingRemovals||[]).filter(x=>x.memberId!==id);
   parent.pendingRemovals.push({memberId:id,affected});
@@ -1820,7 +1834,7 @@ function confirmGroupMemberRemove() {
   notify(affected.length?`已标记移除 ${person(id).name}，保存后同时退出 ${affected.length} 个协作项目`:`已标记移除 ${person(id).name}`);
 }
 function undoGroupMemberRemoval(id) {
-  if(!canManageGroups()||modal?.type!=='group-members'||!canEditGroupMembers(group(modal.groupId)))return;
+  if(!canManageGroups()||modal?.type!=='group-members'||!canRemoveGroupMember(group(modal.groupId),id))return;
   modal.pendingRemovals=(modal.pendingRemovals||[]).filter(x=>x.memberId!==id);
   showGroupMembersModal();notify(`${person(id).name} 已恢复，仍留在课题组名单中`);
 }
@@ -1828,7 +1842,7 @@ function saveGroupMembers() {
   if(modal?.type!=='group-members')return;
   const g=group(modal.groupId);if(!canEditGroupRoles(g))return closeModal();
   const pending=modal.pendingRemovals||[];
-  if(pending.length&&!canEditGroupMembers(g))return notify('只有课题组创建者可以移除成员');
+  if(pending.some(({memberId})=>!canRemoveGroupMember(g,memberId)))return notify('当前账号不能删除该成员');
   if(Object.values(modal.roleDrafts).some(role=>!memberRoles.includes(role)))return notify('角色无效，请重新选择');
   g.members.forEach(m=>{if(modal.roleDrafts[m.id])m.role=modal.roleDrafts[m.id];});
   const affected=new Set();
@@ -1899,11 +1913,18 @@ function resolveMemberIdentifier(value,key) {
 }
 function showMemberAccountLookup(title) {
   modal.lookupKey=modal.lookupKey||'account';modal.memberFields=modal.memberFields||{account:'',phone:'',email:''};
-  const key=modal.lookupKey,id=memberFieldIds[key];
-  modalFrame(title,'按任一账号信息查找，匹配后自动展示已有信息。',`<form id="memberAddForm" novalidate><label class="field"><span class="field-label">查找方式</span><select id="memberLookupType">${Object.entries(memberFieldLabels).map(([k,label])=>`<option value="${k}" ${key===k?'selected':''}>${label}</option>`).join('')}</select></label><label class="field" id="${id}Field"><span class="field-label">${memberFieldLabels[key]}</span><input id="${id}" data-member-field="${key}" required aria-required="true" value="${safe(modal.memberFields[key])}" placeholder="请输入完整${memberFieldLabels[key]}" autocomplete="off"><span id="${id}Error" class="field-error">请填写${memberFieldLabels[key]}</span></label><div id="matchedMemberDetails" aria-live="polite"></div>${memberRemarkField()}<div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error||'')}</div></form>`,'<button class="btn" data-close>取消</button><button class="btn primary" type="submit" form="memberAddForm">添加成员</button>');
+  const key=modal.lookupKey,id=memberFieldIds[key];modal.lookupOpen=false;
+  modalFrame(title,'按任一账号信息查找，匹配后自动展示已有信息。',`<form id="memberAddForm" novalidate><label class="field"><span class="field-label">查找方式</span><select id="memberLookupType">${Object.entries(memberFieldLabels).map(([k,label])=>`<option value="${k}" ${key===k?'selected':''}>${label}</option>`).join('')}</select></label><label class="field" id="${id}Field"><span class="field-label">${memberFieldLabels[key]}</span><span class="member-lookup-control"><input id="${id}" data-member-field="${key}" required aria-required="true" value="${safe(modal.memberFields[key])}" placeholder="输入${memberFieldLabels[key]}搜索已有账号" autocomplete="off" aria-controls="memberLookupOptions" aria-expanded="false"><button type="button" data-toggle-member-lookup aria-label="展开成员选项">⌄</button></span><span id="${id}Error" class="field-error">请填写${memberFieldLabels[key]}</span></label><div id="memberLookupOptions" class="member-lookup-options" hidden></div><div id="matchedMemberDetails" aria-live="polite"></div>${memberRemarkField()}<div id="accountLookupError" class="inline-error" role="alert" ${modal.error?'':'hidden'}>${safe(modal.error||'')}</div></form>`,'<button class="btn" data-close>取消</button><button class="btn primary" type="submit" form="memberAddForm">添加成员</button>');
   const input=document.getElementById(id);updateMemberLookup(input);input?.focus();
 }
 
+function drawMemberLookupOptions() {
+  const box=document.getElementById('memberLookupOptions');if(!box)return;
+  const key=modal.lookupKey,q=accountValue(modal.memberFields[key]);
+  const users=platformAccounts.filter(u=>!isSupportPerson(u)&&!isDirectoryOwner(u.id)&&memberLookupValue(u,key)&&(!q||accountSearchText(u).includes(q))&&(isRepeatableDemoAccount(u)||!directory.some(d=>d.id===u.id))).slice(0,6);
+  box.hidden=!modal.lookupOpen;document.getElementById(memberFieldIds[key])?.setAttribute('aria-expanded',String(modal.lookupOpen));
+  box.innerHTML=users.map(u=>`<button type="button" class="member-lookup-option" data-pick-member-lookup="${safe(u.id)}"><strong>${safe(u.account)}</strong><span>${safe([u.phone,u.emailBound?u.email:''].filter(Boolean).join(' / '))}</span></button>`).join('')||'<div class="picker-empty">暂无匹配的可添加成员</div>';
+}
 function clearMemberFieldError(input) { input?.closest('.field')?.classList.remove('invalid');input?.setAttribute('aria-invalid','false');modal.error='';const error=document.getElementById('accountLookupError');if(error)error.hidden=true; }
 function memberFieldError(key,message) {
   const input=document.getElementById(memberFieldIds[key]);input?.closest('.field')?.classList.add('invalid');input?.setAttribute('aria-invalid','true');const error=document.getElementById(memberFieldIds[key]+'Error');if(error)error.textContent=message;
@@ -1914,6 +1935,7 @@ function updateMemberLookup(input) {
   const result=resolveMemberIdentifier(input.value,key),details=document.getElementById('matchedMemberDetails');
   if(details)details.innerHTML=result.user?`<dl class="matched-member-details"><div><dt>用户名</dt><dd>${safe(result.user.account||'—')}</dd></div><div><dt>手机号</dt><dd>${safe(result.user.phone||'—')}</dd></div><div><dt>邮箱</dt><dd>${safe(result.user.email||'—')}</dd></div></dl>`:'';
   for(const other of Object.keys(memberFieldIds))if(other!==key)modal.memberFields[other]=result.user?memberLookupValue(result.user,other):'';
+  drawMemberLookupOptions();
 }
 
 function validateMemberDetails() {
@@ -2258,16 +2280,23 @@ function changeCollabMember(projectId,id,selected) {
 function selectAllCollabMembers(projectId) { if(modal?.readOnly||!canConfigureCollaboration(projects.find(p=>p.id===projectId)))return;const d=collabProjectDraft(modal,projectId);d.memberIds=[...new Set([...d.memberIds,...collabMembers(modal).map(m=>m.id)])];d.dirty=true;showCollabModal(); }
 function clearCollabMembers(projectId) { if(modal?.readOnly||!canConfigureCollaboration(projects.find(p=>p.id===projectId)))return;const d=collabProjectDraft(modal,projectId);d.memberIds=[];d.dirty=true;showCollabModal(); }
 function collabTechnicalSupportAction(p,d,disabled) {
-  const support=projectTechnicalSupportPerson(p),pending=d.technicalSupportId&&projectSupportPeople.find(u=>u.id===d.technicalSupportId&&u.supportType==='technical');
   if(disabled)return '';
-  const user=support||pending||defaultTechnicalSupportPerson(p),added=!!(support||pending);
-  return `<button type="button" class="btn quiet small collab-support-button" data-collab-add-support="${safe(p.id)}" ${added||!user?'disabled':''} title="${safe(user?'技术支持：'+user.name+'（'+user.account+'）':'暂未分配技术支持')}">${icon(added?'check':'plus')}${support?'已添加技术支持':pending?'技术支持待保存':'添加技术支持'}</button>`;
+  const support=projectTechnicalSupportPerson(p),changed=Object.hasOwn(d,'technicalSupportId');
+  const pending=d.technicalSupportId&&projectSupportPeople.find(u=>u.id===d.technicalSupportId&&u.supportType==='technical');
+  const assigned=changed?pending:support,user=assigned||defaultTechnicalSupportPerson(p);
+  const label=assigned?(support&&assigned.id===support.id?'已添加技术支持':'技术支持待保存'):'添加技术支持';
+  return `<button type="button" class="btn quiet small collab-support-button" data-collab-add-support="${safe(p.id)}" ${assigned||!user?'disabled':''} title="${safe(user?'技术支持：'+user.name+'（'+user.account+'）':'暂未分配技术支持')}">${icon(assigned?'check':'plus')}${label}</button>${assigned?`<button type="button" class="btn quiet small danger" data-collab-remove-support="${safe(p.id)}">取消技术支持</button>`:changed&&support?'<span class="collab-support-pending">取消待保存</span>':''}`;
 }
 function addCollabTechnicalSupport(id) {
   if(modal?.type!=='collab'||modal.readOnly||!modal.selectedProjectIds.includes(id)||!canEditGroupRoles(group(modal.groupId)))return;
-  const p=projects.find(p=>p.id===id);if(!canConfigureCollaboration(p)||projectTechnicalSupportPerson(p))return;
-  const user=defaultTechnicalSupportPerson(p);if(!user)return notify('该项目暂未分配技术支持');
+  const p=projects.find(p=>p.id===id);if(!canConfigureCollaboration(p))return;
+  const user=projectTechnicalSupportPerson(p)||defaultTechnicalSupportPerson(p);if(!user)return notify('该项目暂未分配技术支持');
   collabProjectDraft(modal,id).technicalSupportId=user.id;showCollabModal();notify('已选技术支持，保存授权后生效');
+}
+function removeCollabTechnicalSupport(id) {
+  if(modal?.type!=='collab'||modal.readOnly||!modal.selectedProjectIds.includes(id)||!canEditGroupRoles(group(modal.groupId)))return;
+  const p=projects.find(p=>p.id===id);if(!canConfigureCollaboration(p))return;
+  collabProjectDraft(modal,id).technicalSupportId=null;showCollabModal();notify('已取消技术支持，保存授权后生效');
 }
 function showCollabModal() {
   const state=modal,g=group(state.groupId),available=collabMembers(state),readOnly=!!state.readOnly;
@@ -2361,9 +2390,14 @@ function confirmCollab() {
   }
   const now=new Date().toLocaleString('zh-CN',{hour12:false});
   for(const {p,d,records} of plans){
+    if(d.technicalSupportId===null){
+      if(projectSupportPeople.some(u=>u.id===p.supportAssignment?.personId&&u.supportType==='technical'))p.supportAssignment=null;
+      if(projectSupportPeople.some(u=>u.id===p.technicalSupportAssignment?.personId&&u.supportType==='technical'))p.technicalSupportAssignment=null;
+      rebuildProjectMembers(p);
+    }
     if(d.technicalSupportId&&!projectTechnicalSupportPerson(p)){
       const assignment={personId:d.technicalSupportId,source:'project',addedAt:new Date().toISOString(),addedBy:currentUserId()};
-      if(p.supportAssignment)p.technicalSupportAssignment=assignment;else p.supportAssignment=assignment;
+      if(p.supportAssignment)p.technicalSupportAssignment=assignment;else {p.supportAssignment=assignment;p.supportContactId=assignment.personId;}
       p.exitedUserIds=(p.exitedUserIds||[]).filter(id=>id!==d.technicalSupportId);rebuildProjectMembers(p);
     }
     if(records.length&&!d.dirty)continue;
@@ -2454,6 +2488,9 @@ modalRoot.addEventListener('click',e=>{
   if(a.hasAttribute('data-clear-collab-projects')){modal.selectedProjectIds=[];return showCollabModal();}
   if(a.dataset.managedMemberPage&&modal.type==='group-members'){modal.memberPage=Number(a.dataset.managedMemberPage);drawManagedRoster();modalRoot.querySelector('.group-member-list').scrollTop=0;return;}
   if(a.dataset.collabAddSupport)return addCollabTechnicalSupport(a.dataset.collabAddSupport);
+  if(a.dataset.collabRemoveSupport)return removeCollabTechnicalSupport(a.dataset.collabRemoveSupport);
+  if(a.hasAttribute('data-toggle-member-lookup')){modal.lookupOpen=!modal.lookupOpen;return drawMemberLookupOptions();}
+  if(a.dataset.pickMemberLookup){const u=platformAccounts.find(u=>u.id===a.dataset.pickMemberLookup);if(!u)return;const input=document.getElementById(memberFieldIds[modal.lookupKey]);input.value=memberLookupValue(u,modal.lookupKey);modal.lookupOpen=false;updateMemberLookup(input);return input.focus();}
   if(a.dataset.collabMemberPage&&modal.type==='collab'){const d=collabProjectDraft(modal,a.dataset.collabTarget);d.page=Number(a.dataset.collabMemberPage);return showCollabModal();}
   if(!canManage()&&!(canManageGroups()&&['group-create','group-delete','group-members','group-member-remove','group-roles','group-add-members','add','directory-add'].includes(modal.type)))return closeModal();
   if(a.dataset.removeGroupMember&&modal.type==='group-members')return openGroupMemberRemove(modal.groupId,a.dataset.removeGroupMember);
@@ -2503,7 +2540,7 @@ modalRoot.addEventListener('input',e=>{
   if(e.target.id==='collabProjectSearch'){const pos=e.target.selectionStart;modal.projectQuery=e.target.value;showCollabModal();const input=document.getElementById('collabProjectSearch');input.focus({preventScroll:true});try{input.setSelectionRange(pos,pos);}catch{}return;}
   if(e.target.id==='folderName')modal.name=e.target.value;
   if(e.target.id==='memberRemark'){modal.remark=e.target.value;e.target.setAttribute('aria-invalid','false');}
-  if(e.target.dataset.memberField)return updateMemberLookup(e.target);
+  if(e.target.dataset.memberField){modal.lookupOpen=!!e.target.value.trim();return updateMemberLookup(e.target);}
   if(e.target.id==='groupName'){modal.name=e.target.value;modal.error='';}
   if(e.target.id==='groupMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;drawGroupPicker();}
   if(e.target.id==='groupAddMemberSearch'){modal.memberQuery=e.target.value;modal.pickerOpen=true;document.getElementById('directoryMemberOptions').innerHTML=directoryPickerOptions();}
@@ -2526,7 +2563,7 @@ modalRoot.addEventListener('change',e=>{
   if(e.target.dataset.collabMember){const id=e.target.dataset.collabMember,pid=e.target.dataset.collabTarget;changeCollabMember(pid,id,e.target.checked);showCollabModal();modalRoot.querySelector(`[data-collab-project-members="${pid}"] [data-collab-member="${id}"]`)?.focus({preventScroll:true});return;}
   if(e.target.dataset.groupRole){const m=modal.members.find(x=>x.id===e.target.dataset.groupRole);if(m&&!isSupportPerson(m))m.role=e.target.value;}
 });
-document.addEventListener('click',e=>{if(openProjectSearch&&!e.target.closest('.project-search-control'))closeProjectSearch();});
+document.addEventListener('click',e=>{if(modal?.lookupOpen&&!e.target.closest('.member-lookup-control,.member-lookup-options')){modal.lookupOpen=false;drawMemberLookupOptions();}if(openProjectSearch&&!e.target.closest('.project-search-control'))closeProjectSearch();});
 window.addEventListener('resize',positionProjectSearch);
 document.addEventListener('scroll',positionProjectSearch,true);
 document.addEventListener('keydown',e=>{
