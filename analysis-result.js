@@ -30,7 +30,7 @@ window.AnalysisResult = (() => {
   const svg = name => `<svg class="ar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] || icons.chart}</svg>`;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const statusLabels = {queued:'排队中',running:'运行中',success:'成功',failed:'失败'};
-  const identityLabels = {owner:'项目拥有者',support:'技术支持',aftersales:'售后支持',admin:'管理者',member:'协作成员',visitor:'访问者',historical:'历史成员'};
+  const identityLabels = {owner:'项目拥有者',support:'技术支持',aftersales:'售后支持',admin:'管理员',member:'协作者',visitor:'访问者',historical:'历史成员'};
   const identityOrder = {owner:0,support:1,aftersales:1,member:2,admin:1,visitor:4,historical:5};
   let root, context, records=[], counters={}, collaborationDemoVersion=0, query='', onlyMine=false, selectedSubmitter='', status='success', section='info', panelOpen=true, collapsed=new Set(['mfa','o2pls','kegg','diff','correlation']), toastTimer, lastFocus;
   const storageKey = () => `personalbio-analysis-records-v1:${context.project.id}`;
