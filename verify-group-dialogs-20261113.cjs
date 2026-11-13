@@ -33,9 +33,9 @@ const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
    await p.locator(`[data-project-authorization="${row}"]`).click();assert.equal(await p.locator('.modal-head h2').innerText(),rows[0].action);
    const source=await p.locator('[data-collab-project]').evaluateAll(es=>es.map(e=>e.dataset.collabProject).sort());
    const expected=await p.evaluate(id=>{const g=group(id);return (modal.readOnly?groupVisibleProjects(g):[...new Map([...manageableProjects().filter(canConfigureCollaboration),...groupVisibleProjects(g)].map(p=>[p.id,p])).values()]).map(p=>p.id).sort();},row);assert.deepEqual(source,expected);
-   if(role==='support'){assert.equal(await p.locator('[data-confirm-collab],[data-collab-member]:not(:disabled),[data-collab-role]:not(:disabled)').count(),0);}
+   if(role==='support'){assert.equal(await p.locator('[data-confirm-collab],[data-collab-add-support],[data-collab-member]:not(:disabled),[data-collab-role]:not(:disabled)').count(),0);}
    const baseline=await read(p);await close();assert.deepEqual(await read(p),baseline);
-   const viewerRow=rows.find(row=>row.role==='访问者');assert.ok(viewerRow);await p.locator(`[data-project-authorization="${viewerRow.id}"]`).click();assert.equal(await p.locator('.modal-head h2').innerText(),'查看项目');assert.equal(await p.locator('[data-confirm-collab],[data-collab-member]:not(:disabled),[data-collab-role]:not(:disabled)').count(),0);await close();assert.deepEqual(await read(p),baseline);
+   const viewerRow=rows.find(row=>row.role==='访问者');assert.ok(viewerRow);await p.locator(`[data-project-authorization="${viewerRow.id}"]`).click();assert.equal(await p.locator('.modal-head h2').innerText(),'查看项目');assert.equal(await p.locator('[data-confirm-collab],[data-collab-add-support],[data-collab-member]:not(:disabled),[data-collab-role]:not(:disabled)').count(),0);await close();assert.deepEqual(await read(p),baseline);
   }
   checks.push('受邀列表管理员显示授权项目，协作者与访问者显示查看项目；更多展开全部可访问项目并可收起，只读权限保持，列表无退出项目入口');
   await p.locator('[data-preview-role=owner]').click();await p.locator('[data-space-tab=owned]').click();
@@ -84,6 +84,18 @@ const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
   assert.equal(await section(ids[0]).locator('[data-collab-role="li-1"]').inputValue(),'visitor');await p.locator('[data-confirm-collab]').click();assert.deepEqual((await read(p)).collabRecords,saved.collabRecords);
   await p.reload();assert.deepEqual((await read(p)).collabRecords,saved.collabRecords);
   checks.push('项目授权统一查看与编辑；按名称分组独立保存，不修改确认与刷新不扩大授权');
+  await p.locator('[data-space-tab=owned]').click();await p.locator(`[data-project-authorization="${gid}"]`).click();const supportCancelBefore=await read(p);
+  for(const id of ids){assert.equal(await section(id).locator('[data-collab-add-support]').count(),1);await section(id).locator('[data-collab-add-support]').click();assert.equal(await section(id).locator('[data-collab-add-support]').innerText(),'技术支持待保存');}
+  assert.equal(await p.locator('[data-collab-member="support-1"],[data-collab-member="support-2"]').count(),0);assert.deepEqual(await read(p),supportCancelBefore);await close();assert.deepEqual(await read(p),supportCancelBefore);
+  await p.locator(`[data-project-authorization="${gid}"]`).click();await p.locator(`[data-collab-project-card="${ids[1]}"] [data-open-project]`).click();await p.locator(`[data-add-project-support="${ids[1]}"]`).click();await p.locator('[data-back-project-list]').click();
+  const supportBefore=await read(p),priorSupport=supportBefore.projects.find(p=>p.id===ids[1]).supportAssignment;assert.equal(priorSupport.personId,'aftersales-1');
+  for(const id of ids)await section(id).locator('[data-collab-add-support]').click();await p.locator(`[data-collab-project="${ids[1]}"]`).uncheck();await p.locator('[data-confirm-collab]').click();
+  const supportAfter=await read(p);assert.equal(supportAfter.projects.find(p=>p.id===ids[0]).supportAssignment.personId,'support-1');assert.deepEqual(supportAfter.projects.find(p=>p.id===ids[1]),supportBefore.projects.find(p=>p.id===ids[1]));assert.deepEqual(supportAfter.groups,supportBefore.groups);assert.deepEqual(supportAfter.collabRecords,supportBefore.collabRecords);assert.equal(supportAfter.directory.some(u=>u.id==='support-1'),false);
+  await p.locator(`[data-project-authorization="${gid}"]`).click();assert.equal(await section(ids[0]).locator('[data-collab-add-support]').innerText(),'已添加技术支持');assert.equal(await section(ids[0]).locator('[data-collab-add-support]').isDisabled(),true);await section(ids[1]).locator('[data-collab-add-support]').click();await p.locator('[data-confirm-collab]').click();
+  const supportBoth=await read(p),projectWithBoth=supportBoth.projects.find(p=>p.id===ids[1]);assert.deepEqual(projectWithBoth.supportAssignment,priorSupport);assert.equal(projectWithBoth.technicalSupportAssignment.personId,'support-1');assert.ok(projectWithBoth.members.some(m=>m.id==='support-1'&&m.projectSupport));assert.equal(supportBoth.groups.find(g=>g.id===gid).members.some(m=>m.id==='support-1'),false);
+  await p.reload();await p.locator('[data-space-tab=owned]').click();await p.locator(`[data-project-authorization="${gid}"]`).click();for(const id of ids)assert.equal(await section(id).locator('[data-collab-add-support]').innerText(),'已添加技术支持');assert.equal(await p.locator('[data-collab-member="support-1"],[data-collab-member="aftersales-1"]').count(),0);await p.screenshot({path:'/private/tmp/project-technical-support-20261113.png',animations:'disabled'});await close();
+  checks.push('每个项目成员区可独立添加技术支持，取消不保存，取消选中的项目不添加，保存刷新保留且不重复添加；普通成员名单不包含支持人员，已有售后支持保留');
+
   await p.locator('[data-space-tab=owned]').click();await p.locator(`[data-project-authorization="${gid}"]`).click();
   await section(ids[0]).locator('[data-collab-member="chen-1"]').check();await section(ids[0]).locator('[data-collab-role="chen-1"]').selectOption('member');
   await p.locator(`[data-collab-project-card="${ids[0]}"] [data-open-project]`).click();assert.equal(await p.evaluate(()=>page),'detail');assert.ok(await p.locator('[data-show-result]').count());
@@ -117,17 +129,9 @@ const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
   checks.push('管理员点击即可退出项目，无移交步骤；拥有者、其他成员、课题组和数据保留，刷新不恢复退出权限');
   await p.locator('[data-space-tab=owned]').click();await p.locator('[data-project-authorization="manager-owned-01"]').click();
   const managerOwnedIds=await p.evaluate(()=>groupVisibleProjects(group('manager-owned-01')).filter(p=>projectAccessRole(p)==='admin').map(p=>p.id));assert.ok(managerOwnedIds.length>=2);
-  const ownBefore=await read(p),ownTarget=ownBefore.projects.find(p=>p.id===managerOwnedIds[0]);
-  await p.locator(`[data-exit-project="${managerOwnedIds[0]}"]`).click();
-  assert.equal(await p.locator('#exitOwnerSelect,[data-confirm-project-exit]').count(),0);assert.equal(await p.locator(`[data-collab-project="${managerOwnedIds[0]}"]`).count(),0);
-  let ownAfter=await read(p),ownSaved=ownAfter.projects.find(p=>p.id===managerOwnedIds[0]);assert.equal(ownSaved.members.some(m=>m.id==='manager-1'),false);
-  assert.deepEqual(ownSaved.members,ownTarget.members.filter(m=>m.id!=='manager-1'));assert.deepEqual(ownSaved.files,ownTarget.files);assert.deepEqual(ownAfter.groups,ownBefore.groups);assert.deepEqual(ownAfter.projects.filter(p=>p.id!==ownTarget.id),ownBefore.projects.filter(p=>p.id!==ownTarget.id));
-  const detailTarget=managerOwnedIds[1];await p.locator(`[data-collab-project-card="${detailTarget}"] [data-open-project]`).click();assert.equal(await p.evaluate(()=>page),'detail');
-  assert.equal(await p.locator('[data-exit-project]').count(),0);await p.locator('[data-back-project-list]').click();const detailBefore=await read(p);await p.locator(`[data-exit-project="${detailTarget}"]`).click();assert.equal(await p.locator('#exitOwnerSelect,[data-confirm-project-exit]').count(),0);assert.equal(await p.evaluate(()=>page),'spaces');
-  const detailAfter=await read(p);assert.equal(detailAfter.projects.find(p=>p.id===detailTarget).members.some(m=>m.id==='manager-1'),false);assert.deepEqual(detailAfter.groups,detailBefore.groups);assert.deepEqual(detailAfter.projects.filter(p=>p.id!==detailTarget),detailBefore.projects.filter(p=>p.id!==detailTarget));
-  await p.reload();await p.locator('[data-space-tab=owned]').click();await p.locator('[data-project-authorization="manager-owned-01"]').click();assert.equal(await p.locator(`[data-collab-project="${managerOwnedIds[0]}"]`).count(),0);assert.equal(await p.locator(`[data-collab-project="${detailTarget}"]`).count(),0);await close();
-  checks.push('管理者在我创建的课题组中直接退出无需移交；详情无退出入口，返回授权弹窗才可退出，其他人员权限保留且刷新不恢复');
-
+  const ownBefore=await read(p);assert.equal(await p.locator('[data-exit-project]').count(),0);await p.evaluate(id=>openExitProject(id),managerOwnedIds[0]);assert.deepEqual(await read(p),ownBefore);
+  const detailTarget=managerOwnedIds[1];await p.locator(`[data-collab-project-card="${detailTarget}"] [data-open-project]`).click();assert.equal(await p.evaluate(()=>page),'detail');assert.equal(await p.locator('[data-exit-project]').count(),0);await p.locator('[data-back-project-list]').click();assert.equal(await p.locator('[data-exit-project]').count(),0);await close();await p.reload();assert.deepEqual((await read(p)).projects,ownBefore.projects);
+  checks.push('我创建的课题组授权弹窗和项目详情均无退出项目按钮，直接调用退出也不能改动项目');
 
   await p.locator('[data-preview-role=member]').click();await p.locator('#recipientSelect').selectOption('li-1');
   await p.locator(`[data-group-row="${gid}"] .group-actions [data-project-authorization]`).click();assert.equal(await p.locator('[data-confirm-collab]').count(),0);assert.equal(await p.locator('[data-collab-member]:not(:disabled)').count(),0);
@@ -175,7 +179,7 @@ const read=p=>p.evaluate(()=>JSON.parse(localStorage.getItem(storageKey)));
   await p.evaluate(id=>openExitProject(id),ownerExitId);assert.equal(await p.locator('#exitOwnerSelect,[data-confirm-project-exit]').count(),0);assert.deepEqual(await read(p),ownerBefore);await close();
   await p.evaluate(id=>{modal={type:'project-exit',projectId:id,parent:null};confirmExitProject();},ownerExitId);assert.deepEqual(await read(p),ownerBefore);await p.reload();assert.deepEqual((await read(p)).projects,ownerBefore.projects);
   checks.push('项目拥有者无退出按钮，退出入口与确认处理均不能解除拥有者身份，其他成员权限与项目数据保持');
-  await p.evaluate(id=>{const saved=JSON.parse(localStorage.getItem(storageKey)),p=saved.projects.find(p=>p.id===id);p.members=p.members.filter(m=>m.id!=='owner-1');p.ownerUserId='manager-1';saved.managerProjectOwnershipSeeded=false;localStorage.setItem(storageKey,JSON.stringify(saved));},managerOwnedIds[0]);
+  await p.evaluate(id=>{const saved=JSON.parse(localStorage.getItem(storageKey)),p=saved.projects.find(p=>p.id===id);p.members=p.members.filter(m=>m.id!=='owner-1'&&m.id!=='manager-1');p.exitedUserIds=[...new Set([...(p.exitedUserIds||[]),'manager-1'])];p.managerUserIds=(p.managerUserIds||[]).filter(id=>id!=='manager-1');p.ownerUserId='manager-1';saved.managerProjectOwnershipSeeded=false;localStorage.setItem(storageKey,JSON.stringify(saved));},managerOwnedIds[0]);
   await p.reload();const migrated=await read(p),migratedProject=migrated.projects.find(p=>p.id===managerOwnedIds[0]);assert.equal(migratedProject.members.find(m=>m.role==='owner').id,'owner-1');assert.equal(migratedProject.members.some(m=>m.id==='manager-1'),false);assert.ok(migratedProject.exitedUserIds.includes('manager-1'));await p.reload();assert.deepEqual((await read(p)).projects.find(p=>p.id===managerOwnedIds[0]),migratedProject);
   checks.push('旧管理者示例的课题组归属与项目拥有者分开修正，已退出管理员不会重新加入，刷新后保持');
   assert.deepEqual(errors,[]);console.log(JSON.stringify({passed:checks.length,checks,errors},null,2));
