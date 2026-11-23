@@ -41,8 +41,8 @@ window.AnalysisResult = (() => {
   // 分析记录的管理权限与参与人的角色标签独立。
   // 课题组管理员仍需具备项目管理权限才能删除他人的分析记录。
   const canDeleteAny = () => context.canManageRecords===true;
-  const canDeleteRecord = record => !!record&&(canDeleteAny()||context.canSubmit&&mine(record));
-  const canRenameRecord = record => !!record&&(context.canRenameRecords===true||(mine(record)&&context.canSubmit));
+  const canDeleteRecord = record => !!record&&record.status!=='running'&&(canDeleteAny()||context.canSubmit&&mine(record));
+  const canRenameRecord = record => !!record&&record.status!=='running'&&(context.canRenameRecords===true||(mine(record)&&context.canSubmit));
   const submitterIdentity = user => user&&Object.hasOwn(identityLabels,user.projectRole)&&!context.isSupportMember?.(user.id)?user.projectRole:'';
   const recordIdentity = record => Object.hasOwn(identityLabels,record.submitterIdentity)&&!context.isSupportMember?.(record.submitterId)?record.submitterIdentity:'';
   const identityLabel = record => identityLabels[recordIdentity(record)]||'';
@@ -77,7 +77,23 @@ window.AnalysisResult = (() => {
         records.push({id:`collab-demo-cca-${author.id}`,methodId:'cca',group,sequence,name:generatedName('cca',group,sequence),...submitterSnapshot(author),createdAt:new Date(Date.UTC(2026,10,2,6,34)-index*17*60000).toISOString(),status:'success'});
       });
     }
-    collaborationDemoVersion=1;
+    collaborationDemoVersion=Math.max(collaborationDemoVersion,1);
+  }
+  function upgradeRunningExamples() {
+    const people=exampleAuthors();
+    if(collaborationDemoVersion>=2||!people.length)return;
+    const runningPlans=[
+      {methodId:'cca',group:'Treat1',progress:72},
+      {methodId:'coia',group:'Treat2',progress:46},
+      {methodId:'correlation',group:'Treat1',progress:88}
+    ];
+    runningPlans.forEach((plan,index)=>{
+      const id=`seed-running-${index+1}`;
+      if(records.some(record=>record.id===id))return;
+      const author=people[(index+1)%people.length],sequence=nextSequence(plan.methodId,plan.group);
+      records.push({id,methodId:plan.methodId,group:plan.group,sequence,name:generatedName(plan.methodId,plan.group,sequence),...submitterSnapshot(author),createdAt:new Date(Date.now()-(index+1)*4*60000).toISOString(),status:'running',progress:plan.progress});
+    });
+    collaborationDemoVersion=2;
   }
   function seed() {
     records=[];counters={};collaborationDemoVersion=context.project.collab?1:0;
@@ -94,6 +110,15 @@ window.AnalysisResult = (() => {
     });
     const author=people[Math.min(1,people.length-1)],sequence=nextSequence('cca','Treat2');
     records.push({id:'seed-failed-1',methodId:'cca',group:'Treat2',sequence,name:generatedName('cca','Treat2',sequence),...submitterSnapshot(author),createdAt:'2026-11-02T02:15:00.000Z',status:'failed'});
+    [
+      {methodId:'cca',group:'Treat1',progress:72},
+      {methodId:'coia',group:'Treat2',progress:46},
+      {methodId:'correlation',group:'Treat1',progress:88}
+    ].forEach((plan,index)=>{
+      const runningAuthor=people[(index+1)%people.length],runningSequence=nextSequence(plan.methodId,plan.group);
+      records.push({id:`seed-running-${index+1}`,methodId:plan.methodId,group:plan.group,sequence:runningSequence,name:generatedName(plan.methodId,plan.group,runningSequence),...submitterSnapshot(runningAuthor),createdAt:new Date(Date.now()-(index+1)*4*60000).toISOString(),status:'running',progress:plan.progress});
+    });
+    collaborationDemoVersion=2;
     save();
   }
   function load() {
@@ -101,7 +126,7 @@ window.AnalysisResult = (() => {
       const saved=JSON.parse(localStorage.getItem(storageKey()));
       if(!saved||!Array.isArray(saved.records)||!saved.records.every(r=>r.id&&r.submitterId&&r.createdAt&&methodFor(r.methodId).id===r.methodId))throw new Error('no saved records');
       records=saved.records.map(r=>{
-        const record=r.status==='running'?{...r,status:'success'}:{...r};
+        const record=r.status==='running'&&!String(r.id).startsWith('seed-running-')?{...r,status:'success'}:{...r};
         record.submitterRemark=recordRemark(record);
         if(!record.submitterIdentity||record.submitterIdentity==='historical'||record.submitterIdentitySource==='current'){
           record.submitterIdentity=submitterIdentity(context.participants.find(user=>user.id===r.submitterId));
@@ -109,7 +134,7 @@ window.AnalysisResult = (() => {
         }
         return record;
       });
-      counters=saved.counters||{};collaborationDemoVersion=Number(saved.collaborationDemoVersion)||0;upgradeCollaborationExamples();save();
+      counters=saved.counters||{};collaborationDemoVersion=Number(saved.collaborationDemoVersion)||0;upgradeCollaborationExamples();upgradeRunningExamples();save();
     }
     catch { seed(); }
   }
@@ -142,7 +167,8 @@ window.AnalysisResult = (() => {
   }
   function recordRow(record) {
     const own=mine(record),editable=canRenameRecord(record);
-    return `<div class="ar-record-row ${own?'mine':''}" data-ar-record="${esc(record.id)}" data-ar-submitter="${esc(record.submitterId)}"><div class="ar-record-line"><button class="ar-record-name" data-ar-open="${esc(record.id)}" title="${esc(record.name)}">${esc(record.name)}</button>${own?'<span class="ar-mine-tag">我</span>':''}<div class="ar-record-actions">${editable?`<button class="ar-icon-button" data-ar-rename="${esc(record.id)}" aria-label="重命名 ${esc(record.name)}" title="重命名">${svg('edit')}</button>`:''}${canDeleteRecord(record)?`<button class="ar-icon-button" data-ar-delete="${esc(record.id)}" aria-label="删除 ${esc(record.name)}（提交人：${esc(record.submitterName)}）" title="删除${esc(record.submitterName)}提交的记录">${svg('trash')}</button>`:''}</div></div><div class="ar-record-meta"><span class="ar-submitter-person">${svg('user')}<span class="ar-record-author" title="${esc(record.submitterName)} · 用户名：${esc(record.submitterAccount)}">提交人：${esc(record.submitterName)}</span>${roleTag(record)}</span></div></div>`;
+    const running=record.status==='running';
+    return `<div class="ar-record-row ${own?'mine':''} ${running?'running':''}" data-ar-record="${esc(record.id)}" data-ar-submitter="${esc(record.submitterId)}"><div class="ar-record-line">${running?`<span class="ar-record-name disabled" title="${esc(record.name)}">${esc(record.name)}</span>`:`<button class="ar-record-name" data-ar-open="${esc(record.id)}" title="${esc(record.name)}">${esc(record.name)}</button>`}${own?'<span class="ar-mine-tag">我</span>':''}<div class="ar-record-actions">${editable?`<button class="ar-icon-button" data-ar-rename="${esc(record.id)}" aria-label="重命名 ${esc(record.name)}" title="重命名">${svg('edit')}</button>`:''}${canDeleteRecord(record)?`<button class="ar-icon-button" data-ar-delete="${esc(record.id)}" aria-label="删除 ${esc(record.name)}（提交人：${esc(record.submitterName)}）" title="删除${esc(record.submitterName)}提交的记录">${svg('trash')}</button>`:''}</div></div><div class="ar-record-meta"><span class="ar-submitter-person">${svg('user')}<span class="ar-record-author" title="${esc(record.submitterName)} · 用户名：${esc(record.submitterAccount)}">提交人：${esc(record.submitterName)}</span>${roleTag(record)}</span></div></div>`;
   }
   function renderRecords() {
     renderCounts();const list=visibleRecords(),panel=root.querySelector('#arRecordPanel');panel.hidden=!panelOpen;
@@ -181,7 +207,7 @@ window.AnalysisResult = (() => {
     if(!el.open)el.showModal();
   }
   function showRecord(id) {
-    const r=records.find(r=>r.id===id);if(!r)return;
+    const r=records.find(r=>r.id===id);if(!r||r.status==='running')return;
     dialog('分析记录详情',`<h3 class="ar-detail-name">${esc(r.name)} ${mine(r)?'<span class="ar-mine-tag">我</span>':''}</h3><dl class="ar-detail-info"><dt>分析方法</dt><dd>${methodFor(r.methodId).label}</dd><dt>分组方案</dt><dd>${esc(r.group)}</dd><dt>提交人</dt><dd>${esc(r.submitterName)}（${esc(r.submitterAccount)}）</dd><dt>成员别称</dt><dd>${esc(recordRemark(r))}</dd>${recordIdentity(r)?`<dt>${r.submitterIdentitySource==='current'?'当前项目角色':'提交时角色'}</dt><dd>${roleTag(r)}</dd>`:''}<dt>提交时间</dt><dd>${esc(dateParts(r.createdAt))}</dd><dt>运行状态</dt><dd><span class="ar-state-label ${r.status}">${svg(r.status)}${statusLabels[r.status]}</span></dd><dt>记录编号</dt><dd>${esc(r.id)}</dd></dl>`,`<button class="ar-button" data-ar-dialog-close>关闭</button>${canRenameRecord(r)?`<button class="ar-button primary" data-ar-rename="${esc(r.id)}">修改名称</button>`:''}`);
   }
   function renameRecord(id) {
@@ -201,7 +227,7 @@ window.AnalysisResult = (() => {
   function submitAnalysis(form) {
     if(!context.canSubmit)return;
     const data=new FormData(form),methodId=data.get('methodId'),group=data.get('group'),sequence=nextSequence(methodId,group),author=currentUser();
-    const r={id:`AN-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,methodId,group,sequence,name:String(data.get('name')||'').trim()||generatedName(methodId,group,sequence),...submitterSnapshot(author),createdAt:new Date().toISOString(),status:'running'};
+    const r={id:`AN-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,methodId,group,sequence,name:String(data.get('name')||'').trim()||generatedName(methodId,group,sequence),...submitterSnapshot(author),createdAt:new Date().toISOString(),status:'running',progress:0};
     records.push(r);save();status='running';panelOpen=true;query='';root.querySelector('#arRecordSearch').value='';collapsed.delete(methodId);renderRecords();form.reset();updateAutoName();toast('分析已提交，可在运行中查看');
     const projectId=context.project.id;
     setTimeout(()=>{if(context?.project.id!==projectId)return;const record=records.find(item=>item.id===r.id);if(!record)return;record.status='success';save();if(status==='running'){status='success';collapsed.delete(methodId);}renderRecords();toast('示例分析已完成');},1800);
