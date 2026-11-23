@@ -87,6 +87,7 @@ body.analysis-result-mode > .app-shell { display: none; }
 .ar-record-row.running { background:#f4f5f7; }
 .ar-record-row.running:hover { background:#f4f5f7; }
 .ar-record-row.running .ar-record-name, .ar-record-row.running .ar-record-meta { color:#9aa3b0; }
+.ar-record-row.failed-clickable { cursor:pointer; }
 .ar-record-line { display:flex; align-items:center; gap:6px; }
 .ar-record-name { flex:0 1 auto; min-width:0; padding:0; color:#35404e; background:transparent; border:0; font-size:13px!important; line-height:20px; text-align:left; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
 .ar-record-name:hover { color:var(--ar-blue); }
@@ -108,6 +109,7 @@ body.analysis-result-mode > .app-shell { display: none; }
 .ar-empty button { margin-top:12px; color:var(--ar-blue); }
 .ar-empty strong { display:block; color:#6d7887; font-size:13px; margin-bottom:5px; font-weight:500; }
 .ar-readonly-notice { display:flex; align-items:center; min-height:40px; padding:9px 13px; border:1px dashed #c9d2dd; border-radius:4px; background:#f7f9fb; color:#67717d; font-size:12px; }
+.ar-error-message { white-space:pre-wrap; overflow-wrap:anywhere; color:#4c5866; font-size:13px; line-height:1.7; }
 .ar-analysis-view h2 { font-size:19px; font-weight:500; margin:4px 0 6px; }
 .ar-analysis-view > p { color:#929ba6; font-size:12px; margin:0 0 25px; }
 .ar-config-form { max-width:650px; }
