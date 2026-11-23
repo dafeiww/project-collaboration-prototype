@@ -160,7 +160,7 @@ const initialProjects = [
   ...pendingCollaborationExamples,
   { id: 'analysis', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610201731FS5D', name: '测试示例-定量蛋白组云分析', category: '定量蛋白组云分析', created: '2026-10-20 17:31:42', status: '完成', type: '云分析', collab: true, members: [
     { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true },
-    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'member' }, { id: 'lin-1', role: 'member' }
+    { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }, { id: 'zhou-1', role: 'member' }, { id: 'lin-1', role: 'member' }, { id: 'xia-1', role: 'visitor' }
   ], visitorDownload: true },
   { id: 'protein-mod-1', ticket: 'DemoProjectID', contract: 'DemoContractID', code: 'PT202610100956LETO', name: '测试示例-修饰蛋白组云分析', category: '修饰蛋白组云分析', created: '2026-10-10 09:56:29', status: '完成', type: '云分析', collab: true, members: [
     { id: 'owner-1', role: 'owner' }, { id: 'support-1', role: 'admin', initial: true }, { id: 'chen-1', role: 'admin' }, { id: 'li-1', role: 'member' }
@@ -338,6 +338,7 @@ let supportUserId=projectSupportPeople.some(u=>u.id===previewParams.get('support
 let collaborationGroupPresetId=null, collabDraftProjectIds=[],spaceTab='joined',groupProjectId=null,aliasEditId=null;
 let page = 'spaces', activeProjectId = 'analysis', tab = 'data', listTab = 'mine', identity = 'owner', search = '', projectTicketSearch = '', projectCodeSearch = '', selectedProjectIds = [], modal = null, toastTimer, confirmationTimer, returnFocus = null;
 identity=previewRoleAliases[previewParams.get('role')]||'owner';
+if(!previewParams.get('role')&&document.body.hasAttribute('data-start-collaboration-analysis')){identity='member';recipientUserId='xia-1';}
 if(previewAccounts().some(u=>u.id===previewParams.get('user')&&u.id!=='owner-1'))recipientUserId=previewParams.get('user');
 let detailOrigin = { page: 'spaces', listTab: 'mine' };
 let filePath=[],selectedFileIds=[];
