@@ -128,6 +128,15 @@ function memberIdentifier(user) {
 function memberAccountsDisplay(user) {
   return [user.account,user.phone,user.email].map(v=>String(v||'').trim()).filter(Boolean).join(' / ')||(isEnglishVersion?'Not provided':'未登记');
 }
+function memberAccountStack(user) {
+  const items=[
+    {label:isEnglishVersion?'Username':'用户名',value:String(user.account||'').trim()},
+    {label:isEnglishVersion?'Phone':'手机号',value:String(user.phone||'').trim()},
+    {label:isEnglishVersion?'Email':'邮箱',value:usableAccountValue(user,'email')}
+  ].map(item=>({...item,value:item.value||(isEnglishVersion?'Not provided':'未绑定')}));
+  const rows=items.map(item=>`<div class="member-account-line"><span>${safe(item.label)}</span><span${item.value==='未绑定'||item.value==='Not provided'?' class="empty"':''}>${safe(item.value)}</span></div>`).join('');
+  return `<div class="member-account-stack">${rows}</div>`;
+}
 const exampleMemberRemarks={'owner-1':'项目负责人','manager-1':'协作管理','chen-1':'课题负责人','li-1':'数据分析','zhou-1':'实验研究','xia-1':'临床研究','lin-1':'生信分析','demo-zhao':'科研协作','demo-sun':'数据整理','demo-wu':'结果审核'};
 function savedMemberRemark(user) { return String(user?.remark||'').trim(); }
 function memberRemark(user) { if(user?.memberAliasDefined===true)return savedMemberRemark(user);return savedMemberRemark(user)||exampleMemberRemarks[user?.id]||exampleMemberRemarks[user?.demoSourceId]||(isSupportPerson(user)?'项目支持':'成员'); }
@@ -723,7 +732,7 @@ function renderMemberDirectory() {
   const list=memberDirectoryForViewer().filter(d=>!isSupportPerson(d)&&!isDirectoryOwner(d.id)&&accountSearchText(d).includes(q));
   return `<div class="page member-directory-page" data-screen-label="成员列表">${heading('成员管理','',`<button class="btn" data-nav="spaces">课题组管理</button>${canCreateGroups()?`<button class="btn" data-create-group>${icon('plus')}添加课题组</button>`:''}<button class="btn primary" data-add-directory ${!canManageGroups()?'disabled':''}>${icon('plus')}添加成员</button>`)}
     <section class="surface"><div class="surface-top"><h2 class="surface-title">所有成员 <span class="tab-count">${list.length}</span></h2><span class="surface-caption">云平台账号信息</span></div><div class="toolbar">${searchField('memberSearch',isEnglishVersion?'Search username, email or remark':'搜索用户名、手机号、邮箱或成员别称')}<span class="small-count">共 ${list.length} 位成员</span></div>
-    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>${isEnglishVersion?'Username / Phone / Email':'用户名 / 手机号 / 邮箱'}</th><th>成员别称</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map(d=>`<tr data-directory-member="${safe(d.id)}"><td class="member-account">${safe(memberAccountsDisplay(d))}</td><td class="member-remark-cell">${memberAliasCell(d)}</td><td class="directory-actions-column"><div class="directory-row-actions"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canRemoveDirectoryPerson(d.id)?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':'从成员库移除，并收回可管理的课题组与项目关联'}" aria-label="移除成员${safe(memberIdentifier(d))}">移除成员</button></div></td></tr>`).join('')||`<tr><td colspan="3" class="empty-cell">${emptyState('未找到匹配的成员','试试其他用户名、手机号、邮箱或成员别称。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot(identity==='manager'?'移除成员会收回你可管理的课题组与项目关联；受邀课题组中的成员关系和授权保留。':'移除成员会同步退出其所在课题组与协作项目；不删除对方的云平台账号。')}</div>`;
+    <div class="table-shell directory-table"><div class="table-scroll"><table><thead><tr><th>${isEnglishVersion?'Account info':'账号信息'}</th><th>成员别称</th><th class="directory-actions-column">操作</th></tr></thead><tbody>${list.map(d=>`<tr data-directory-member="${safe(d.id)}"><td class="member-account">${memberAccountStack(d)}</td><td class="member-remark-cell">${memberAliasCell(d)}</td><td class="directory-actions-column"><div class="directory-row-actions"><button class="btn quiet small danger" data-remove-directory="${safe(d.id)}" ${!canRemoveDirectoryPerson(d.id)?'disabled':''} title="${isDirectoryOwner(d.id)?'项目所有者不可移除':'从成员库移除，并收回可管理的课题组与项目关联'}" aria-label="移除成员${safe(memberIdentifier(d))}">移除成员</button></div></td></tr>`).join('')||`<tr><td colspan="3" class="empty-cell">${emptyState('未找到匹配的成员','试试其他用户名、手机号、邮箱或成员别称。')}</td></tr>`}</tbody></table></div></div>${tableFooter(list.length,'位成员')}</section>${pageFoot(identity==='manager'?'移除成员会收回你可管理的课题组与项目关联；受邀课题组中的成员关系和授权保留。':'移除成员会同步退出其所在课题组与协作项目；不删除对方的云平台账号。')}</div>`;
 }
 function renderDetail() {
   const p=project();
